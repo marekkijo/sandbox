@@ -27,9 +27,7 @@ cc_library(
 
 cc_library(
     name = "sdl2",
-    visibility = [
-        "//visibility:public",
-    ],
+    visibility = ["//visibility:public"],
     deps = [
         ":sdl2_dll",
         ":sdl2_hdrs",

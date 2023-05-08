@@ -7,15 +7,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  SDL_Window *window = SDL_CreateWindow("GAME", SDL_WINDOWPOS_CENTERED,
-                                        SDL_WINDOWPOS_CENTERED, 1024, 768, 0);
+  SDL_Window *window = SDL_CreateWindow("GAME", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 768, 0);
   if (!window) {
     std::cout << "SDL CreateWindow Error" << std::endl;
     return 1;
   }
 
-  SDL_Renderer *renderer =
-      SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
   if (!renderer) {
     std::cout << "SDL CreateRenderer Error" << std::endl;
     return 1;
