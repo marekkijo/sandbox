@@ -1,3 +1,10 @@
+#include "player_state.hpp"
+#include "raw_map.hpp"
+#include "vector_map.hpp"
+
+#include "tools/math/math.hpp"
+#include "tools/sdl/sdl.hpp"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keyboard.h>
@@ -6,57 +13,17 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 
-#include <tools/math/math.hpp>
-#include <tools/sdl/sdl.hpp>
-
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <iostream>
 #include <memory>
 #include <numbers>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
 namespace wolf {
-class Map {
-public:
-  Map() {
-    map_.resize(20);
-
-    // clang-format off
-    map_[ 0] = {-1.0f,  1.0f, -0.5f,  1.0f};
-    map_[ 1] = {-0.5f,  1.0f,  0.0f,  1.0f};
-    map_[ 2] = { 0.0f,  1.0f,  0.5f,  1.0f};
-    map_[ 3] = { 0.5f,  1.0f,  1.0f,  1.0f};
-
-    map_[ 4] = { 1.0f,  1.0f,  1.0f,  0.5f};
-    map_[ 5] = { 1.0f,  0.5f,  1.0f,  0.0f};
-    map_[ 6] = { 1.0f,  0.0f,  1.0f, -0.5f};
-    map_[ 7] = { 1.0f, -0.5f,  1.0f, -1.0f};
-
-    map_[ 8] = { 1.0f, -1.0f,  0.5f, -1.0f};
-    map_[ 9] = { 0.5f, -1.0f,  0.0f, -1.0f};
-    map_[10] = { 0.0f, -1.0f, -0.5f, -1.0f};
-    map_[11] = {-0.5f, -1.0f, -1.0f, -1.0f};
-
-    map_[12] = {-1.0f, -1.0f, -1.0f, -0.5f};
-    map_[13] = {-1.0f, -0.5f, -1.0f,  0.0f};
-    map_[14] = {-1.0f,  0.0f, -1.0f,  0.5f};
-    map_[15] = {-1.0f,  0.5f, -1.0f,  1.0f};
-
-    map_[16] = {0.25f, 0.25f, 0.75f, 0.25f};
-    map_[17] = {0.75f, 0.25f, 0.75f, 0.75f};
-    map_[18] = {0.75f, 0.75f, 0.25f, 0.75f};
-    map_[19] = {0.25f, 0.75f, 0.25f, 0.25f};
-    // clang-format on
-  }
-  [[nodiscard]] const std::vector<std::array<float, 4>> &data() const { return map_; }
-
-private:
-  std::vector<std::array<float, 4>> map_{};
-};
-
 class Position {
 public:
   Position(float rotation_speed, float move_speed)
@@ -105,31 +72,31 @@ private:
   float move_speed_{};
 
   float orientation_{};
-  float x_{};
-  float y_{};
-  float look_x_{4.0f};
-  float look_y_{};
+  float x_{1.5f};
+  float y_{8.5f};
+  float look_x_{x_ + 4.0f};
+  float look_y_{y_};
 };
 
 class ViewGenerator {
 public:
-  ViewGenerator(std::shared_ptr<const Map> map, std::shared_ptr<const Position> position, float fov,
-                std::uint16_t lines)
-      : map_{map}, position_{position} {
-    if (lines % 2) {
+  ViewGenerator(std::shared_ptr<const VectorMap> vector_map, std::shared_ptr<const Position> position, float fov,
+                std::uint16_t vectors)
+      : vector_map_{vector_map}, position_{position} {
+    if (vectors % 2) {
       rays_.emplace_back(0.0f);
-      lines--;
+      vectors--;
     }
-    const float fov_step = fov * (std::numbers::pi / 180.0f) / lines;
+    const float fov_step = fov * (std::numbers::pi / 180.0f) / vectors;
     auto angle = fov_step;
-    while (lines) {
+    while (vectors) {
       rays_.emplace_back(angle);
       rays_.emplace_back(-angle);
       angle += fov_step;
-      lines -= 2;
+      vectors -= 2;
     }
     std::sort(rays_.begin(), rays_.end());
-    lines_.resize(rays_.size(), 0.0f);
+    vectors_.resize(rays_.size(), 0.0f);
   }
   void generate() {
     const auto x1 = position_->x();
@@ -145,39 +112,41 @@ public:
       const auto x2 = (x0 * cos - y0 * sin) + x1;
       const auto y2 = (x0 * sin + y0 * cos) + y1;
 
-      lines_[i] = std::numeric_limits<float>::max();
+      vectors_[i] = std::numeric_limits<float>::max();
 
-      for (const auto &line : map_->data()) {
-        if (tools::math::do_intersect(line[0], line[1], line[2], line[3], x1, y1, x2, y2)) {
+      for (const auto &vector : vector_map_->vectors()) {
+        if (tools::math::do_intersect(vector[0], vector[1], vector[2], vector[3], x1, y1, x2, y2)) {
           auto [result, x_intersect, y_intersect] =
-              tools::math::intersection_point(line[0], line[1], line[2], line[3], x1, y1, x2, y2);
+              tools::math::intersection_point(vector[0], vector[1], vector[2], vector[3], x1, y1, x2, y2);
           if (result) {
-            lines_[i] =
-                std::min(lines_[i], std::sqrt(std::pow(x_intersect - x1, 2.0f) + std::pow(y_intersect - y1, 2.0f)));
+            vectors_[i] =
+                std::min(vectors_[i], std::sqrt(std::pow(x_intersect - x1, 2.0f) + std::pow(y_intersect - y1, 2.0f)));
           }
         }
       }
 
-      if (lines_[i] == std::numeric_limits<float>::max()) {
-        lines_[i] = 0.0f;
+      if (vectors_[i] == std::numeric_limits<float>::max()) {
+        vectors_[i] = 0.0f;
       } else {
-        lines_[i] = (view_length - lines_[i]) / view_length;
+        vectors_[i] = (view_length - vectors_[i]) / view_length;
       }
     }
   }
 
-  const std::vector<float> &lines() const { return lines_; };
+  const std::vector<float> &vectors() const { return vectors_; };
 
 private:
-  const std::shared_ptr<const Map> map_{};
+  const std::shared_ptr<const VectorMap> vector_map_{};
   const std::shared_ptr<const Position> position_{};
 
   std::vector<float> rays_{};
-  std::vector<float> lines_{};
+  std::vector<float> vectors_{};
 };
 
 class Renderer {
 public:
+  virtual ~Renderer() = default;
+
   Renderer(tools::sdl::SDLSystem &sdl_sys) : window_{sdl_sys.window()}, renderer_{sdl_sys.renderer()} {
     if (!wnd())
       throw std::runtime_error{"given window is nullptr"};
@@ -216,8 +185,8 @@ public:
   }
   void redraw() override {
     for (std::size_t w_it{0u}; w_it < buffer_.size(); w_it++) {
-      const auto line = view_generator_->lines()[w_it];
-      auto wall_height = std::min(buffer_[w_it].size(), static_cast<std::size_t>(buffer_[w_it].size() * line + 0.5f));
+      const auto vector = view_generator_->vectors()[w_it];
+      auto wall_height = std::min(buffer_[w_it].size(), static_cast<std::size_t>(buffer_[w_it].size() * vector + 0.5f));
       auto no_wall = buffer_[w_it].size() - wall_height;
       if (no_wall % 2) {
         wall_height++;
@@ -231,8 +200,8 @@ public:
         SDL_RenderFillRect(r(), &buffer_[w_it][h_it]);
       }
       // wall
-      SDL_SetRenderDrawColor(r(), static_cast<Uint8>(65.0f * line + 0.5f), static_cast<Uint8>(80.0f * line + 0.5f),
-                             120 + static_cast<Uint8>(100.0f * line + 0.5f), 255);
+      SDL_SetRenderDrawColor(r(), static_cast<Uint8>(65.0f * vector + 0.5f), static_cast<Uint8>(80.0f * vector + 0.5f),
+                             120 + static_cast<Uint8>(100.0f * vector + 0.5f), 255);
       for (std::size_t h_it{no_wall}; h_it < no_wall + wall_height; h_it++) {
         SDL_RenderFillRect(r(), &buffer_[w_it][h_it]);
       }
@@ -266,8 +235,9 @@ private:
 
 class MapRenderer : public Renderer {
 public:
-  MapRenderer(tools::sdl::SDLSystem &sdl_sys, std::shared_ptr<const Map> map, std::shared_ptr<const Position> position)
-      : Renderer(sdl_sys), map_{map}, position_{position} {
+  MapRenderer(tools::sdl::SDLSystem &sdl_sys, std::shared_ptr<const VectorMap> vector_map,
+              std::shared_ptr<const Position> position)
+      : Renderer(sdl_sys), vector_map_{vector_map}, position_{position} {
     Renderer::rescale();
   }
   void redraw() override {
@@ -288,18 +258,19 @@ public:
       }
 
       { // map
-        for (const auto &line : map_->data()) {
-          auto x1 = (line[0] - position_->x()) * cos - (line[1] - position_->y()) * sin;
+        for (const auto &vector : vector_map_->vectors()) {
+          auto x1 = (vector[0] - position_->x()) * cos - (vector[1] - position_->y()) * sin;
           x1 = x1 * scale_x_ + translate_x_;
-          auto y1 = (line[0] - position_->x()) * sin + (line[1] - position_->y()) * cos;
+          auto y1 = (vector[0] - position_->x()) * sin + (vector[1] - position_->y()) * cos;
           y1 = y1 * scale_y_ + translate_y_;
-          auto x2 = (line[2] - position_->x()) * cos - (line[3] - position_->y()) * sin;
+          auto x2 = (vector[2] - position_->x()) * cos - (vector[3] - position_->y()) * sin;
           x2 = x2 * scale_x_ + translate_x_;
-          auto y2 = (line[2] - position_->x()) * sin + (line[3] - position_->y()) * cos;
+          auto y2 = (vector[2] - position_->x()) * sin + (vector[3] - position_->y()) * cos;
           y2 = y2 * scale_y_ + translate_y_;
 
-          const auto do_intersect = tools::math::do_intersect(line[0], line[1], line[2], line[3], position_->x(),
-                                                              position_->y(), position_->look_x(), position_->look_y());
+          const auto do_intersect =
+              tools::math::do_intersect(vector[0], vector[1], vector[2], vector[3], position_->x(), position_->y(),
+                                        position_->look_x(), position_->look_y());
           if (do_intersect)
             SDL_SetRenderDrawColor(r(), 255, 0, 0, 255);
           else
@@ -308,8 +279,8 @@ public:
 
           if (do_intersect) { // intersection point
             auto [result, x_intersect, y_intersect] =
-                tools::math::intersection_point(line[0], line[1], line[2], line[3], position_->x(), position_->y(),
-                                                position_->look_x(), position_->look_y());
+                tools::math::intersection_point(vector[0], vector[1], vector[2], vector[3], position_->x(),
+                                                position_->y(), position_->look_x(), position_->look_y());
             if (result) {
               auto rot_x_intersect = (x_intersect - position_->x()) * cos - (y_intersect - position_->y()) * sin;
               rot_x_intersect = rot_x_intersect * scale_x_ + translate_x_;
@@ -333,18 +304,16 @@ public:
         SDL_RenderDrawLineF(r(), posx, posy, lookx, looky);
       }
 
-      const auto cos = std::cosf(position_->orientation());
-      const auto sin = std::sinf(position_->orientation());
-
       { // map
-        for (const auto &line : map_->data()) {
-          auto x1 = line[0] * scale_x_ + translate_x_;
-          auto y1 = line[1] * scale_y_ + translate_y_;
-          auto x2 = line[2] * scale_x_ + translate_x_;
-          auto y2 = line[3] * scale_y_ + translate_y_;
+        for (const auto &vector : vector_map_->vectors()) {
+          auto x1 = vector[0] * scale_x_ + translate_x_;
+          auto y1 = vector[1] * scale_y_ + translate_y_;
+          auto x2 = vector[2] * scale_x_ + translate_x_;
+          auto y2 = vector[3] * scale_y_ + translate_y_;
 
-          const auto do_intersect = tools::math::do_intersect(line[0], line[1], line[2], line[3], position_->x(),
-                                                              position_->y(), position_->look_x(), position_->look_y());
+          const auto do_intersect =
+              tools::math::do_intersect(vector[0], vector[1], vector[2], vector[3], position_->x(), position_->y(),
+                                        position_->look_x(), position_->look_y());
           if (do_intersect)
             SDL_SetRenderDrawColor(r(), 255, 0, 0, 255);
           else
@@ -353,8 +322,8 @@ public:
 
           if (do_intersect) { // intersection point
             auto [result, x_intersect, y_intersect] =
-                tools::math::intersection_point(line[0], line[1], line[2], line[3], position_->x(), position_->y(),
-                                                position_->look_x(), position_->look_y());
+                tools::math::intersection_point(vector[0], vector[1], vector[2], vector[3], position_->x(),
+                                                position_->y(), position_->look_x(), position_->look_y());
             if (result) {
               x_intersect = x_intersect * scale_x_ + translate_x_;
               y_intersect = y_intersect * scale_y_ + translate_y_;
@@ -378,10 +347,10 @@ protected:
   }
 
 private:
-  const std::shared_ptr<const Map> map_{};
+  const std::shared_ptr<const VectorMap> vector_map_{};
   const std::shared_ptr<const Position> position_{};
 
-  bool player_oriented_{false};
+  bool player_oriented_{true};
   float scale_x_{};
   float scale_y_{};
   float translate_x_{};
@@ -420,11 +389,16 @@ int main(int argc, char *argv[]) {
       SDL_INIT_EVERYTHING,  "Wolf", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 1024, 0, -1,
       SDL_RENDERER_SOFTWARE};
 
-  auto map = std::make_shared<wolf::Map>();
+  auto raw_map = std::make_shared<wolf::RawMap>("projects/wolf/data/map1.map");
+  auto vector_map = std::make_shared<wolf::VectorMap>(*raw_map);
+  auto player_state = std::make_shared<wolf::PlayerState>(std::const_pointer_cast<const wolf::RawMap>(raw_map));
+
   auto position = std::make_shared<wolf::Position>(0.5f, 0.5f);
-  auto view_generator = std::make_shared<wolf::ViewGenerator>(map, position, 45.0f, 64);
+  auto view_generator = std::make_shared<wolf::ViewGenerator>(vector_map, position, 45.0f, 64);
   std::unique_ptr<wolf::Renderer> view_renderer = std::make_unique<wolf::ViewRenderer>(sdl_sys, view_generator, 64, 64);
-  std::unique_ptr<wolf::Renderer> map_renderer = std::make_unique<wolf::MapRenderer>(sdl_sys, map, position);
+  std::unique_ptr<wolf::Renderer> map_renderer =
+      std::make_unique<wolf::MapRenderer>(sdl_sys, std::const_pointer_cast<const wolf::VectorMap>(vector_map),
+                                          std::const_pointer_cast<const wolf::Position>(position));
   auto last_timestamp = SDL_GetTicks();
   auto anim = wolf::Animation(30u);
 
