@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -9,7 +10,6 @@ class RawMap {
 public:
   using BlockType = char;
 
-  RawMap() = delete;
   RawMap(const RawMap &) = default;
   RawMap &operator=(const RawMap &) = default;
   RawMap(RawMap &&) noexcept = default;
@@ -29,18 +29,15 @@ public:
   [[nodiscard]] bool is_wall_on_w(std::size_t w, std::size_t h) const;
   [[nodiscard]] bool is_wall_on_e(std::size_t w, std::size_t h) const;
   /// @}
-  [[nodiscard]] std::size_t player_pos_w() const;
-  [[nodiscard]] std::size_t player_pos_h() const;
   [[nodiscard]] std::tuple<std::size_t, std::size_t> player_pos() const;
 
 private:
   std::size_t width_{};
   std::size_t height_{};
-  std::vector<BlockType> data_{};
+  std::vector<BlockType> blocks_{};
   std::size_t player_pos_w_{std::numeric_limits<std::size_t>::max()};
   std::size_t player_pos_h_{std::numeric_limits<std::size_t>::max()};
 
-  [[nodiscard]] const std::vector<BlockType> &data() const;
   void detect_player_pos();
 };
 } // namespace wolf
