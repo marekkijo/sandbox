@@ -9,3 +9,11 @@ http_archive(
     strip_prefix = "SDL2-2.26.5",
     url = "https://github.com/libsdl-org/SDL/releases/download/release-2.26.5/SDL2-devel-2.26.5-VC.zip",
 )
+
+http_archive(
+    name = "glm",
+    build_file = "//externals:glm.BUILD",
+    sha256 = "e7a1abc208278cc3f0dba59c5170d83863b3375f98136d588b8beb74825e503c",
+    strip_prefix = "glm-efec5db081e3aad807d0731e172ac597f6a39447",
+    url = "https://github.com/g-truc/glm/archive/efec5db081e3aad807d0731e172ac597f6a39447.zip",
+)
