@@ -1,30 +1,39 @@
 #include "player_state.hpp"
 
+#include "tools/math/math.hpp"
+
+#include <cmath>
 #include <numbers>
 
 namespace wolf {
-PlayerState::PlayerState(std::shared_ptr<const RawMap> _raw_map, float move_speed, float rot_speed)
-    : raw_map_{_raw_map}, move_speed_{move_speed}, rot_speed_{rot_speed} {
-  const auto [w, h] = raw_map().player_pos();
+PlayerState::PlayerState(std::shared_ptr<const RawMap> raw_map, float fov_deg, float move_speed, float rot_speed)
+    : raw_map_{raw_map}, fov_rad_{static_cast<float>(fov_deg * (std::numbers::pi / 180.0f))}, move_speed_{move_speed},
+      rot_speed_{rot_speed} {
+  const auto [w, h] = PlayerState::raw_map().player_pos();
   pos_x_ = w + 0.5f;
   pos_y_ = h + 0.5f;
 
-  const auto &pos_type = raw_map().block(w, h);
+  const auto &pos_type = PlayerState::raw_map().block(w, h);
   if (pos_type == 'n') {
     orientation_ = std::numbers::pi / 2.0f;
-    dir_y_ = 1.0;
   } else if (pos_type == 's') {
     orientation_ = std::numbers::pi * 1.5f;
-    dir_y_ = -1.0;
   } else if (pos_type == 'w') {
     orientation_ = std::numbers::pi;
-    dir_x_ = -1.0;
   } else if (pos_type == 'e') {
-    dir_x_ = 1.0;
+    orientation_ = 0.0f;
   }
+  update_dir();
 }
 
-void PlayerState::animate(std::uint32_t time_elapsed_ms) {}
+void PlayerState::animate(std::uint32_t time_elapsed_ms) {
+  animate_move(time_elapsed_ms);
+  animate_rot(time_elapsed_ms);
+}
+
+float PlayerState::fov_deg() const { return fov_rad_ / (std::numbers::pi / 180.0f); }
+
+float PlayerState::fov_rad() const { return fov_rad_; }
 
 float PlayerState::pos_x() const { return pos_x_; }
 
@@ -47,4 +56,38 @@ const tools::sdl::SDLKeyboardState &PlayerState::keyboard_state() const { return
 float PlayerState::move_speed() const { return move_speed_; }
 
 float PlayerState::rot_speed() const { return rot_speed_; }
+
+void PlayerState::animate_move(std::uint32_t time_elapsed_ms) {
+  if (!keyboard_state().up() && !keyboard_state().down()) {
+    return;
+  }
+  if (keyboard_state().up() && keyboard_state().down()) {
+    return;
+  }
+
+  const auto time_elapsed_factor = time_elapsed_ms / 1000.0f;
+  const auto move_factor = keyboard_state().up() ? move_speed() : -move_speed();
+  pos_x_ += time_elapsed_factor * move_factor * dir_x();
+  pos_y_ += time_elapsed_factor * move_factor * dir_y();
+}
+
+void PlayerState::animate_rot(std::uint32_t time_elapsed_ms) {
+  if (!keyboard_state().left() && !keyboard_state().right()) {
+    return;
+  }
+  if (keyboard_state().left() && keyboard_state().right()) {
+    return;
+  }
+
+  const auto time_elapsed_factor = time_elapsed_ms / 1000.0f;
+  orientation_ +=
+      static_cast<float>(keyboard_state().left() ? -time_elapsed_factor : time_elapsed_factor) * rot_speed();
+  orientation_ = tools::math::wrap_angle(orientation_);
+  update_dir();
+}
+
+void PlayerState::update_dir() {
+  dir_x_ = std::cosf(orientation());
+  dir_y_ = std::sinf(orientation());
+}
 } // namespace wolf

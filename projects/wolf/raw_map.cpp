@@ -12,11 +12,11 @@ RawMap::RawMap(const std::string &filename) {
 
   file >> width_;
   file >> height_;
-  data_.resize(width() * height() + 1);
+  blocks_.resize(width() * height() + 1);
 
   file.ignore();
-  for (std::size_t h = 0; h < height(); h++) {
-    file.getline(data_.data() + h * width(), data_.size() - h * width());
+  for (std::size_t h{0u}; h < height(); h++) {
+    file.getline(blocks_.data() + h * width(), blocks_.size() - h * width());
     if (file.gcount() != width() + 1) {
       throw std::runtime_error{"error while reading given map file"};
     }
@@ -29,7 +29,7 @@ std::size_t RawMap::width() const { return width_; }
 
 std::size_t RawMap::height() const { return height_; }
 
-const RawMap::BlockType &RawMap::block(std::size_t w, std::size_t h) const { return data().at(w + h * width_); }
+const RawMap::BlockType &RawMap::block(std::size_t w, std::size_t h) const { return blocks_[w + h * width()]; }
 
 bool RawMap::is_wall(std::size_t w, std::size_t h) const {
   const auto &_block = block(w, h);
@@ -44,23 +44,17 @@ bool RawMap::is_wall_on_w(std::size_t w, std::size_t h) const { return w == 0 ||
 
 bool RawMap::is_wall_on_e(std::size_t w, std::size_t h) const { return w == (width() - 1) || is_wall(w + 1, h); }
 
-std::size_t RawMap::player_pos_w() const { return player_pos_w_; }
-
-std::size_t RawMap::player_pos_h() const { return player_pos_h_; }
-
 std::tuple<std::size_t, std::size_t> RawMap::player_pos() const {
-  return std::make_tuple(player_pos_w(), player_pos_h());
+  return std::make_tuple(player_pos_w_, player_pos_h_);
 }
 
-const std::vector<RawMap::BlockType> &RawMap::data() const { return data_; }
-
 void RawMap::detect_player_pos() {
-  for (std::size_t h = 0; h < height(); h++) {
-    for (std::size_t w = 0; w < width(); w++) {
+  for (std::size_t h{0u}; h < height(); h++) {
+    for (std::size_t w{0u}; w < width(); w++) {
       const auto &_block = block(w, h);
       if (_block == 'n' || _block == 's' || _block == 'w' || _block == 'e') {
-        if (player_pos_w() != std::numeric_limits<std::size_t>::max() ||
-            player_pos_h() != std::numeric_limits<std::size_t>::max()) {
+        if (player_pos_w_ != std::numeric_limits<std::size_t>::max() ||
+            player_pos_h_ != std::numeric_limits<std::size_t>::max()) {
           throw std::runtime_error{"map error: more than one player position detected"};
         }
         player_pos_w_ = w;
@@ -68,8 +62,8 @@ void RawMap::detect_player_pos() {
       }
     }
   }
-  if (player_pos_w() == std::numeric_limits<std::size_t>::max() ||
-      player_pos_h() == std::numeric_limits<std::size_t>::max()) {
+  if (player_pos_w_ == std::numeric_limits<std::size_t>::max() ||
+      player_pos_h_ == std::numeric_limits<std::size_t>::max()) {
     throw std::runtime_error{"map error: no player position detected"};
   }
 }
