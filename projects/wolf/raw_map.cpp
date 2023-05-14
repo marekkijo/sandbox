@@ -6,9 +6,7 @@
 namespace wolf {
 RawMap::RawMap(const std::string &filename) {
   auto file = std::ifstream{filename};
-  if (!file.is_open()) {
-    throw std::runtime_error{"cannot open given map file"};
-  }
+  if (!file.is_open()) { throw std::runtime_error{"cannot open given map file"}; }
 
   file >> width_;
   file >> height_;
@@ -17,9 +15,7 @@ RawMap::RawMap(const std::string &filename) {
   file.ignore();
   for (std::size_t h{0u}; h < height(); h++) {
     file.getline(blocks_.data() + h * width(), blocks_.size() - h * width());
-    if (file.gcount() != width() + 1) {
-      throw std::runtime_error{"error while reading given map file"};
-    }
+    if (file.gcount() != width() + 1) { throw std::runtime_error{"error while reading given map file"}; }
   }
 
   detect_player_pos();

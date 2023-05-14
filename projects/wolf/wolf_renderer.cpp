@@ -9,13 +9,21 @@
 #include <numbers>
 
 namespace wolf {
-WolfRenderer::WolfRenderer(tools::sdl::SDLSystem &sdl_sys, std::shared_ptr<const VectorMap> vector_map,
-                           std::shared_ptr<const PlayerState> player_state, std::uint32_t res_w, std::uint32_t res_h)
-    : Renderer(sdl_sys), vector_map_{vector_map}, player_state_{player_state}, walls_{res_w}, ray_rots_{res_w},
-      res_h_{res_h}, wall_heights_{WolfRenderer::res_h() / 2u + WolfRenderer::res_h() % 2u + 1u} {
+WolfRenderer::WolfRenderer(tools::sdl::SDLSystem             &sdl_sys,
+                           std::shared_ptr<const VectorMap>   vector_map,
+                           std::shared_ptr<const PlayerState> player_state,
+                           std::uint32_t                      res_w,
+                           std::uint32_t                      res_h)
+    : Renderer(sdl_sys)
+    , vector_map_{vector_map}
+    , player_state_{player_state}
+    , walls_{res_w}
+    , ray_rots_{res_w}
+    , res_h_{res_h}
+    , wall_heights_{WolfRenderer::res_h() / 2u + WolfRenderer::res_h() % 2u + 1u} {
   const auto fov_step = WolfRenderer::player_state().fov_rad() / (WolfRenderer::ray_rots().size() - 1u);
   for (std::size_t r_it{0u}; r_it < WolfRenderer::ray_rots().size(); r_it++) {
-    const auto angle = -(WolfRenderer::player_state().fov_rad() / 2.0f) + fov_step * r_it;
+    const auto angle    = -(WolfRenderer::player_state().fov_rad() / 2.0f) + fov_step * r_it;
     ray_rots_[r_it].sin = std::sinf(angle);
     ray_rots_[r_it].cos = std::cosf(angle);
   }
@@ -28,7 +36,7 @@ void WolfRenderer::redraw() {
 
   draw_background();
   draw_walls();
-};
+}
 
 void WolfRenderer::resize(int width, int height) {
   const auto h_part = height / static_cast<double>(res_h());
@@ -38,14 +46,14 @@ void WolfRenderer::resize(int width, int height) {
   }
 
   const auto w_part = width / static_cast<double>(walls_.size());
-  const auto w = static_cast<int>(std::ceil(w_part));
+  const auto w      = static_cast<int>(std::ceil(w_part));
   for (std::size_t r_it{0u}; r_it < walls_.size(); r_it++) {
     walls_[r_it].rect.x = static_cast<int>(std::floor(w_part * r_it));
     walls_[r_it].rect.w = w;
   }
 
   ceiling_rect_ = SDL_Rect{0, 0, width, height / 2};
-  floor_rect_ = SDL_Rect{0, height / 2, width, height / 2};
+  floor_rect_   = SDL_Rect{0, height / 2, width, height / 2};
 }
 
 const VectorMap &WolfRenderer::vector_map() const { return *vector_map_; }
@@ -88,13 +96,13 @@ void WolfRenderer::prepare_walls() {
   for (std::size_t r_it{0u}; r_it < ray_rots().size(); r_it++) {
     const auto ray_cos = ray_rots()[r_it].cos;
     const auto ray_sin = ray_rots()[r_it].sin;
-    const auto ray_x = (ray_cos * dir_x - ray_sin * dir_y) * ray_length + pos_x;
-    const auto ray_y = (ray_sin * dir_x + ray_cos * dir_y) * ray_length + pos_y;
+    const auto ray_x   = (ray_cos * dir_x - ray_sin * dir_y) * ray_length + pos_x;
+    const auto ray_y   = (ray_sin * dir_x + ray_cos * dir_y) * ray_length + pos_y;
 
-    auto v_index = std::numeric_limits<std::size_t>::max();
+    auto v_index  = std::numeric_limits<std::size_t>::max();
     auto min_dist = ray_length * 2.0f;
-    auto min_x = 0.0f;
-    auto min_y = 0.0f;
+    auto min_x    = 0.0f;
+    auto min_y    = 0.0f;
     for (std::size_t v_it{0u}; v_it < vector_map().vectors().size(); v_it++) {
       const auto &v = vector_map().vectors()[v_it];
 
@@ -103,31 +111,27 @@ void WolfRenderer::prepare_walls() {
       }
       const auto [crossed, cross_x, cross_y] =
           tools::math::intersection_point(pos_x, pos_y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y);
-      if (!crossed) {
-        continue;
-      }
+      if (!crossed) { continue; }
 
       const auto curr_dist = std::sqrtf((cross_x - pos_x) * (cross_x - pos_x) + (cross_y - pos_y) * (cross_y - pos_y));
       if (curr_dist < min_dist) {
         min_dist = curr_dist;
-        min_x = cross_x;
-        min_y = cross_y;
-        v_index = v_it;
+        min_x    = cross_x;
+        min_y    = cross_y;
+        v_index  = v_it;
       }
     }
 
     auto cam_dist = 10000.0f;
     if (v_index != std::numeric_limits<std::size_t>::max()) {
-      cam_dist = (cam_x2 - cam_x1) * (cam_y1 - min_y) - (cam_x1 - min_x) * (cam_y2 - cam_y1);
+      cam_dist  = (cam_x2 - cam_x1) * (cam_y1 - min_y) - (cam_x1 - min_x) * (cam_y2 - cam_y1);
       cam_dist /= std::sqrtf((cam_x2 - cam_x1) * (cam_x2 - cam_x1) + (cam_y2 - cam_y1) * (cam_y2 - cam_y1));
-      if (cam_dist < 0.0f) {
-        cam_dist = 0.0f;
-      }
+      if (cam_dist < 0.0f) { cam_dist = 0.0f; }
     }
 
-    walls_[r_it].rect.h = 1.0f / cam_dist * 1024.0f;
-    walls_[r_it].rect.y = (1024.0f - walls_[r_it].rect.h) / 2.0f;
-    walls_[r_it].color_index = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
+    walls_[r_it].rect.h        = 1.0f / cam_dist * 1024.0f;
+    walls_[r_it].rect.y        = (1024.0f - walls_[r_it].rect.h) / 2.0f;
+    walls_[r_it].color_index   = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
     walls_[r_it].shadow_factor = 1.0f - std::min(1.0f, walls_[r_it].rect.h / 1024.0f);
   }
 }
