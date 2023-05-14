@@ -12,7 +12,8 @@ VectorMap::VectorMap(std::shared_ptr<const RawMap> raw_map) : raw_map_{raw_map} 
 const std::vector<std::pair<glm::vec2, glm::vec2>> &VectorMap::vectors() const { return vectors_; }
 
 glm::uvec3 VectorMap::color(std::size_t index, float shadow_factor) const {
-  return {static_cast<std::uint32_t>(65.0f * shadow_factor), static_cast<std::uint32_t>(80.0f * shadow_factor),
+  return {static_cast<std::uint32_t>(65.0f * shadow_factor),
+          static_cast<std::uint32_t>(80.0f * shadow_factor),
           120 + static_cast<std::uint32_t>(100.0f * shadow_factor)};
 }
 

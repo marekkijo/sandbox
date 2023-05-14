@@ -5,7 +5,8 @@
 #include <numbers>
 
 namespace wolf {
-MapRenderer::MapRenderer(tools::sdl::SDLSystem &sdl_sys, std::shared_ptr<const VectorMap> vector_map,
+MapRenderer::MapRenderer(tools::sdl::SDLSystem             &sdl_sys,
+                         std::shared_ptr<const VectorMap>   vector_map,
                          std::shared_ptr<const PlayerState> player_state)
     : Renderer(sdl_sys), vector_map_{vector_map}, player_state_{player_state} {
   Renderer::resize();
@@ -22,7 +23,7 @@ void MapRenderer::redraw() {
 void MapRenderer::resize(int width, int height) {
   translate_x_ = static_cast<float>(width) / 2.0f;
   translate_y_ = static_cast<float>(height) / 2.0f;
-  scale_ = std::min(width, height) / vector_map().diagonal_length();
+  scale_       = std::min(width, height) / vector_map().diagonal_length();
 }
 
 const VectorMap &MapRenderer::vector_map() const { return *vector_map_; }
@@ -43,22 +44,22 @@ void MapRenderer::redraw_player_oriented() const {
   // to the center of the screen
   auto map_mat = glm::translate(glm::mat4(1.0f), glm::vec3(translate_x(), translate_y(), 0.0f));
   // orient to north
-  map_mat = glm::rotate(map_mat, -static_cast<float>(std::numbers::pi / 2.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  map_mat      = glm::rotate(map_mat, -static_cast<float>(std::numbers::pi / 2.0f), glm::vec3(0.0f, 0.0f, 1.0f));
   // scale map
-  map_mat = glm::scale(map_mat, glm::vec3(scale()));
+  map_mat      = glm::scale(map_mat, glm::vec3(scale()));
   // player rotation
-  map_mat = glm::rotate(map_mat, -player_state().orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
+  map_mat      = glm::rotate(map_mat, -player_state().orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
   // player translation
-  map_mat = glm::translate(map_mat, glm::vec3(-player_state().pos_x(), -player_state().pos_y(), 0.0f));
+  map_mat      = glm::translate(map_mat, glm::vec3(-player_state().pos_x(), -player_state().pos_y(), 0.0f));
 
   draw_map(map_mat);
 
   // to the center of the screen
   auto player_mat = glm::translate(glm::mat4(1.0f), glm::vec3(translate_x(), translate_y(), 0.0f));
   // orient to north
-  player_mat = glm::rotate(player_mat, -static_cast<float>(std::numbers::pi / 2.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  player_mat      = glm::rotate(player_mat, -static_cast<float>(std::numbers::pi / 2.0f), glm::vec3(0.0f, 0.0f, 1.0f));
   // scale map
-  player_mat = glm::scale(player_mat, glm::vec3(scale()));
+  player_mat      = glm::scale(player_mat, glm::vec3(scale()));
   draw_player(player_mat);
 }
 
@@ -66,15 +67,15 @@ void MapRenderer::redraw_map_oriented() const {
   // to the center of the screen
   auto map_mat = glm::translate(glm::mat4(1.0f), glm::vec3(translate_x(), translate_y(), 0.0f));
   // scale map
-  map_mat = glm::scale(map_mat, glm::vec3(scale()));
+  map_mat      = glm::scale(map_mat, glm::vec3(scale()));
   // to the center of the map
-  map_mat = glm::translate(map_mat, glm::vec3(-vector_map().width() / 2.0f, -vector_map().height() / 2.0f, 0.0f));
+  map_mat      = glm::translate(map_mat, glm::vec3(-vector_map().width() / 2.0f, -vector_map().height() / 2.0f, 0.0f));
   draw_map(map_mat);
 
   // to the center of the screen
   auto player_mat = glm::translate(glm::mat4(1.0f), glm::vec3(translate_x(), translate_y(), 0.0f));
   // scale map
-  player_mat = glm::scale(player_mat, glm::vec3(scale()));
+  player_mat      = glm::scale(player_mat, glm::vec3(scale()));
   // to the center of the map
   player_mat = glm::translate(player_mat, glm::vec3(-vector_map().width() / 2.0f, -vector_map().height() / 2.0f, 0.0f));
   // player translation
@@ -95,12 +96,16 @@ void MapRenderer::draw_map(const glm::mat4 &mat) const {
 
 void MapRenderer::draw_player(const glm::mat4 &mat) const {
   constexpr auto ray_length = 5.0f;
-  const auto zero = mat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  const auto left = mat * glm::vec4(std::cosf(-player_state().fov_rad() / 2.0f) * ray_length,
-                                    std::sinf(-player_state().fov_rad() / 2.0f) * ray_length, 0.0f, 1.0f);
-  const auto right = mat * glm::vec4(std::cosf(player_state().fov_rad() / 2.0f) * ray_length,
-                                     std::sinf(player_state().fov_rad() / 2.0f) * ray_length, 0.0f, 1.0f);
-  const auto front = mat * glm::vec4(ray_length, 0.0f, 0.0f, 1.0f);
+  const auto     zero       = mat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  const auto     left       = mat * glm::vec4(std::cosf(-player_state().fov_rad() / 2.0f) * ray_length,
+                                    std::sinf(-player_state().fov_rad() / 2.0f) * ray_length,
+                                    0.0f,
+                                    1.0f);
+  const auto     right      = mat * glm::vec4(std::cosf(player_state().fov_rad() / 2.0f) * ray_length,
+                                     std::sinf(player_state().fov_rad() / 2.0f) * ray_length,
+                                     0.0f,
+                                     1.0f);
+  const auto     front      = mat * glm::vec4(ray_length, 0.0f, 0.0f, 1.0f);
   SDL_SetRenderDrawColor(r(), 0, 0, 0, 255);
   SDL_RenderDrawLineF(r(), zero.x, zero.y, left.x, left.y);
   SDL_RenderDrawLineF(r(), zero.x, zero.y, right.x, right.y);
