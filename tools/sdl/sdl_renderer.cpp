@@ -6,19 +6,17 @@
 namespace tools::sdl {
 SDLRenderer::SDLRenderer(SDL_Window *window, int index, Uint32 flags)
     : renderer_{SDL_CreateRenderer(window, index, flags)} {
-  if (!r())
-    throw std::runtime_error{std::string{"SDL CreateRenderer Error:"} + SDL_GetError()};
+  if (!r()) { throw std::runtime_error{std::string{"SDL CreateRenderer Error:"} + SDL_GetError()}; }
 }
 
 SDLRenderer::SDLRenderer(SDLRenderer &&other) noexcept : renderer_{other.renderer_} { other.renderer_ = nullptr; }
 
 SDLRenderer &SDLRenderer::operator=(SDLRenderer &&other) noexcept {
-  if (this == &other)
-    return *this;
+  if (this == &other) { return *this; }
 
   SDL_DestroyRenderer(renderer_);
 
-  renderer_ = other.renderer_;
+  renderer_       = other.renderer_;
   other.renderer_ = nullptr;
 
   return *this;

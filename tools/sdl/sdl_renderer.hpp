@@ -9,7 +9,7 @@
 namespace tools::sdl {
 class SDLRenderer {
 public:
-  SDLRenderer(const SDLRenderer &) = delete;
+  SDLRenderer(const SDLRenderer &)            = delete;
   SDLRenderer &operator=(const SDLRenderer &) = delete;
 
   SDLRenderer(SDL_Window *window, int index, Uint32 flags);

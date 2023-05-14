@@ -7,9 +7,7 @@
 
 namespace tools::sdl {
 SDLKeyboardState::SDLKeyboardState() : sdl_keys_{SDL_GetKeyboardState(nullptr)} {
-  if (!sdl_keys_) {
-    throw std::runtime_error{"retrieving SDL keyboard state failed"};
-  }
+  if (!sdl_keys_) { throw std::runtime_error{"retrieving SDL keyboard state failed"}; }
 }
 
 bool SDLKeyboardState::right() const { return sdl_keys()[SDL_SCANCODE_RIGHT] == 1u; }

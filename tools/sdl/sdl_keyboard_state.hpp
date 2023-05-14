@@ -7,11 +7,11 @@
 namespace tools::sdl {
 class SDLKeyboardState {
 public:
-  SDLKeyboardState(const SDLKeyboardState &) = default;
-  SDLKeyboardState(SDLKeyboardState &&) noexcept = default;
-  SDLKeyboardState &operator=(const SDLKeyboardState &) = default;
+  SDLKeyboardState(const SDLKeyboardState &)                = default;
+  SDLKeyboardState(SDLKeyboardState &&) noexcept            = default;
+  SDLKeyboardState &operator=(const SDLKeyboardState &)     = default;
   SDLKeyboardState &operator=(SDLKeyboardState &&) noexcept = default;
-  ~SDLKeyboardState() = default;
+  ~SDLKeyboardState()                                       = default;
 
   SDLKeyboardState();
 
