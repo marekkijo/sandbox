@@ -4,8 +4,9 @@
 
 #include "tools/sdl/sdl_keyboard_state.hpp"
 
+#include <glm/vec2.hpp>
+
 #include <memory>
-#include <tuple>
 
 namespace wolf {
 class PlayerState {
@@ -23,15 +24,10 @@ public:
 
   void animate(std::uint32_t time_elapsed_ms);
 
-  [[nodiscard]] float                    fov_deg() const;
-  [[nodiscard]] float                    fov_rad() const;
-  [[nodiscard]] float                    pos_x() const;
-  [[nodiscard]] float                    pos_y() const;
-  [[nodiscard]] std::tuple<float, float> pos() const;
-  [[nodiscard]] float                    orientation() const;
-  [[nodiscard]] float                    dir_x() const;
-  [[nodiscard]] float                    dir_y() const;
-  [[nodiscard]] std::tuple<float, float> dir() const;
+  [[nodiscard]] float            fov_rad() const;
+  [[nodiscard]] float            orientation() const;
+  [[nodiscard]] const glm::vec2 &pos() const;
+  [[nodiscard]] const glm::vec2 &dir() const;
 
 private:
   const std::shared_ptr<const RawMap> raw_map_{};
@@ -39,18 +35,14 @@ private:
   const float                         fov_rad_{};
   const float                         move_speed_{};
   const float                         rot_speed_{};
-  float                               pos_x_{};
-  float                               pos_y_{};
-  float                               orientation_{};
-  float                               dir_x_{};
-  float                               dir_y_{};
 
-  [[nodiscard]] const RawMap                       &raw_map() const;
-  [[nodiscard]] const tools::sdl::SDLKeyboardState &keyboard_state() const;
-  [[nodiscard]] float                               move_speed() const;
-  [[nodiscard]] float                               rot_speed() const;
-  void                                              animate_move(std::uint32_t time_elapsed_ms);
-  void                                              animate_rot(std::uint32_t time_elapsed_ms);
-  void                                              update_dir();
+  float     orientation_{};
+  glm::vec2 pos_{};
+  glm::vec2 dir_{};
+
+  float deduce_orientation() const;
+  void  animate_move(std::uint32_t time_elapsed_ms);
+  void  animate_rot(std::uint32_t time_elapsed_ms);
+  void  update_dir();
 };
 } // namespace wolf

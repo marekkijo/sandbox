@@ -82,22 +82,20 @@ void WolfRenderer::prepare_walls() {
   const auto cam_cos2 = std::cosf(std::numbers::pi / 2.0f);
   const auto cam_sin2 = std::sinf(std::numbers::pi / 2.0f);
 
-  const auto dir_x = player_state().dir_x();
-  const auto dir_y = player_state().dir_y();
-  const auto pos_x = player_state().pos_x();
-  const auto pos_y = player_state().pos_y();
+  const auto dir = player_state().dir();
+  const auto pos = player_state().pos();
 
-  const auto cam_x1 = (cam_cos1 * dir_x - cam_sin1 * dir_y) + pos_x;
-  const auto cam_y1 = (cam_sin1 * dir_x + cam_cos1 * dir_y) + pos_y;
-  const auto cam_x2 = (cam_cos2 * dir_x - cam_sin2 * dir_y) + pos_x;
-  const auto cam_y2 = (cam_sin2 * dir_x + cam_cos2 * dir_y) + pos_y;
+  const auto cam_x1 = (cam_cos1 * dir.x - cam_sin1 * dir.y) + pos.x;
+  const auto cam_y1 = (cam_sin1 * dir.x + cam_cos1 * dir.y) + pos.y;
+  const auto cam_x2 = (cam_cos2 * dir.x - cam_sin2 * dir.y) + pos.x;
+  const auto cam_y2 = (cam_sin2 * dir.x + cam_cos2 * dir.y) + pos.y;
 
   constexpr auto ray_length = 100.0f;
   for (std::size_t r_it{0u}; r_it < ray_rots().size(); r_it++) {
     const auto ray_cos = ray_rots()[r_it].cos;
     const auto ray_sin = ray_rots()[r_it].sin;
-    const auto ray_x   = (ray_cos * dir_x - ray_sin * dir_y) * ray_length + pos_x;
-    const auto ray_y   = (ray_sin * dir_x + ray_cos * dir_y) * ray_length + pos_y;
+    const auto ray_x   = (ray_cos * dir.x - ray_sin * dir.y) * ray_length + pos.x;
+    const auto ray_y   = (ray_sin * dir.x + ray_cos * dir.y) * ray_length + pos.y;
 
     auto v_index  = std::numeric_limits<std::size_t>::max();
     auto min_dist = ray_length * 2.0f;
@@ -106,14 +104,14 @@ void WolfRenderer::prepare_walls() {
     for (std::size_t v_it{0u}; v_it < vector_map().vectors().size(); v_it++) {
       const auto &v = vector_map().vectors()[v_it];
 
-      if (!tools::math::do_intersect(pos_x, pos_y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y)) {
+      if (!tools::math::do_intersect(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y)) {
         continue;
       }
       const auto [crossed, cross_x, cross_y] =
-          tools::math::intersection_point(pos_x, pos_y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y);
+          tools::math::intersection_point(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y);
       if (!crossed) { continue; }
 
-      const auto curr_dist = std::sqrtf((cross_x - pos_x) * (cross_x - pos_x) + (cross_y - pos_y) * (cross_y - pos_y));
+      const auto curr_dist = std::sqrtf((cross_x - pos.x) * (cross_x - pos.x) + (cross_y - pos.y) * (cross_y - pos.y));
       if (curr_dist < min_dist) {
         min_dist = curr_dist;
         min_x    = cross_x;

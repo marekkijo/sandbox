@@ -50,7 +50,7 @@ void MapRenderer::redraw_player_oriented() const {
   // player rotation
   map_mat      = glm::rotate(map_mat, -player_state().orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
   // player translation
-  map_mat      = glm::translate(map_mat, glm::vec3(-player_state().pos_x(), -player_state().pos_y(), 0.0f));
+  map_mat      = glm::translate(map_mat, glm::vec3(-player_state().pos().x, -player_state().pos().y, 0.0f));
 
   draw_map(map_mat);
 
@@ -79,7 +79,7 @@ void MapRenderer::redraw_map_oriented() const {
   // to the center of the map
   player_mat = glm::translate(player_mat, glm::vec3(-vector_map().width() / 2.0f, -vector_map().height() / 2.0f, 0.0f));
   // player translation
-  player_mat = glm::translate(player_mat, glm::vec3(player_state().pos_x(), player_state().pos_y(), 0.0f));
+  player_mat = glm::translate(player_mat, glm::vec3(player_state().pos().x, player_state().pos().y, 0.0f));
   // player rotation
   player_mat = glm::rotate(player_mat, player_state().orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
   draw_player(player_mat);
