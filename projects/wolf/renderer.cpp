@@ -8,7 +8,7 @@ Renderer::Renderer(tools::sdl::SDLSystem &sdl_sys) : window_{sdl_sys.wnd()}, ren
   if (!r()) { throw std::runtime_error{"given renderer is nullptr"}; }
 }
 
-void Renderer::animate(std::uint32_t /* time_elapsed_ms */) {}
+void Renderer::animate(const std::uint32_t /* time_elapsed_ms */) {}
 
 void Renderer::resize() {
   int width, height;

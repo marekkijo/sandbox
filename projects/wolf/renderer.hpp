@@ -16,14 +16,14 @@ public:
 
   Renderer(tools::sdl::SDLSystem &sdl_sys);
 
-  virtual void animate(std::uint32_t time_elapsed_ms);
+  virtual void animate(const std::uint32_t time_elapsed_ms);
   virtual void redraw() = 0;
   void         resize();
 
 protected:
   [[nodiscard]] SDL_Window   *wnd() const;
   [[nodiscard]] SDL_Renderer *r() const;
-  virtual void                resize(int width, int height) = 0;
+  virtual void                resize(const int width, const int height) = 0;
 
 private:
   SDL_Window   *window_{nullptr};

@@ -22,7 +22,7 @@ public:
   VectorMap(std::shared_ptr<const RawMap> raw_map);
 
   [[nodiscard]] const std::vector<std::pair<glm::vec2, glm::vec2>> &vectors() const;
-  [[nodiscard]] glm::uvec3 color(std::size_t index, float shadow_factor = 1.0f) const;
+  [[nodiscard]] glm::uvec3 color(const std::size_t index, const float shadow_factor = 1.0f) const;
   [[nodiscard]] float      width() const;
   [[nodiscard]] float      height() const;
   [[nodiscard]] float      diagonal_length() const;
