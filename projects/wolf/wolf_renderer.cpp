@@ -12,8 +12,8 @@ namespace wolf {
 WolfRenderer::WolfRenderer(tools::sdl::SDLSystem             &sdl_sys,
                            std::shared_ptr<const VectorMap>   vector_map,
                            std::shared_ptr<const PlayerState> player_state,
-                           std::uint32_t                      res_w,
-                           std::uint32_t                      res_h)
+                           const std::uint32_t                res_w,
+                           const std::uint32_t                res_h)
     : Renderer(sdl_sys)
     , vector_map_{vector_map}
     , player_state_{player_state}
@@ -21,9 +21,9 @@ WolfRenderer::WolfRenderer(tools::sdl::SDLSystem             &sdl_sys,
     , ray_rots_{res_w}
     , res_h_{res_h}
     , wall_heights_{WolfRenderer::res_h() / 2u + WolfRenderer::res_h() % 2u + 1u} {
-  const auto fov_step = WolfRenderer::player_state().fov_rad() / (WolfRenderer::ray_rots().size() - 1u);
+  const auto fov_step = WolfRenderer::player_state_->fov_rad() / (WolfRenderer::ray_rots().size() - 1u);
   for (std::size_t r_it{0u}; r_it < WolfRenderer::ray_rots().size(); r_it++) {
-    const auto angle    = -(WolfRenderer::player_state().fov_rad() / 2.0f) + fov_step * r_it;
+    const auto angle    = -(WolfRenderer::player_state_->fov_rad() / 2.0f) + fov_step * r_it;
     ray_rots_[r_it].sin = std::sinf(angle);
     ray_rots_[r_it].cos = std::cosf(angle);
   }
@@ -38,7 +38,7 @@ void WolfRenderer::redraw() {
   draw_walls();
 }
 
-void WolfRenderer::resize(int width, int height) {
+void WolfRenderer::resize(const int width, const int height) {
   const auto h_part = height / static_cast<double>(res_h());
   for (std::size_t h_it{0u}; h_it < wall_heights().size() - 1; h_it++) {
     wall_heights_[h_it].y = static_cast<int>(std::round(h_part * h_it));
@@ -56,17 +56,13 @@ void WolfRenderer::resize(int width, int height) {
   floor_rect_   = SDL_Rect{0, height / 2, width, height / 2};
 }
 
-const VectorMap &WolfRenderer::vector_map() const { return *vector_map_; }
-
-const PlayerState &WolfRenderer::player_state() const { return *player_state_; }
-
 const std::vector<WolfRenderer::RayRot> &WolfRenderer::ray_rots() const { return ray_rots_; }
 
 std::uint32_t WolfRenderer::res_h() const { return res_h_; }
 
 const std::vector<WolfRenderer::WallHeight> &WolfRenderer::wall_heights() const { return wall_heights_; }
 
-const WolfRenderer::WallHeight &WolfRenderer::wall_height(float factor) const {
+const WolfRenderer::WallHeight &WolfRenderer::wall_height(const float factor) const {
   const auto index =
       std::min(wall_heights().size() - 1u, static_cast<std::size_t>(std::round(factor * wall_heights().size())));
   return wall_heights()[index];
@@ -82,8 +78,8 @@ void WolfRenderer::prepare_walls() {
   const auto cam_cos2 = std::cosf(std::numbers::pi / 2.0f);
   const auto cam_sin2 = std::sinf(std::numbers::pi / 2.0f);
 
-  const auto dir = player_state().dir();
-  const auto pos = player_state().pos();
+  const auto dir = player_state_->dir();
+  const auto pos = player_state_->pos();
 
   const auto cam_x1 = (cam_cos1 * dir.x - cam_sin1 * dir.y) + pos.x;
   const auto cam_y1 = (cam_sin1 * dir.x + cam_cos1 * dir.y) + pos.y;
@@ -101,8 +97,8 @@ void WolfRenderer::prepare_walls() {
     auto min_dist = ray_length * 2.0f;
     auto min_x    = 0.0f;
     auto min_y    = 0.0f;
-    for (std::size_t v_it{0u}; v_it < vector_map().vectors().size(); v_it++) {
-      const auto &v = vector_map().vectors()[v_it];
+    for (std::size_t v_it{0u}; v_it < vector_map_->vectors().size(); v_it++) {
+      const auto &v = vector_map_->vectors()[v_it];
 
       if (!tools::math::do_intersect(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y)) {
         continue;

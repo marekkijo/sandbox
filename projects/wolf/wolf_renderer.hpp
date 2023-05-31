@@ -24,13 +24,13 @@ public:
   WolfRenderer(tools::sdl::SDLSystem             &sdl_sys,
                std::shared_ptr<const VectorMap>   vector_map,
                std::shared_ptr<const PlayerState> player_state,
-               std::uint32_t                      res_w = 64u,
-               std::uint32_t                      res_h = 64u);
+               const std::uint32_t                res_w = 64u,
+               const std::uint32_t                res_h = 64u);
 
   void redraw() final;
 
 protected:
-  void resize(int width, int height) final;
+  void resize(const int width, const int height) final;
 
 private:
   struct RayRot {
@@ -59,12 +59,10 @@ private:
   SDL_Rect                ceiling_rect_{};
   SDL_Rect                floor_rect_{};
 
-  [[nodiscard]] const VectorMap               &vector_map() const;
-  [[nodiscard]] const PlayerState             &player_state() const;
   [[nodiscard]] const std::vector<RayRot>     &ray_rots() const;
   [[nodiscard]] std::uint32_t                  res_h() const;
   [[nodiscard]] const std::vector<WallHeight> &wall_heights() const;
-  [[nodiscard]] const WallHeight              &wall_height(float factor) const;
+  [[nodiscard]] const WallHeight              &wall_height(const float factor) const;
   [[nodiscard]] const SDL_Rect                &ceiling_rect() const;
   [[nodiscard]] const SDL_Rect                &floor_rect() const;
   void                                         prepare_walls();
