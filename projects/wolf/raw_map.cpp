@@ -22,8 +22,8 @@ const RawMap::BlockType &RawMap::block(const std::size_t w, const std::size_t h)
 }
 
 bool RawMap::is_wall(const std::size_t w, const std::size_t h) const {
-  const auto &_block = block(w, h);
-  return _block >= '1' && _block <= '9';
+  const auto &_block = block(w, h)[0];
+  return _block >= 1u && _block <= 9u;
 }
 
 bool RawMap::is_wall_on_n(const std::size_t w, const std::size_t h) const { return h == 0 || is_wall(w, h - 1); }
@@ -45,7 +45,7 @@ std::tuple<std::size_t, std::size_t> RawMap::player_pos() const {
 void RawMap::detect_player_pos() {
   for (std::size_t h{0u}; h < height(); h++) {
     for (std::size_t w{0u}; w < width(); w++) {
-      const auto &_block = block(w, h);
+      const auto &_block = block(w, h)[0];
       if (_block == 'n' || _block == 's' || _block == 'w' || _block == 'e') {
         if (player_pos_w_ != std::numeric_limits<std::size_t>::max() ||
             player_pos_h_ != std::numeric_limits<std::size_t>::max()) {
