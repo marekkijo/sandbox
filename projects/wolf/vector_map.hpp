@@ -31,7 +31,7 @@ public:
 private:
   const std::shared_ptr<const RawMap>          raw_map_{};
   std::vector<std::pair<glm::vec2, glm::vec2>> vectors_{};
-  std::vector<std::uint16_t>                   colors_{};
+  // std::vector<std::uint16_t>                   colors_{};
   float                                        diagonal_length_{};
 
   void generate_vector_map();

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "wolf_map_info.hpp"
+
 #include <array>
 #include <cstdint>
 #include <limits>
@@ -9,7 +11,15 @@
 namespace wolf {
 class RawMap {
 public:
-  using BlockType = std::array<std::uint16_t, 3>;
+  class BlockType {
+  public:
+    Map::Walls   wall;
+    Map::Objects object;
+    Map::Extra   extra;
+
+    [[nodiscard]] std::uint16_t  operator[](const std::size_t index) const;
+    [[nodiscard]] std::uint16_t &operator[](const std::size_t index);
+  };
 
   RawMap(const RawMap &)                = default;
   RawMap &operator=(const RawMap &)     = default;
@@ -40,6 +50,10 @@ private:
   std::size_t            player_pos_w_{std::numeric_limits<std::size_t>::max()};
   std::size_t            player_pos_h_{std::numeric_limits<std::size_t>::max()};
 
-  void detect_player_pos();
+  [[nodiscard]] BlockType &block(const std::size_t w, const std::size_t h);
+
+  void process_doors();
+  void process_ambush_tiles();
+  void process_start_position();
 };
 } // namespace wolf

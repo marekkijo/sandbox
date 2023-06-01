@@ -19,7 +19,7 @@
 
 int main(int argc, char *argv[]) {
   auto wnd_title         = "Wolf";
-  auto asciimap_filename = "projects/wolf/data/map2.map";
+  auto asciimap_filename = "projects/wolf/data/map3.map";
   auto maphead_filename  = "projects/wolf/data/MAPHEAD.WL6";
   auto gamemaps_filename = "projects/wolf/data/GAMEMAPS.WL6";
   auto pix_width         = 1024;
@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
           wolf_renderer.Renderer::resize();
           map_renderer.Renderer::resize();
           break;
+        default: break;
         }
         break;
       case SDL_USEREVENT:
@@ -83,6 +84,7 @@ int main(int argc, char *argv[]) {
         map_renderer.redraw();
         SDL_RenderPresent(sdl_sys.r());
         break;
+      default: break;
       }
     }
   }

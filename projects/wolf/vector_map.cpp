@@ -21,27 +21,27 @@ void VectorMap::generate_vector_map() {
   for (std::size_t h{0u}; h < raw_map_->height(); h++) {
     for (std::size_t w{0u}; w < raw_map_->width(); w++) {
       if (raw_map_->is_wall(w, h)) {
-        const auto &curr_color = raw_map_->block(w, h)[0];
+        // const auto &curr_color = raw_map_->block(w, h)[0];
 
         if (!raw_map_->is_wall_on_n(w, h)) {
           vectors_.emplace_back(glm::vec2{static_cast<float>(w), static_cast<float>(h)},
                                 glm::vec2{static_cast<float>(w + 1), static_cast<float>(h)});
-          colors_.push_back(curr_color);
+          // colors_.push_back(curr_color);
         }
         if (!raw_map_->is_wall_on_s(w, h)) {
           vectors_.emplace_back(glm::vec2{static_cast<float>(w + 1), static_cast<float>(h + 1)},
                                 glm::vec2{static_cast<float>(w), static_cast<float>(h + 1)});
-          colors_.push_back(curr_color);
+          // colors_.push_back(curr_color);
         }
         if (!raw_map_->is_wall_on_w(w, h)) {
           vectors_.emplace_back(glm::vec2{static_cast<float>(w), static_cast<float>(h + 1)},
                                 glm::vec2{static_cast<float>(w), static_cast<float>(h)});
-          colors_.push_back(curr_color);
+          // colors_.push_back(curr_color);
         }
         if (!raw_map_->is_wall_on_e(w, h)) {
           vectors_.emplace_back(glm::vec2{static_cast<float>(w + 1), static_cast<float>(h)},
                                 glm::vec2{static_cast<float>(w + 1), static_cast<float>(h + 1)});
-          colors_.push_back(curr_color);
+          // colors_.push_back(curr_color);
         }
       }
     }

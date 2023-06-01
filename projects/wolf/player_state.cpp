@@ -1,5 +1,7 @@
 #include "player_state.hpp"
 
+#include "wolf_map_info.hpp"
+
 #include "tools/math/math.hpp"
 
 #include <cmath>
@@ -31,13 +33,13 @@ const glm::vec2 &PlayerState::pos() const { return pos_; }
 const glm::vec2 &PlayerState::dir() const { return dir_; }
 
 float PlayerState::deduce_orientation() const {
-  const auto [w, h]    = raw_map_->player_pos();
-  const auto &pos_type = raw_map_->block(w, h)[0];
-  if (pos_type == 'n') {
+  const auto [w, h]   = raw_map_->player_pos();
+  const auto pos_type = raw_map_->block(w, h).object;
+  if (pos_type == Map::Objects::start_position_n) {
     return std::numbers::pi * 1.5f;
-  } else if (pos_type == 's') {
+  } else if (pos_type == Map::Objects::start_position_s) {
     return std::numbers::pi / 2.0f;
-  } else if (pos_type == 'w') {
+  } else if (pos_type == Map::Objects::start_position_w) {
     return std::numbers::pi;
   } else {
     return 0.0f;
