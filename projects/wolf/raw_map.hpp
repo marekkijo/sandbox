@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+#include <cstdint>
 #include <limits>
 #include <tuple>
 #include <vector>
@@ -7,7 +9,7 @@
 namespace wolf {
 class RawMap {
 public:
-  using BlockType = char;
+  using BlockType = std::array<std::uint16_t, 3>;
 
   RawMap(const RawMap &)                = default;
   RawMap &operator=(const RawMap &)     = default;

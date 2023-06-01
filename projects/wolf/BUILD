@@ -18,6 +18,7 @@ cc_binary(
         "renderer.hpp",
         "vector_map.cpp",
         "vector_map.hpp",
+        "wolf_map_info.hpp",
         "wolf_renderer.cpp",
         "wolf_renderer.hpp",
     ],

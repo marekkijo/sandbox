@@ -32,11 +32,11 @@ const glm::vec2 &PlayerState::dir() const { return dir_; }
 
 float PlayerState::deduce_orientation() const {
   const auto [w, h]    = raw_map_->player_pos();
-  const auto &pos_type = raw_map_->block(w, h);
+  const auto &pos_type = raw_map_->block(w, h)[0];
   if (pos_type == 'n') {
-    return std::numbers::pi / 2.0f;
-  } else if (pos_type == 's') {
     return std::numbers::pi * 1.5f;
+  } else if (pos_type == 's') {
+    return std::numbers::pi / 2.0f;
   } else if (pos_type == 'w') {
     return std::numbers::pi;
   } else {
