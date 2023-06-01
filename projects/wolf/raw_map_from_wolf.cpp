@@ -28,7 +28,6 @@ RawMapFromWolf::RawMapFromWolf(const std::string &maphead_filename, const std::s
   maphead_file.read(reinterpret_cast<char *>(&map_file_type), sizeof(map_file_type));
 
   rlew_tag_ = map_file_type.RLEWtag;
-  printf("%i\n", rlew_tag_);
   for (const auto &v : map_file_type.headeroffsets) {
     if (v > 0) { header_offsets_.push_back(v); }
   }
@@ -66,26 +65,6 @@ std::unique_ptr<RawMap> RawMapFromWolf::create_map(const std::size_t map_index) 
   decarmacize_plane(compressed_planes[0], blocks, 0);
   decarmacize_plane(compressed_planes[1], blocks, 1);
   decarmacize_plane(compressed_planes[2], blocks, 2);
-
-  printf("name: %s\n", map_type.name);
-
-  for (std::size_t b_it{0u}; b_it < blocks.size(); b_it++) {
-    if ((blocks[b_it][0] >= 1 && blocks[b_it][0] <= 12) || (blocks[b_it][0] >= 14 && blocks[b_it][0] <= 20)) {
-      blocks[b_it][0] = 1;
-    } else {
-      blocks[b_it][0] = 0;
-    }
-
-    if (blocks[b_it][1] == 19) {
-      blocks[b_it][0] = 'n';
-    } else if (blocks[b_it][1] == 21) {
-      blocks[b_it][0] = 's';
-    } else if (blocks[b_it][1] == 22) {
-      blocks[b_it][0] = 'w';
-    } else if (blocks[b_it][1] == 20) {
-      blocks[b_it][0] = 'e';
-    }
-  }
 
   return std::make_unique<RawMap>(width, height, std::move(blocks));
 }
