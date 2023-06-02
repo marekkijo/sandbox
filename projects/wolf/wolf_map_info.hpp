@@ -363,5 +363,7 @@ enum class Objects : std::uint16_t {
   endgame_trigger = 99,
 };
 
-enum class Extra : std::uint16_t { nothing = 0 };
+enum class Extra : std::uint16_t {
+  nothing = 0
+};
 } // namespace wolf::Map

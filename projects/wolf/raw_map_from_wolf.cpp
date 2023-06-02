@@ -50,51 +50,50 @@ std::unique_ptr<RawMap> RawMapFromWolf::create_map(const std::size_t map_index) 
   gamemaps_file_.seekg(header_offsets_.at(map_index));
   gamemaps_file_.read(reinterpret_cast<char *>(&map_type), sizeof(map_type));
 
-  std::size_t width{map_type.width};
-  std::size_t height{map_type.height};
-
   auto compressed_planes = std::array<std::vector<std::uint16_t>, 3>{};
-  for (std::size_t p_it{0u}; p_it < compressed_planes.size(); p_it++) {
-    compressed_planes[p_it].resize(map_type.planelength[p_it]);
-    gamemaps_file_.seekg(map_type.planestart[p_it]);
-    gamemaps_file_.read(reinterpret_cast<char *>(compressed_planes[p_it].data()),
-                        sizeof(compressed_planes[p_it][0]) * compressed_planes[p_it].size());
+  for (auto c_it = std::size_t{0u}; c_it < compressed_planes.size(); c_it++) {
+    compressed_planes[c_it].resize(map_type.planelength[c_it]);
+    gamemaps_file_.seekg(map_type.planestart[c_it]);
+    gamemaps_file_.read(reinterpret_cast<char *>(compressed_planes[c_it].data()),
+                        sizeof(compressed_planes[c_it][0]) * compressed_planes[c_it].size());
   }
 
-  auto blocks = std::vector<RawMap::BlockType>(width * height);
-  decarmacize_plane(compressed_planes[0], blocks, 0);
-  decarmacize_plane(compressed_planes[1], blocks, 1);
-  decarmacize_plane(compressed_planes[2], blocks, 2);
+  auto blocks = std::vector<RawMap::BlockType>(map_type.width * map_type.height);
+  decarmacize_plane(compressed_planes[0], blocks, 0u);
+  decarmacize_plane(compressed_planes[1], blocks, 1u);
+  decarmacize_plane(compressed_planes[2], blocks, 2u);
 
-  return std::make_unique<RawMap>(width, height, std::move(blocks));
+  return std::make_unique<RawMap>(map_type.width, map_type.height, std::move(blocks));
 }
 
 void RawMapFromWolf::decarmacize_plane(const std::vector<std::uint16_t> &plane_data,
                                        std::vector<RawMap::BlockType>   &blocks,
-                                       [[maybe_unused]] std::size_t      plane) const {
-  constexpr auto NEARTAG = std::uint16_t{0xa7};
-  constexpr auto FARTAG  = std::uint16_t{0xa8};
+                                       const std::size_t                 plane) const {
+  constexpr auto near_tag = std::uint16_t{0xa7};
+  constexpr auto far_tag  = std::uint16_t{0xa8};
 
-  auto                extended_plane = std::vector<std::uint16_t>(plane_data.at(0u) / 2u);
-  const std::uint8_t *in_ptr         = reinterpret_cast<const std::uint8_t *>(&plane_data.at(1u));
+  auto extended_plane = std::vector<std::uint16_t>(plane_data.at(0u) / 2u);
+  auto in_ptr         = reinterpret_cast<const std::uint8_t *>(&plane_data.at(1u));
 
-  for (std::size_t e_it{0u}; e_it < extended_plane.size(); e_it++) {
+  for (auto e_it = std::size_t{0u}; e_it < extended_plane.size(); e_it++) {
     std::uint16_t ch;
     std::memcpy(&ch, in_ptr, 2);
     in_ptr += 2;
 
-    if ((ch >> 8u) == NEARTAG) {
-      auto count = ch & 0xff;
+    if ((ch >> 8u) == near_tag) {
+      const auto count = ch & 0xff;
 
       if (count == 0u) {
         extended_plane[e_it] = ch | *in_ptr++;
       } else {
-        std::uint16_t offset = *in_ptr++;
-        for (std::size_t it{0u}; it < count; it++) { extended_plane[e_it + it] = extended_plane[(e_it - offset) + it]; }
+        const auto offset = std::uint16_t{*in_ptr++};
+        for (auto c = std::size_t{0u}; c < count; c++) {
+          extended_plane[e_it + c] = extended_plane[(e_it - offset) + c];
+        }
         e_it += count - 1u;
       }
-    } else if ((ch >> 8u) == FARTAG) {
-      auto count = ch & 0xff;
+    } else if ((ch >> 8u) == far_tag) {
+      const auto count = ch & 0xff;
 
       if (count == 0u) {
         extended_plane[e_it] = ch | *in_ptr++;
@@ -102,7 +101,7 @@ void RawMapFromWolf::decarmacize_plane(const std::vector<std::uint16_t> &plane_d
         std::uint16_t offset;
         memcpy(&offset, in_ptr, 2);
         in_ptr += 2;
-        for (std::size_t it{0u}; it < count; it++) { extended_plane[e_it + it] = extended_plane[offset + it]; }
+        for (auto c = std::size_t{0u}; c < count; c++) { extended_plane[e_it + c] = extended_plane[offset + c]; }
         e_it += count - 1u;
       }
     } else {
@@ -115,8 +114,8 @@ void RawMapFromWolf::decarmacize_plane(const std::vector<std::uint16_t> &plane_d
 
 void RawMapFromWolf::expand_plane(const std::vector<std::uint16_t> &plane_data,
                                   std::vector<RawMap::BlockType>   &blocks,
-                                  [[maybe_unused]] std::size_t      plane) const {
-  for (std::size_t b_it{0u}, p_it{1u}; b_it < blocks.size(); b_it++) {
+                                  const std::size_t                 plane) const {
+  for (auto b_it = std::size_t{0u}, p_it = std::size_t{1u}; b_it < blocks.size(); b_it++) {
     blocks[b_it][plane] = plane_data.at(p_it++);
 
     if (blocks[b_it][plane] != rlew_tag_) { continue; }
@@ -124,7 +123,7 @@ void RawMapFromWolf::expand_plane(const std::vector<std::uint16_t> &plane_data,
     const auto count = plane_data.at(p_it++);
     const auto value = plane_data.at(p_it++);
     if (count != 0) {
-      for (auto it = 0; it < count; it++) { blocks[b_it + it][plane] = value; }
+      for (auto c = std::size_t{0u}; c < count; c++) { blocks[b_it + c][plane] = value; }
     }
     b_it += count - 1u;
   }

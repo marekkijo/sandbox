@@ -29,9 +29,9 @@ private:
 
   void decarmacize_plane(const std::vector<std::uint16_t> &plane_data,
                          std::vector<RawMap::BlockType>   &blocks,
-                         std::size_t                       plane = 0u) const;
+                         const std::size_t                 plane = 0u) const;
   void expand_plane(const std::vector<std::uint16_t> &plane_data,
                     std::vector<RawMap::BlockType>   &blocks,
-                    std::size_t                       plane = 0u) const;
+                    const std::size_t                 plane = 0u) const;
 };
 } // namespace wolf

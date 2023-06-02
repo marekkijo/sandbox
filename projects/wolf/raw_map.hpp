@@ -27,7 +27,6 @@ public:
   RawMap &operator=(RawMap &&) noexcept = default;
   ~RawMap()                             = default;
 
-  RawMap(const std::size_t width, const std::size_t height, const std::vector<BlockType> &blocks);
   RawMap(const std::size_t width, const std::size_t height, std::vector<BlockType> &&blocks);
 
   [[nodiscard]] std::size_t                          width() const;
@@ -44,8 +43,9 @@ public:
   [[nodiscard]] std::tuple<std::size_t, std::size_t> player_pos() const;
 
 private:
-  std::size_t            width_{};
-  std::size_t            height_{};
+  const std::size_t width_{};
+  const std::size_t height_{};
+
   std::vector<BlockType> blocks_{};
   std::size_t            player_pos_w_{std::numeric_limits<std::size_t>::max()};
   std::size_t            player_pos_h_{std::numeric_limits<std::size_t>::max()};

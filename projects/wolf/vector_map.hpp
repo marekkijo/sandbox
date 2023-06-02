@@ -1,11 +1,11 @@
 #pragma once
 
 #include "raw_map.hpp"
+#include "wolf_map_info.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-#include <array>
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -20,20 +20,23 @@ public:
   VectorMap &operator=(VectorMap &&) noexcept = default;
   ~VectorMap()                                = default;
 
-  VectorMap(std::shared_ptr<const RawMap> raw_map);
+  VectorMap(const std::shared_ptr<const RawMap> raw_map);
 
   [[nodiscard]] const std::vector<std::pair<glm::vec2, glm::vec2>> &vectors() const;
+  [[nodiscard]] const std::vector<glm::uvec3>                      &colors() const;
   [[nodiscard]] glm::uvec3 color(const std::size_t index, const float shadow_factor = 1.0f) const;
   [[nodiscard]] float      width() const;
   [[nodiscard]] float      height() const;
   [[nodiscard]] float      diagonal_length() const;
 
 private:
-  const std::shared_ptr<const RawMap>          raw_map_{};
+  const std::shared_ptr<const RawMap> raw_map_{};
+
   std::vector<std::pair<glm::vec2, glm::vec2>> vectors_{};
-  // std::vector<std::uint16_t>                   colors_{};
+  std::vector<glm::uvec3>                      colors_{};
   float                                        diagonal_length_{};
 
-  void generate_vector_map();
+  void                            generate_vector_map();
+  [[nodiscard]] static glm::uvec3 wall_color(const Map::Walls wall);
 };
 } // namespace wolf

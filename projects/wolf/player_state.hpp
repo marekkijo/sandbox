@@ -17,12 +17,12 @@ public:
   PlayerState &operator=(PlayerState &&) noexcept = default;
   ~PlayerState()                                  = default;
 
-  PlayerState(std::shared_ptr<const RawMap> raw_map,
-              float                         fov_deg    = 45.0f,
-              float                         move_speed = 1.0f,
-              float                         rot_speed  = 1.0f);
+  PlayerState(const std::shared_ptr<const RawMap> raw_map,
+              const float                         fov_deg    = 45.0f,
+              const float                         move_speed = 1.0f,
+              const float                         rot_speed  = 1.0f);
 
-  void animate(std::uint32_t time_elapsed_ms);
+  void animate(const std::uint32_t time_elapsed_ms);
 
   [[nodiscard]] float            fov_rad() const;
   [[nodiscard]] float            orientation() const;
@@ -40,9 +40,9 @@ private:
   glm::vec2 pos_{};
   glm::vec2 dir_{};
 
-  float deduce_orientation() const;
-  void  animate_move(std::uint32_t time_elapsed_ms);
-  void  animate_rot(std::uint32_t time_elapsed_ms);
-  void  update_dir();
+  [[nodiscard]] float deduce_orientation() const;
+  void                animate_move(const std::uint32_t time_elapsed_ms);
+  void                animate_rot(const std::uint32_t time_elapsed_ms);
+  void                update_dir();
 };
 } // namespace wolf
