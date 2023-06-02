@@ -20,20 +20,21 @@ public:
   MapRenderer &operator=(MapRenderer &&) noexcept = default;
   ~MapRenderer() final                            = default;
 
-  MapRenderer(tools::sdl::SDLSystem             &sdl_sys,
-              std::shared_ptr<const VectorMap>   vector_map,
-              std::shared_ptr<const PlayerState> player_state);
+  MapRenderer(tools::sdl::SDLSystem                   &sdl_sys,
+              const std::shared_ptr<const VectorMap>   vector_map,
+              const std::shared_ptr<const PlayerState> player_state,
+              const bool                               player_oriented = false);
 
   void redraw() final;
 
 protected:
-  void resize(int width, int height) final;
+  void resize(const int width, const int height) final;
 
 private:
-  std::shared_ptr<const VectorMap>   vector_map_{};
-  std::shared_ptr<const PlayerState> player_state_{};
+  const std::shared_ptr<const VectorMap>   vector_map_{};
+  const std::shared_ptr<const PlayerState> player_state_{};
+  const bool                               player_oriented_{};
 
-  bool      player_oriented_{false};
   float     scale_{};
   glm::vec3 screen_center_translation_{};
 

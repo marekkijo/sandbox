@@ -21,13 +21,6 @@ std::uint16_t &RawMap::BlockType::operator[](const std::size_t index) {
   return dump;
 }
 
-RawMap::RawMap(const std::size_t width, const std::size_t height, const std::vector<BlockType> &blocks)
-    : width_{width}, height_{height}, blocks_{blocks} {
-  process_doors();
-  process_ambush_tiles();
-  process_start_position();
-}
-
 RawMap::RawMap(const std::size_t width, const std::size_t height, std::vector<BlockType> &&blocks)
     : width_{width}, height_{height}, blocks_{std::move(blocks)} {
   process_doors();
@@ -67,8 +60,8 @@ std::tuple<std::size_t, std::size_t> RawMap::player_pos() const {
 RawMap::BlockType &RawMap::block(const std::size_t w, const std::size_t h) { return blocks_[w + h * width()]; }
 
 void RawMap::process_doors() {
-  for (std::size_t h{0u}; h < height(); h++) {
-    for (std::size_t w{0u}; w < width(); w++) {
+  for (auto h = std::size_t{0u}; h < height(); h++) {
+    for (auto w = std::size_t{0u}; w < width(); w++) {
       switch (block(w, h).wall) {
       case Map::Walls::door_vertical:
       case Map::Walls::door_vertical_gold_key:
@@ -85,8 +78,8 @@ void RawMap::process_doors() {
 }
 
 void RawMap::process_ambush_tiles() {
-  for (std::size_t h{0u}; h < height(); h++) {
-    for (std::size_t w{0u}; w < width(); w++) {
+  for (auto h = std::size_t{0u}; h < height(); h++) {
+    for (auto w = std::size_t{0u}; w < width(); w++) {
       switch (block(w, h).wall) {
       case Map::Walls::floor_deaf_guard: block(w, h).wall = Map::Walls::nothing; break;
       default: break;
@@ -96,8 +89,8 @@ void RawMap::process_ambush_tiles() {
 }
 
 void RawMap::process_start_position() {
-  for (std::size_t h{0u}; h < height(); h++) {
-    for (std::size_t w{0u}; w < width(); w++) {
+  for (auto h = std::size_t{0u}; h < height(); h++) {
+    for (auto w = std::size_t{0u}; w < width(); w++) {
       const auto object = block(w, h).object;
       switch (block(w, h).object) {
       case Map::Objects::start_position_n:

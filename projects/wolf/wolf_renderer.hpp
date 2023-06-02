@@ -21,11 +21,11 @@ public:
   WolfRenderer &operator=(WolfRenderer &&) noexcept = default;
   ~WolfRenderer() final                             = default;
 
-  WolfRenderer(tools::sdl::SDLSystem             &sdl_sys,
-               std::shared_ptr<const VectorMap>   vector_map,
-               std::shared_ptr<const PlayerState> player_state,
-               const std::uint32_t                res_w = 64u,
-               const std::uint32_t                res_h = 64u);
+  WolfRenderer(tools::sdl::SDLSystem                   &sdl_sys,
+               const std::shared_ptr<const VectorMap>   vector_map,
+               const std::shared_ptr<const PlayerState> player_state,
+               const std::uint32_t                      res_w = 64u,
+               const std::uint32_t                      res_h = 64u);
 
   void redraw() final;
 
@@ -49,24 +49,19 @@ private:
     float       shadow_factor;
   };
 
-  std::shared_ptr<const VectorMap>   vector_map_{};
-  std::shared_ptr<const PlayerState> player_state_{};
+  const std::shared_ptr<const VectorMap>   vector_map_{};
+  const std::shared_ptr<const PlayerState> player_state_{};
+  const std::uint32_t                      res_h_{};
 
   std::vector<Wall>       walls_{};
   std::vector<RayRot>     ray_rots_{};
-  std::uint32_t           res_h_{};
   std::vector<WallHeight> wall_heights_{};
-  SDL_Rect                ceiling_rect_{};
-  SDL_Rect                floor_rect_{};
+  int                     width_{};
+  int                     height_{};
 
-  [[nodiscard]] const std::vector<RayRot>     &ray_rots() const;
-  [[nodiscard]] std::uint32_t                  res_h() const;
-  [[nodiscard]] const std::vector<WallHeight> &wall_heights() const;
-  [[nodiscard]] const WallHeight              &wall_height(const float factor) const;
-  [[nodiscard]] const SDL_Rect                &ceiling_rect() const;
-  [[nodiscard]] const SDL_Rect                &floor_rect() const;
-  void                                         prepare_walls();
-  void                                         draw_background() const;
-  void                                         draw_walls() const;
+  [[nodiscard]] const WallHeight &wall_height(const float factor) const;
+  void                            prepare_walls();
+  void                            draw_background() const;
+  void                            draw_walls() const;
 };
 } // namespace wolf

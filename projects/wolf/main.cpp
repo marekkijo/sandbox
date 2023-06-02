@@ -18,13 +18,13 @@
 #include <memory>
 
 int main(int argc, char *argv[]) {
-  auto wnd_title         = "Wolf";
-  auto asciimap_filename = "projects/wolf/data/map3.map";
-  auto maphead_filename  = "projects/wolf/data/MAPHEAD.WL6";
-  auto gamemaps_filename = "projects/wolf/data/GAMEMAPS.WL6";
-  auto pix_width         = 1024;
-  auto pix_height        = 1024;
-  auto rays_number       = 128u;
+  const auto wnd_title         = "Wolf";
+  const auto asciimap_filename = "projects/wolf/data/map3.map";
+  const auto maphead_filename  = "projects/wolf/data/MAPHEAD.WL6";
+  const auto gamemaps_filename = "projects/wolf/data/GAMEMAPS.WL6";
+  const auto pix_width         = 1520;
+  const auto pix_height        = 760;
+  const auto rays_number       = 152u;
 
   auto sdl_sys = tools::sdl::SDLSystem{SDL_INIT_EVERYTHING,
                                        wnd_title,
@@ -36,17 +36,20 @@ int main(int argc, char *argv[]) {
                                        -1,
                                        SDL_RENDERER_SOFTWARE};
 
-  auto raw_map_from_wolf = wolf::RawMapFromWolf{maphead_filename, gamemaps_filename};
-  auto raw_map           = std::shared_ptr(std::move(raw_map_from_wolf.create_map(0u)));
-  // auto raw_map_from_ascii = wolf::RawMapFromAscii{asciimap_filename};
-  // auto raw_map            = std::shared_ptr(std::move(raw_map_from_ascii.create_map()));
+  auto       raw_map_from_wolf = wolf::RawMapFromWolf{maphead_filename, gamemaps_filename};
+  const auto raw_map           = std::shared_ptr(std::move(raw_map_from_wolf.create_map(0u)));
 
-  auto vector_map   = std::make_shared<wolf::VectorMap>(std::const_pointer_cast<const wolf::RawMap>(raw_map));
-  auto player_state = std::make_shared<wolf::PlayerState>(std::const_pointer_cast<const wolf::RawMap>(raw_map));
+  // auto       raw_map_from_ascii = wolf::RawMapFromAscii{asciimap_filename};
+  // const auto raw_map            = std::shared_ptr(std::move(raw_map_from_ascii.create_map()));
+
+  const auto vector_map = std::make_shared<wolf::VectorMap>(std::const_pointer_cast<const wolf::RawMap>(raw_map));
+  const auto player_state =
+      std::make_shared<wolf::PlayerState>(std::const_pointer_cast<const wolf::RawMap>(raw_map), 90.0f, 3.0f, 2.0f);
 
   auto map_renderer = wolf::MapRenderer{sdl_sys,
                                         std::const_pointer_cast<const wolf::VectorMap>(vector_map),
-                                        std::const_pointer_cast<const wolf::PlayerState>(player_state)};
+                                        std::const_pointer_cast<const wolf::PlayerState>(player_state),
+                                        false};
 
   auto wolf_renderer = wolf::WolfRenderer{sdl_sys,
                                           std::const_pointer_cast<const wolf::VectorMap>(vector_map),
@@ -55,11 +58,11 @@ int main(int argc, char *argv[]) {
 
   auto last_timestamp_ms = SDL_GetTicks();
   auto animation         = tools::sdl::SDLAnimation(30u);
+  auto quit              = false;
 
-  auto quit = false;
   while (!quit) {
     SDL_Event event;
-    while (SDL_PollEvent(&event)) {
+    while (!quit && SDL_PollEvent(&event)) {
       switch (event.type) {
       case SDL_QUIT: quit = true; break;
       case SDL_WINDOWEVENT:

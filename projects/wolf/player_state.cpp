@@ -8,7 +8,10 @@
 #include <numbers>
 
 namespace wolf {
-PlayerState::PlayerState(std::shared_ptr<const RawMap> raw_map, float fov_deg, float move_speed, float rot_speed)
+PlayerState::PlayerState(const std::shared_ptr<const RawMap> raw_map,
+                         const float                         fov_deg,
+                         const float                         move_speed,
+                         const float                         rot_speed)
     : raw_map_{raw_map}
     , fov_rad_{static_cast<float>(fov_deg * (std::numbers::pi / 180.0f))}
     , move_speed_{move_speed}
@@ -19,7 +22,7 @@ PlayerState::PlayerState(std::shared_ptr<const RawMap> raw_map, float fov_deg, f
   update_dir();
 }
 
-void PlayerState::animate(std::uint32_t time_elapsed_ms) {
+void PlayerState::animate(const std::uint32_t time_elapsed_ms) {
   animate_move(time_elapsed_ms);
   animate_rot(time_elapsed_ms);
 }
@@ -35,18 +38,13 @@ const glm::vec2 &PlayerState::dir() const { return dir_; }
 float PlayerState::deduce_orientation() const {
   const auto [w, h]   = raw_map_->player_pos();
   const auto pos_type = raw_map_->block(w, h).object;
-  if (pos_type == Map::Objects::start_position_n) {
-    return std::numbers::pi * 1.5f;
-  } else if (pos_type == Map::Objects::start_position_s) {
-    return std::numbers::pi / 2.0f;
-  } else if (pos_type == Map::Objects::start_position_w) {
-    return std::numbers::pi;
-  } else {
-    return 0.0f;
-  }
+  if (pos_type == Map::Objects::start_position_n) { return std::numbers::pi * 1.5f; }
+  if (pos_type == Map::Objects::start_position_s) { return std::numbers::pi / 2.0f; }
+  if (pos_type == Map::Objects::start_position_w) { return std::numbers::pi; }
+  return 0.0f;
 }
 
-void PlayerState::animate_move(std::uint32_t time_elapsed_ms) {
+void PlayerState::animate_move(const std::uint32_t time_elapsed_ms) {
   if (!keyboard_state_.up() && !keyboard_state_.down()) { return; }
   if (keyboard_state_.up() && keyboard_state_.down()) { return; }
 
@@ -55,7 +53,7 @@ void PlayerState::animate_move(std::uint32_t time_elapsed_ms) {
   pos_ += glm::vec2(time_elapsed_factor * move_factor * dir().x, time_elapsed_factor * move_factor * dir().y);
 }
 
-void PlayerState::animate_rot(std::uint32_t time_elapsed_ms) {
+void PlayerState::animate_rot(const std::uint32_t time_elapsed_ms) {
   if (!keyboard_state_.left() && !keyboard_state_.right()) { return; }
   if (keyboard_state_.left() && keyboard_state_.right()) { return; }
 

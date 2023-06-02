@@ -21,12 +21,12 @@ std::unique_ptr<RawMap> RawMapFromAscii::create_map() {
 
   // greater by 1 because getline adds \0 at the end of each read
   auto raw_blocks = std::vector<char>(width * height + 1);
-  for (std::size_t h{0u}; h < height; h++) {
+  for (auto h = std::size_t{0u}; h < height; h++) {
     asciimap_file_.getline(raw_blocks.data() + h * width, raw_blocks.size() - h * width);
   }
 
   auto blocks = std::vector<RawMap::BlockType>(width * height);
-  for (std::size_t b_it{0u}; b_it < blocks.size(); b_it++) {
+  for (auto b_it = std::size_t{0u}; b_it < blocks.size(); b_it++) {
     blocks[b_it].wall   = wolf::Map::Walls::nothing;
     blocks[b_it].object = wolf::Map::Objects::nothing;
     blocks[b_it].extra  = wolf::Map::Extra::nothing;
