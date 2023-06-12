@@ -1,6 +1,6 @@
-#include "player_state.hpp"
+#include "projects/wolf/player_state.hpp"
 
-#include "wolf_map_info.hpp"
+#include "projects/wolf/wolf_map_info.hpp"
 
 #include "tools/math/math.hpp"
 

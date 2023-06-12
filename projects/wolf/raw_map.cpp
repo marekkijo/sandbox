@@ -1,6 +1,6 @@
-#include "raw_map.hpp"
+#include "projects/wolf/raw_map.hpp"
 
-#include "wolf_map_info.hpp"
+#include "projects/wolf/wolf_map_info.hpp"
 
 #include <stdexcept>
 #include <type_traits>
