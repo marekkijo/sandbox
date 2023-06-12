@@ -1,4 +1,4 @@
-#include "map_renderer.hpp"
+#include "projects/wolf/map_renderer.hpp"
 
 #include <glm/ext/matrix_transform.hpp>
 

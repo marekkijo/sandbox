@@ -1,9 +1,8 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
-cc_binary(
-    name = "wolf",
+cc_library(
+    name = "wolf_common_lib",
     srcs = [
-        "main.cpp",
         "map_renderer.cpp",
         "map_renderer.hpp",
         "player_state.cpp",
@@ -22,11 +21,24 @@ cc_binary(
         "wolf_renderer.cpp",
         "wolf_renderer.hpp",
     ],
-    data = glob(["data/**"]),
     deps = [
         "//tools:math",
         "//tools:sdl",
         "@glm",
+        "@sdl2",
+    ],
+)
+
+cc_binary(
+    name = "wolf_singlethread",
+    srcs = [
+        "singlethread/main.cpp",
+    ],
+    data = glob(["data/**"]),
+    deps = [
+        ":wolf_common_lib",
+        "//tools:sdl",
+        "@boost//:program_options",
         "@sdl2",
     ],
 )

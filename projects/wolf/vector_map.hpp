@@ -1,7 +1,7 @@
 #pragma once
 
-#include "raw_map.hpp"
-#include "wolf_map_info.hpp"
+#include "projects/wolf/raw_map.hpp"
+#include "projects/wolf/wolf_map_info.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
