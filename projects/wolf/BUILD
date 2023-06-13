@@ -33,6 +33,8 @@ cc_binary(
     name = "wolf_singlethread",
     srcs = [
         "singlethread/main.cpp",
+        "singlethread/wolf_renderer_singlethread.cpp",
+        "singlethread/wolf_renderer_singlethread.hpp",
     ],
     data = glob(["data/**"]),
     deps = [
@@ -47,6 +49,8 @@ cc_binary(
     name = "wolf_multithread",
     srcs = [
         "multithread/main.cpp",
+        "multithread/wolf_renderer_multithread.cpp",
+        "multithread/wolf_renderer_multithread.hpp",
     ],
     data = glob(["data/**"]),
     deps = [
