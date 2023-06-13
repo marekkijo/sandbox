@@ -42,3 +42,17 @@ cc_binary(
         "@sdl2",
     ],
 )
+
+cc_binary(
+    name = "wolf_multithread",
+    srcs = [
+        "multithread/main.cpp",
+    ],
+    data = glob(["data/**"]),
+    deps = [
+        ":wolf_common_lib",
+        "//tools:sdl",
+        "@boost//:program_options",
+        "@sdl2",
+    ],
+)
