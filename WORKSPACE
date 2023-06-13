@@ -17,3 +17,14 @@ http_archive(
     strip_prefix = "glm-efec5db081e3aad807d0731e172ac597f6a39447",
     url = "https://github.com/g-truc/glm/archive/efec5db081e3aad807d0731e172ac597f6a39447.zip",
 )
+
+http_archive(
+    name = "com_github_nelhage_rules_boost",
+    sha256 = "6494cab0968efa2175b194bbdd44b884aca42a0dc9ac1b20b104b53fe64e3776",
+    strip_prefix = "rules_boost-086d0baee11189ddcbcff01714d0b243c142c7ca",
+    url = "https://github.com/nelhage/rules_boost/archive/086d0baee11189ddcbcff01714d0b243c142c7ca.tar.gz",
+)
+
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+
+boost_deps()
