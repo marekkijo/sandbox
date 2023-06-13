@@ -1,10 +1,11 @@
+#include "projects/wolf/multithread/wolf_renderer_multithread.hpp"
+
 #include "projects/wolf/map_renderer.hpp"
 #include "projects/wolf/player_state.hpp"
 #include "projects/wolf/raw_map.hpp"
 #include "projects/wolf/raw_map_from_ascii.hpp"
 #include "projects/wolf/raw_map_from_wolf.hpp"
 #include "projects/wolf/vector_map.hpp"
-#include "projects/wolf/wolf_renderer.hpp"
 
 #include "tools/sdl/sdl_animation.hpp"
 #include "tools/sdl/sdl_system.hpp"
@@ -30,6 +31,7 @@ struct ProgramSetup {
   int           width{};
   int           height{};
   std::uint32_t rays{};
+  std::uint32_t threads{};
 };
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
@@ -47,6 +49,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   desc.add_options()("width", boost::program_options::value<int>()->default_value(1520), "Width of the window");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(760), "Height of the window");
   desc.add_options()("rays", boost::program_options::value<std::uint32_t>()->default_value(152u), "Number of rays");
+  desc.add_options()("threads",
+                     boost::program_options::value<std::uint32_t>()->default_value(32u),
+                     "Number of threads");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -63,7 +68,8 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["gamemaps"].as<std::string>(),
           vm["width"].as<int>(),
           vm["height"].as<int>(),
-          vm["rays"].as<std::uint32_t>()};
+          vm["rays"].as<std::uint32_t>(),
+          vm["threads"].as<std::uint32_t>()};
 }
 
 int main(int argc, char *argv[]) {
@@ -97,10 +103,11 @@ int main(int argc, char *argv[]) {
                                         std::const_pointer_cast<const wolf::PlayerState>(player_state),
                                         false};
 
-  auto wolf_renderer = wolf::WolfRenderer{sdl_sys,
-                                          std::const_pointer_cast<const wolf::VectorMap>(vector_map),
-                                          std::const_pointer_cast<const wolf::PlayerState>(player_state),
-                                          program_setup.rays};
+  auto wolf_renderer = wolf::WolfRendererMultithread{sdl_sys,
+                                                     std::const_pointer_cast<const wolf::VectorMap>(vector_map),
+                                                     std::const_pointer_cast<const wolf::PlayerState>(player_state),
+                                                     program_setup.rays,
+                                                     program_setup.threads};
 
   auto last_timestamp_ms = SDL_GetTicks();
   auto animation         = tools::sdl::SDLAnimation(30u);

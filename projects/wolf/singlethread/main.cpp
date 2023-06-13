@@ -1,10 +1,11 @@
+#include "projects/wolf/singlethread/wolf_renderer_singlethread.hpp"
+
 #include "projects/wolf/map_renderer.hpp"
 #include "projects/wolf/player_state.hpp"
 #include "projects/wolf/raw_map.hpp"
 #include "projects/wolf/raw_map_from_ascii.hpp"
 #include "projects/wolf/raw_map_from_wolf.hpp"
 #include "projects/wolf/vector_map.hpp"
-#include "projects/wolf/wolf_renderer.hpp"
 
 #include "tools/sdl/sdl_animation.hpp"
 #include "tools/sdl/sdl_system.hpp"
@@ -97,10 +98,10 @@ int main(int argc, char *argv[]) {
                                         std::const_pointer_cast<const wolf::PlayerState>(player_state),
                                         false};
 
-  auto wolf_renderer = wolf::WolfRenderer{sdl_sys,
-                                          std::const_pointer_cast<const wolf::VectorMap>(vector_map),
-                                          std::const_pointer_cast<const wolf::PlayerState>(player_state),
-                                          program_setup.rays};
+  auto wolf_renderer = wolf::WolfRendererSinglethread{sdl_sys,
+                                                      std::const_pointer_cast<const wolf::VectorMap>(vector_map),
+                                                      std::const_pointer_cast<const wolf::PlayerState>(player_state),
+                                                      program_setup.rays};
 
   auto last_timestamp_ms = SDL_GetTicks();
   auto animation         = tools::sdl::SDLAnimation(30u);
