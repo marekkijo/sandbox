@@ -20,6 +20,7 @@ http_archive(
 
 http_archive(
     name = "com_github_nelhage_rules_boost",
+    patches = ["//externals:rules_boost-086d0baee11189ddcbcff01714d0b243c142c7ca.patch"],
     sha256 = "6494cab0968efa2175b194bbdd44b884aca42a0dc9ac1b20b104b53fe64e3776",
     strip_prefix = "rules_boost-086d0baee11189ddcbcff01714d0b243c142c7ca",
     url = "https://github.com/nelhage/rules_boost/archive/086d0baee11189ddcbcff01714d0b243c142c7ca.tar.gz",
