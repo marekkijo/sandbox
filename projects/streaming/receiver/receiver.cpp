@@ -20,7 +20,7 @@ Receiver::Receiver(const std::string &server_ip,
   printf("Connection url: %s\n", url.c_str());
   web_socket_->open(url);
 
-  auto user_input_function = std::function<void(const UserInput &user_input)>{
+  auto user_input_function = std::function<void(const tools::common::UserInput &user_input)>{
       std::bind(&Receiver::user_input_callback, this, std::placeholders::_1)};
   player->set_user_input_callback(user_input_function);
 }
@@ -232,7 +232,7 @@ void Receiver::parse_video_stream_infos(const nlohmann::json &json_video_stream_
   }
 }
 
-void Receiver::user_input_callback(const UserInput &user_input) {
+void Receiver::user_input_callback(const tools::common::UserInput &user_input) {
   if (peer_ && peer_->data_channel && peer_->data_channel->isOpen()) {
     auto user_input_json = nlohmann::json{
         {     "type",      user_input.type},

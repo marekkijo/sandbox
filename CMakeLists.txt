@@ -10,7 +10,11 @@ find_package(nlohmann_json REQUIRED)
 find_package(LibDataChannel REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(assimp REQUIRED)
+find_package(imgui REQUIRED)
 
 add_subdirectory(tools)
-add_subdirectory(projects/wolf)
+
+add_subdirectory(projects/assimp_loader)
 add_subdirectory(projects/streaming)
+add_subdirectory(projects/wolf)

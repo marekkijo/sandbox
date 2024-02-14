@@ -53,6 +53,7 @@ add_executable(streamer
 )
 
 target_link_libraries(streamer common)
+target_link_libraries(streamer tools_common)
 target_link_libraries(streamer tools_sdl)
 target_link_libraries(streamer tools_utils)
 target_link_libraries(streamer SDL2::SDL2)
@@ -80,6 +81,8 @@ add_executable(receiver
   receiver/receiver.hpp
 )
 
+target_link_libraries(receiver common)
+target_link_libraries(receiver tools_common)
 target_link_libraries(receiver tools_sdl)
 target_link_libraries(receiver tools_utils)
 target_link_libraries(receiver Boost::program_options)

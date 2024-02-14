@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common/common.hpp"
-
 #include "decoder.hpp"
 #include "player.hpp"
+
+#include "tools/common/user_input.hpp"
 
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>
@@ -63,7 +63,7 @@ private:
   void command_request_video_stream(const std::string &streamer_id);
   void parse_video_stream_infos(const nlohmann::json &json_video_stream_infos);
 
-  void user_input_callback(const UserInput &user_input);
+  void user_input_callback(const tools::common::UserInput &user_input);
 
   const std::string receiver_id_{};
   const std::string id_{};

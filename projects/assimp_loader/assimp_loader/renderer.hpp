@@ -1,6 +1,6 @@
 #pragma once
 
-#include "encoder.hpp"
+#include "model.hpp"
 
 #include "tools/common/user_input.hpp"
 #include "tools/sdl/sdl_animation.hpp"
@@ -13,7 +13,6 @@
 #include <mutex>
 #include <thread>
 
-namespace streaming {
 class Renderer {
 public:
   Renderer(const Renderer &) = delete;
@@ -21,18 +20,14 @@ public:
   Renderer(Renderer &&other) noexcept = delete;
   Renderer &operator=(Renderer &&other) noexcept = delete;
 
-  Renderer(int width, int height, std::uint16_t fps, std::shared_ptr<Encoder> &encoder);
+  Renderer(int width, int height, std::uint16_t fps, std::shared_ptr<const Model> &model);
   ~Renderer();
-
-  void start_render_thread();
-  void process_user_input(const tools::common::UserInput &user_input);
 
 private:
   int width_{};
   int height_{};
   std::uint16_t fps_{};
-  std::shared_ptr<Encoder> encoder_{};
-  std::shared_ptr<std::vector<GLubyte>> gl_frame_{};
+  std::shared_ptr<const Model> model_{};
   std::unique_ptr<tools::sdl::SDLSystem> sdl_sys_{};
   std::unique_ptr<tools::sdl::SDLAnimation> animation_{};
 
@@ -41,7 +36,12 @@ private:
   glm::vec3 camera_rot_{};
   bool animate_{true};
 
+  std::vector<GLuint> vertices_bufs_{};
+  std::vector<GLuint> indices_bufs_{};
+  std::vector<glm::vec4> colors_{};
+  std::vector<GLsizei> sizes_{};
   GLuint shader_program_{};
+  GLuint color_location_{};
   GLuint viewport_location_{};
   GLuint camera_rot_location_{};
 
@@ -50,11 +50,14 @@ private:
 
   std::mutex mutex_{};
 
+  void start_render_thread();
+  void process_user_input(const tools::common::UserInput &user_input);
+
   void render_procedure();
   void init_rendering();
   void animate(Uint32 time_elapsed_ms);
   void configure_program();
   [[nodiscard]] GLuint load_shader_program(const std::string &program_name);
-  static void check_status(GLuint program, GLenum status);
+  static void check_shader_status(GLuint shader, GLenum status);
+  static void check_program_status(GLuint program, GLenum status);
 };
-} // namespace streaming
