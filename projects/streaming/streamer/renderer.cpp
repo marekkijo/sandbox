@@ -33,7 +33,7 @@ void Renderer::start_render_thread() {
   render_thread_ = std::thread(render_procedure);
 }
 
-void Renderer::process_user_input(const UserInput &user_input) {
+void Renderer::process_user_input(const tools::common::UserInput &user_input) {
   switch (user_input.type) {
   case SDL_MOUSEMOTION:
     if (user_input.state & SDL_BUTTON_LMASK) {

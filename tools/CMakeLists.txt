@@ -1,3 +1,7 @@
+add_library(tools_common INTERFACE
+  common/user_input.hpp
+)
+
 add_library(tools_math STATIC
   math/math.cpp
   math/math.hpp

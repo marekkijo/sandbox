@@ -2,8 +2,7 @@
 
 #include "decoder.hpp"
 
-#include "common/common.hpp"
-
+#include "tools/common/user_input.hpp"
 #include "tools/sdl/sdl_animation.hpp"
 #include "tools/sdl/sdl_system.hpp"
 
@@ -21,12 +20,12 @@ public:
   Player(std::shared_ptr<Decoder> &decoder);
   ~Player();
 
-  void set_user_input_callback(std::function<void(const UserInput &user_input)> user_input_callback);
+  void set_user_input_callback(std::function<void(const tools::common::UserInput &user_input)> user_input_callback);
 
 private:
   std::shared_ptr<Decoder> decoder_{};
 
-  std::function<void(const UserInput &user_input)> user_input_callback_{};
+  std::function<void(const tools::common::UserInput &user_input)> user_input_callback_{};
 
   VideoStreamInfo video_stream_info_{};
   std::unique_ptr<tools::sdl::SDLSystem> sdl_sys_{};

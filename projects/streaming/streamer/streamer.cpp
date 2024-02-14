@@ -205,7 +205,7 @@ void Streamer::video_stream_callback(const std::byte *data, const std::size_t si
 }
 
 void Streamer::parse_user_input(const nlohmann::json &json_user_input) {
-  auto user_input = UserInput{json_user_input.at("type"), json_user_input.at("timestamp")};
+  auto user_input = tools::common::UserInput{json_user_input.at("type"), json_user_input.at("timestamp")};
 
   switch (user_input.type) {
   case SDL_MOUSEMOTION:

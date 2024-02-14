@@ -14,6 +14,8 @@ class SandboxRecipe(ConanFile):
         self.requires("libdatachannel/0.20.1")
         self.requires("nlohmann_json/3.11.3")
         self.requires("sdl/2.28.5")
+        self.requires("assimp/5.2.2")
+        self.requires("imgui/1.90.1")
 
     def configure(self):
         self.options["boost"].without_cobalt = True
