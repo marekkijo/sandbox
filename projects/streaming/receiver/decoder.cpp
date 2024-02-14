@@ -21,8 +21,6 @@ Decoder::Decoder()
 }
 
 Decoder::~Decoder() {
-  fflush(stdout);
-
   avcodec_free_context(&context_);
   av_parser_close(parser_);
   av_packet_free(&packet_);
@@ -39,23 +37,36 @@ void Decoder::set_video_stream_info_callback(
 bool Decoder::prepare_frame() {
   const auto lg = std::lock_guard{mutex_};
 
-  auto used = 0;
-  if (!try_parse(&used)) { return false; }
-
-  auto success = decode_frame();
-  buffer_.erase(buffer_.begin(), buffer_.begin() + used);
-  if (success) {
-    yuv_to_rgb();
-    av_frame_unref(frame_);
+  auto result = avcodec_receive_frame(context_, frame_);
+  if (!buffer_.empty()) { // upload another packet for decoding
+    int used;
+    if (upload_package(buffer_.data(), buffer_.size(), &used)) {
+      buffer_.erase(buffer_.begin(), buffer_.begin() + used);
+    }
   }
-  return success;
+  if (result == AVERROR(EAGAIN) || result == AVERROR_EOF || result < 0) { return false; }
+
+  yuv_to_rgb();
+
+  return true;
 }
 
 void Decoder::incoming_data(const std::byte *data, const std::size_t size) {
   const auto lg = std::lock_guard{mutex_};
-  buffer_.insert(buffer_.end(),
-                 reinterpret_cast<const std::uint8_t *>(data),
-                 reinterpret_cast<const std::uint8_t *>(data + size));
+
+  int used;
+  if (buffer_.empty()) {
+    if (upload_package(data, size, &used)) {
+      if (used != size) { store_on_buffer(data + used, size - used); }
+    } else {
+      store_on_buffer(data, size);
+    }
+  } else {
+    store_on_buffer(data, size);
+    if (upload_package(buffer_.data(), buffer_.size(), &used)) {
+      buffer_.erase(buffer_.begin(), buffer_.begin() + used);
+    }
+  }
 }
 
 void Decoder::set_video_stream_info(const VideoStreamInfo &video_stream_info) {
@@ -67,42 +78,41 @@ void Decoder::set_video_stream_info(const VideoStreamInfo &video_stream_info) {
   if (!codec_) { throw std::runtime_error{"avcodec_find_decoder failed"}; }
   context_ = avcodec_alloc_context3(codec_);
   if (!context_) { throw std::runtime_error{"avcodec_alloc_context3 failed"}; }
+  context_->width = video_stream_info.width;
+  context_->height = video_stream_info.height;
+  context_->thread_count = 4;
 
   if (codec_->capabilities & AV_CODEC_CAP_TRUNCATED) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; }
-
   if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
 
   if (video_stream_info_callback_) { video_stream_info_callback_(video_stream_info); }
+
+  avcodec_flush_buffers(context_);
 }
 
-bool Decoder::try_parse(int *used) {
-  if (buffer_.size() == 0u) { return false; }
-
-  std::uint8_t *poutbuf = nullptr;
-  auto poutbuf_size = 0;
-
-  *used = av_parser_parse2(parser_,
-                           context_,
-                           &poutbuf,
-                           &poutbuf_size,
-                           buffer_.data(),
-                           buffer_.size(),
-                           0,
-                           0,
-                           AV_NOPTS_VALUE);
-
-  if (*used == 0 || poutbuf_size != *used) { return false; }
-
-  packet_->data = poutbuf;
-  packet_->size = poutbuf_size;
+bool Decoder::upload_package(const void *data, const std::size_t size, int *used) {
+  auto result = av_parser_parse2(parser_,
+                                 context_,
+                                 &packet_->data,
+                                 &packet_->size,
+                                 reinterpret_cast<const std::uint8_t *>(data),
+                                 size,
+                                 AV_NOPTS_VALUE,
+                                 AV_NOPTS_VALUE,
+                                 0);
+  if (result < 0) { return false; }
+  *used = result;
+  if (packet_->size != 0) {
+    result = avcodec_send_packet(context_, packet_);
+    if (result < 0) { return false; }
+  }
   return true;
 }
 
-bool Decoder::decode_frame() {
-  auto got_picture = 0;
-  if (avcodec_decode_video2(context_, frame_, &got_picture, packet_) < 0) { printf("avcodec_decode_video2 failed"); }
-  av_packet_unref(packet_);
-  return got_picture != 0;
+void Decoder::store_on_buffer(const void *data, const std::size_t size) {
+  buffer_.insert(buffer_.end(),
+                 reinterpret_cast<const std::uint8_t *>(data),
+                 reinterpret_cast<const std::uint8_t *>(data + size));
 }
 
 void Decoder::yuv_to_rgb() {

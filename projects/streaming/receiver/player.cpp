@@ -99,8 +99,9 @@ void Player::player_procedure() {
 }
 
 void Player::init_player() {
+  const auto wnd_title = std::string(RECEIVER_ID) + " (" + video_stream_info_.codec_name + ")";
   sdl_sys_ = std::make_unique<tools::sdl::SDLSystem>(SDL_INIT_EVERYTHING,
-                                                     RECEIVER_ID,
+                                                     wnd_title.c_str(),
                                                      SDL_WINDOWPOS_CENTERED,
                                                      SDL_WINDOWPOS_CENTERED,
                                                      video_stream_info_.width,

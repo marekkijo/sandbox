@@ -24,8 +24,20 @@ struct ProgramSetup {
   int height{};
   std::uint16_t fps{};
 
-  AVCodecID codec_id{AV_CODEC_ID_H264};
+  AVCodecID codec_id{AV_CODEC_ID_NONE};
 };
+
+AVCodecID codec_name_to_id(const std::string &codec_name) {
+  auto normalized_codec_name = codec_name;
+  std::transform(normalized_codec_name.begin(),
+                 normalized_codec_name.end(),
+                 normalized_codec_name.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+
+  auto codec_descriptor = avcodec_descriptor_get_by_name(normalized_codec_name.c_str());
+  if (!codec_descriptor) { return AV_CODEC_ID_NONE; }
+  return codec_descriptor->id;
+}
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
   boost::program_options::options_description desc("Options");
@@ -37,6 +49,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   desc.add_options()("fps",
                      boost::program_options::value<std::uint16_t>()->default_value(30u),
                      "Number of frames per second");
+  desc.add_options()("codec",
+                     boost::program_options::value<std::string>()->default_value("h264"),
+                     "Codec name, e.g. h264 or mpeg4");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -52,7 +67,8 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["port"].as<std::uint16_t>(),
           vm["width"].as<int>(),
           vm["height"].as<int>(),
-          vm["fps"].as<std::uint16_t>()};
+          vm["fps"].as<std::uint16_t>(),
+          codec_name_to_id(vm["codec"].as<std::string>())};
 }
 
 auto should_exit = std::atomic_bool{false};

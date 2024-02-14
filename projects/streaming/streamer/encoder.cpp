@@ -22,7 +22,7 @@ Encoder::Encoder(int width, int height, std::uint16_t fps, AVCodecID codec_id)
 
   const auto pixel_format = AV_PIX_FMT_YUV420P;
 
-  context_->bit_rate = 65536;
+  context_->bit_rate = 65536 * 2;
   context_->width = width;
   context_->height = height;
   context_->time_base.num = 1;
@@ -30,8 +30,9 @@ Encoder::Encoder(int width, int height, std::uint16_t fps, AVCodecID codec_id)
   context_->gop_size = fps / 3;
   context_->max_b_frames = 1;
   context_->pix_fmt = pixel_format;
+  context_->thread_count = 4;
 
-  if (codec_->id == AV_CODEC_ID_H264) { av_opt_set(context_->priv_data, "preset", "slow", 0); }
+  if (codec_->id == AV_CODEC_ID_H264) { av_opt_set(context_->priv_data, "preset", "ultrafast", 0); }
 
   if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
 

@@ -25,6 +25,7 @@ public:
   Renderer(int width, int height, std::uint16_t fps, std::shared_ptr<Encoder> &encoder);
   ~Renderer();
 
+  void start_render_thread();
   void process_user_input(const UserInput &user_input);
 
 private:
@@ -53,7 +54,6 @@ private:
   void render_procedure();
   void init_rendering();
   void animate(Uint32 time_elapsed_ms);
-  void start_render_thread();
   void configure_program();
   [[nodiscard]] GLuint load_shader_program(const std::string &program_name);
   static void check_status(GLuint program, GLenum status);
