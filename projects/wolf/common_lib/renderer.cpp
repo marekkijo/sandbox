@@ -1,4 +1,4 @@
-#include "projects/wolf/renderer.hpp"
+#include "renderer.hpp"
 
 #include <stdexcept>
 

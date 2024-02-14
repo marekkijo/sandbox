@@ -1,4 +1,4 @@
-#include "projects/wolf/singlethread/wolf_renderer_singlethread.hpp"
+#include "wolf_renderer_singlethread.hpp"
 
 #include "tools/math/math.hpp"
 
@@ -18,10 +18,10 @@ WolfRendererSinglethread::WolfRendererSinglethread(tools::sdl::SDLSystem &sdl_sy
 void WolfRendererSinglethread::prepare_walls() {
   constexpr auto ray_length{100.0f};
 
-  const auto cam_cos1 = std::cosf(-std::numbers::pi / 2.0f);
-  const auto cam_sin1 = std::sinf(-std::numbers::pi / 2.0f);
-  const auto cam_cos2 = std::cosf(std::numbers::pi / 2.0f);
-  const auto cam_sin2 = std::sinf(std::numbers::pi / 2.0f);
+  const auto cam_cos1 = std::cosf(-std::numbers::pi_v<float> / 2.0f);
+  const auto cam_sin1 = std::sinf(-std::numbers::pi_v<float> / 2.0f);
+  const auto cam_cos2 = std::cosf(std::numbers::pi_v<float> / 2.0f);
+  const auto cam_sin2 = std::sinf(std::numbers::pi_v<float> / 2.0f);
 
   const auto dir = player_state_->dir();
   const auto pos = player_state_->pos();
@@ -67,8 +67,8 @@ void WolfRendererSinglethread::prepare_walls() {
       if (cam_dist < 0.0f) { cam_dist = 0.0f; }
     }
 
-    walls_[r_it].rect.h = 1.0f / cam_dist * height_;
-    walls_[r_it].rect.y = (height_ - walls_[r_it].rect.h) / 2.0f;
+    walls_[r_it].rect.h = static_cast<int>(1.0f / cam_dist * height_);
+    walls_[r_it].rect.y = static_cast<int>((height_ - walls_[r_it].rect.h) / 2.0f);
     walls_[r_it].color_index = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
     walls_[r_it].shadow_factor = 1.0f - std::min(0.75f, static_cast<float>(walls_[r_it].rect.h) / height_);
   }

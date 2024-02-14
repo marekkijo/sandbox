@@ -1,6 +1,6 @@
 #pragma once
 
-#include "projects/wolf/raw_map.hpp"
+#include "raw_map.hpp"
 
 #include "tools/sdl/sdl_keyboard_state.hpp"
 

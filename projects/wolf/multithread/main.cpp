@@ -1,11 +1,11 @@
-#include "projects/wolf/multithread/wolf_renderer_multithread.hpp"
+#include "wolf_renderer_multithread.hpp"
 
-#include "projects/wolf/map_renderer.hpp"
-#include "projects/wolf/player_state.hpp"
-#include "projects/wolf/raw_map.hpp"
-#include "projects/wolf/raw_map_from_ascii.hpp"
-#include "projects/wolf/raw_map_from_wolf.hpp"
-#include "projects/wolf/vector_map.hpp"
+#include "projects/wolf/common_lib/map_renderer.hpp"
+#include "projects/wolf/common_lib/player_state.hpp"
+#include "projects/wolf/common_lib/raw_map.hpp"
+#include "projects/wolf/common_lib/raw_map_from_ascii.hpp"
+#include "projects/wolf/common_lib/raw_map_from_wolf.hpp"
+#include "projects/wolf/common_lib/vector_map.hpp"
 
 #include "tools/sdl/sdl_animation.hpp"
 #include "tools/sdl/sdl_system.hpp"
@@ -38,13 +38,13 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   boost::program_options::options_description desc("Wolf options");
   desc.add_options()("help", "This help message");
   desc.add_options()("asciimap",
-                     boost::program_options::value<std::string>()->default_value("projects/wolf/data/map1.map"),
+                     boost::program_options::value<std::string>()->default_value("data/map1.map"),
                      "Ascii map filename");
   desc.add_options()("maphead",
-                     boost::program_options::value<std::string>()->default_value("projects/wolf/data/MAPHEAD.WL6"),
+                     boost::program_options::value<std::string>()->default_value("data/MAPHEAD.WL6"),
                      "Wolf MAPHEAD filename");
   desc.add_options()("gamemaps",
-                     boost::program_options::value<std::string>()->default_value("projects/wolf/data/GAMEMAPS.WL6"),
+                     boost::program_options::value<std::string>()->default_value("data/GAMEMAPS.WL6"),
                      "Wolf GAMEMAPS filename");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(1520), "Width of the window");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(760), "Height of the window");

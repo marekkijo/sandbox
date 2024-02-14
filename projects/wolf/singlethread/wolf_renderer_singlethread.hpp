@@ -1,8 +1,8 @@
 #pragma once
 
-#include "projects/wolf/player_state.hpp"
-#include "projects/wolf/vector_map.hpp"
-#include "projects/wolf/wolf_renderer.hpp"
+#include "projects/wolf/common_lib/player_state.hpp"
+#include "projects/wolf/common_lib/vector_map.hpp"
+#include "projects/wolf/common_lib/wolf_renderer.hpp"
 
 #include "tools/sdl/sdl_system.hpp"
 
