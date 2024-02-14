@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
                                                         program_setup.codec_id);
     auto renderer =
         std::make_shared<streaming::Renderer>(program_setup.width, program_setup.height, program_setup.fps, encoder);
-    streaming::Streamer streamer(program_setup.ip, program_setup.port, encoder);
+    streaming::Streamer streamer(program_setup.ip, program_setup.port, encoder, renderer);
     std::thread wait_thread(wait_for_exit);
     while (true) {
       std::this_thread::sleep_for(1000ms);

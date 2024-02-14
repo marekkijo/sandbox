@@ -2,15 +2,19 @@
 
 #include "tools/utils/utils.hpp"
 
-namespace streaming {
-Streamer::Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> &encoder)
-    : id_{std::string{STREAMER_ID} + ":" + tools::utils::generate_random_string(16u)}
-    , video_stream_info_{encoder->get_video_stream_info()} {
-  std::size_t max_message_size = 1024 * 1024; // 1MB
+#include <SDL2/SDL_events.h>
 
+namespace streaming {
+Streamer::Streamer(const std::string &server_ip,
+                   const std::uint16_t server_port,
+                   std::shared_ptr<Encoder> &encoder,
+                   std::shared_ptr<Renderer> &renderer)
+    : id_{std::string{STREAMER_ID} + ":" + tools::utils::generate_random_string(16u)}
+    , video_stream_info_{encoder->get_video_stream_info()}
+    , renderer_{renderer} {
   configuration_.iceServers.emplace_back("stun.l.google.com", 19302);
   configuration_.disableAutoNegotiation = true;
-  configuration_.maxMessageSize = max_message_size;
+  configuration_.maxMessageSize = MAX_MESSAGE_SIZE;
 
   web_socket_ = std::make_shared<rtc::WebSocket>();
   init_web_socket(web_socket_);
@@ -95,8 +99,15 @@ void Streamer::on_data_channel_binary_message(rtc::binary /* message */) {
   printf("Received data channel binary message\n");
 }
 
-void Streamer::on_data_channel_string_message(std::string /* message */) {
-  printf("Received data channel string message\n");
+void Streamer::on_data_channel_string_message(std::string message) {
+  auto json = nlohmann::json::parse(message);
+
+  if (json.contains("user_input")) {
+    parse_user_input(json.at("user_input"));
+    return;
+  }
+
+  printf("Unknown message: %s\n", message.c_str());
 }
 
 void Streamer::on_peer_state_change(rtc::PeerConnection::State state) {
@@ -188,5 +199,45 @@ void Streamer::send_video_stream_info() {
 
 void Streamer::video_stream_callback(const std::byte *data, const std::size_t size) {
   if (peer_ && peer_->data_channel && peer_->data_channel->isOpen()) { peer_->data_channel->send(data, size); }
+}
+
+void Streamer::parse_user_input(const nlohmann::json &json_user_input) {
+  auto user_input = UserInput{json_user_input.at("type"), json_user_input.at("timestamp")};
+
+  switch (user_input.type) {
+  case SDL_MOUSEMOTION:
+    user_input.state = json_user_input.at("state");
+    user_input.x = json_user_input.at("x");
+    user_input.y = json_user_input.at("y");
+    user_input.x_relative = json_user_input.at("x_relative");
+    user_input.y_relative = json_user_input.at("y_relative");
+    break;
+  case SDL_MOUSEBUTTONDOWN:
+  case SDL_MOUSEBUTTONUP:
+    user_input.state = json_user_input.at("state");
+    user_input.x = json_user_input.at("x");
+    user_input.y = json_user_input.at("y");
+    user_input.button = json_user_input.at("button");
+    user_input.clicks = json_user_input.at("clicks");
+    break;
+  case SDL_MOUSEWHEEL:
+    user_input.x = json_user_input.at("x");
+    user_input.y = json_user_input.at("y");
+    user_input.x_float = json_user_input.at("x_float");
+    user_input.y_float = json_user_input.at("y_float");
+    break;
+  case SDL_KEYDOWN:
+  case SDL_KEYUP:
+    user_input.state = json_user_input.at("state");
+    user_input.repeat = json_user_input.at("repeat");
+    user_input.keysym_scancode = json_user_input.at("keysym_scancode");
+    user_input.keysym_sym = json_user_input.at("keysym_sym");
+    user_input.keysym_mod = json_user_input.at("keysym_mod");
+    break;
+  default:
+    break;
+  }
+
+  renderer_->process_user_input(user_input);
 }
 } // namespace streaming

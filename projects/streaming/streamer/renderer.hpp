@@ -2,6 +2,8 @@
 
 #include "encoder.hpp"
 
+#include "common/common.hpp"
+
 #include "tools/sdl/sdl_animation.hpp"
 #include "tools/sdl/sdl_system.hpp"
 
@@ -9,6 +11,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <thread>
 
 namespace streaming {
@@ -22,6 +25,8 @@ public:
   Renderer(int width, int height, std::uint16_t fps, std::shared_ptr<Encoder> &encoder);
   ~Renderer();
 
+  void process_user_input(const UserInput &user_input);
+
 private:
   int width_{};
   int height_{};
@@ -34,6 +39,7 @@ private:
   glm::mat4 projection_{};
   glm::vec3 camera_pos_{};
   glm::vec3 camera_rot_{};
+  bool animate_{true};
 
   GLuint shader_program_{};
   GLuint viewport_location_{};
@@ -41,6 +47,8 @@ private:
 
   std::thread render_thread_{};
   std::atomic_bool quit_{false};
+
+  std::mutex mutex_{};
 
   void render_procedure();
   void init_rendering();

@@ -3,6 +3,7 @@
 #include "common/common.hpp"
 
 #include "decoder.hpp"
+#include "player.hpp"
 
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>
@@ -19,7 +20,10 @@ public:
   Receiver(Receiver &&other) noexcept = delete;
   Receiver &operator=(Receiver &&other) noexcept = delete;
 
-  Receiver(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Decoder> &decoder);
+  Receiver(const std::string &server_ip,
+           const std::uint16_t server_port,
+           std::shared_ptr<Decoder> &decoder,
+           std::shared_ptr<Player> &player);
 
 private:
   struct Peer {
@@ -58,6 +62,8 @@ private:
   void command_request_video_stream_infos();
   void command_request_video_stream(const std::string &streamer_id);
   void parse_video_stream_infos(const nlohmann::json &json_video_stream_infos);
+
+  void user_input_callback(const UserInput &user_input);
 
   const std::string receiver_id_{};
   const std::string id_{};

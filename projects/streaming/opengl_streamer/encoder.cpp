@@ -130,5 +130,4 @@ void Encoder::close_stream() {
   uint8_t endcode[] = {0, 0, 1, 0xb7};
   file_.write(reinterpret_cast<char *>(endcode), sizeof(endcode));
 }
-
 } // namespace streaming

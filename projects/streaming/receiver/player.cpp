@@ -1,5 +1,7 @@
 #include "player.hpp"
 
+#include "common/common.hpp"
+
 #include <SDL2/SDL.h>
 
 #include <functional>
@@ -15,6 +17,10 @@ Player::Player(std::shared_ptr<Decoder> &decoder)
 Player::~Player() {
   quit_ = true;
   if (player_thread_.joinable()) { player_thread_.join(); }
+}
+
+void Player::set_user_input_callback(std::function<void(const UserInput &user_input)> user_input_callback) {
+  user_input_callback_ = user_input_callback;
 }
 
 void Player::video_stream_info_callback(const VideoStreamInfo &video_stream_info) {
@@ -43,6 +49,43 @@ void Player::player_procedure() {
           SDL_UpdateWindowSurface(sdl_sys_->wnd());
         }
         break;
+      case SDL_MOUSEMOTION: {
+        auto user_input = UserInput{event.motion.type, event.motion.timestamp};
+        user_input.state = event.motion.state;
+        user_input.x = event.motion.x;
+        user_input.y = event.motion.y;
+        user_input.x_relative = event.motion.xrel;
+        user_input.y_relative = event.motion.yrel;
+        if (user_input_callback_) { user_input_callback_(user_input); }
+      } break;
+      case SDL_MOUSEBUTTONDOWN:
+      case SDL_MOUSEBUTTONUP: {
+        auto user_input = UserInput{event.button.type, event.button.timestamp};
+        user_input.state = event.button.state;
+        user_input.x = event.button.x;
+        user_input.y = event.button.y;
+        user_input.button = event.button.button;
+        user_input.clicks = event.button.clicks;
+        if (user_input_callback_) { user_input_callback_(user_input); }
+      } break;
+      case SDL_MOUSEWHEEL: {
+        auto user_input = UserInput{event.wheel.type, event.wheel.timestamp};
+        user_input.x = event.wheel.x;
+        user_input.y = event.wheel.y;
+        user_input.x_float = event.wheel.preciseX;
+        user_input.y_float = event.wheel.preciseY;
+        if (user_input_callback_) { user_input_callback_(user_input); }
+      } break;
+      case SDL_KEYDOWN:
+      case SDL_KEYUP: {
+        auto user_input = UserInput{event.key.type, event.key.timestamp};
+        user_input.state = event.key.state;
+        user_input.repeat = event.key.repeat;
+        user_input.keysym_scancode = event.key.keysym.scancode;
+        user_input.keysym_sym = event.key.keysym.sym;
+        user_input.keysym_mod = event.key.keysym.mod;
+        if (user_input_callback_) { user_input_callback_(user_input); }
+      } break;
       default:
         break;
       }
@@ -80,5 +123,4 @@ void Player::init_player() {
                                             0x00FF0000,
                                             0x00000000);
 }
-
 } // namespace streaming
