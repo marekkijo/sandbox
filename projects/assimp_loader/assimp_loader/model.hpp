@@ -29,7 +29,6 @@ private:
   void process_node(const aiScene *const scene, const aiNode *const node, glm::mat4 transformation);
   void process_mesh(const aiMesh *const mesh, const glm::mat4 &transformation);
 
-  ModelFormat model_format_{ModelFormat::Unknown};
   std::vector<std::vector<glm::vec4>> vertices_{};
   std::vector<std::vector<std::uint32_t>> indices_{};
   std::vector<glm::vec4> colors_{};

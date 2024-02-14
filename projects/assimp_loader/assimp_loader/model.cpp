@@ -6,29 +6,13 @@
 #include <assimp/postprocess.h>
 
 #include <algorithm>
-#include <cstring>
 #include <iterator>
 #include <span>
 
+#include "model_format.hpp"
+#include "model_orientation.hpp"
+
 namespace {
-ModelFormat get_model_format(const Assimp::Importer &importer) {
-  constexpr auto importer_index_property_name = "importerIndex";
-  const auto importer_index = importer.GetPropertyInteger(importer_index_property_name);
-  const auto importer_info = importer.GetImporterInfo(importer_index);
-
-  if (strcmp(importer_info->mName, "Discreet 3DS Importer") == 0) { return ModelFormat::_3DS; }
-  if (strcmp(importer_info->mName, "Blender 3D Importer (http://www.blender3d.org)") == 0) {
-    return ModelFormat::Blender;
-  }
-  if (strcmp(importer_info->mName, "Collada Importer") == 0) { return ModelFormat::Collada; }
-  if (strcmp(importer_info->mName, "Autodesk FBX Importer") == 0) { return ModelFormat::FBX; }
-  if (strcmp(importer_info->mName, "glTF2 Importer") == 0) { return ModelFormat::glTF2; }
-  if (strcmp(importer_info->mName, "Wavefront Object Importer") == 0) { return ModelFormat::OBJ; }
-  if (strcmp(importer_info->mName, "Stereolithography (STL) Importer") == 0) { return ModelFormat::STL; }
-
-  return ModelFormat::Unknown;
-}
-
 glm::mat4 to_glm(const aiMatrix4x4 &mat) {
   return {mat.a1,
           mat.b1,
@@ -54,13 +38,11 @@ Model::Model(const std::string &filename) {
   const auto scene = importer.ReadFile(filename, aiPostProcessSteps::aiProcess_Triangulate);
   if (!scene) { return; }
 
-  model_format_ = get_model_format(importer);
+  const auto model_format = get_model_format(importer);
+  const auto orientation = get_orientation(model_format, scene->mMetaData);
+  const auto orientation_matrix = get_orientation_matrix(orientation);
 
-  auto init_matrix = glm::mat4(1.0);
-  if (model_format_ == ModelFormat::FBX) {
-    init_matrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f));
-  }
-  process_node(scene, scene->mRootNode, init_matrix);
+  process_node(scene, scene->mRootNode, orientation_matrix);
 }
 
 std::size_t Model::size() const { return vertices_.size(); }

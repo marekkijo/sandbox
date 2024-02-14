@@ -3,7 +3,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(assimp_loader
   assimp_loader/main.cpp
+  assimp_loader/model_format.cpp
   assimp_loader/model_format.hpp
+  assimp_loader/model_orientation.cpp
+  assimp_loader/model_orientation.hpp
   assimp_loader/model.cpp
   assimp_loader/model.hpp
   assimp_loader/renderer.cpp
