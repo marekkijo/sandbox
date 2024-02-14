@@ -10,21 +10,23 @@ add_executable(opengl_streamer
 )
 
 target_link_libraries(opengl_streamer tools_sdl)
-target_link_libraries(opengl_streamer SDL2)
+target_link_libraries(opengl_streamer SDL2::SDL2)
+target_link_libraries(opengl_streamer SDL2::SDL2main)
 target_link_libraries(opengl_streamer Boost::program_options)
-target_link_libraries(opengl_streamer OpenGL)
-target_link_libraries(opengl_streamer ${AVCodec_LIBRARY})
-target_link_libraries(opengl_streamer ${AVFormat_LIBRARY})
-target_link_libraries(opengl_streamer ${AVUtil_LIBRARY})
-target_link_libraries(opengl_streamer ${SWScale_LIBRARY})
+target_link_libraries(opengl_streamer opengl::opengl)
+target_link_libraries(opengl_streamer ffmpeg::avcodec)
+target_link_libraries(opengl_streamer ffmpeg::avformat)
+target_link_libraries(opengl_streamer ffmpeg::avutil)
+target_link_libraries(opengl_streamer ffmpeg::swscale)
 target_link_libraries(opengl_streamer glm::glm)
 target_link_libraries(opengl_streamer GLEW::GLEW)
 
 add_library(common INTERFACE
   common/common.hpp
+  common/ffmpeg.hpp
 )
 
-target_link_libraries(common INTERFACE ${AVCodec_LIBRARY})
+target_link_libraries(common INTERFACE ffmpeg::avcodec)
 
 add_executable(signaling_server
   signaling_server/main.cpp
@@ -37,7 +39,7 @@ add_executable(signaling_server
 target_link_libraries(signaling_server common)
 target_link_libraries(signaling_server tools_utils)
 target_link_libraries(signaling_server Boost::program_options)
-target_link_libraries(signaling_server LibDataChannel::LibDataChannel)
+target_link_libraries(signaling_server libdatachannel::libdatachannel)
 target_link_libraries(signaling_server nlohmann_json::nlohmann_json)
 
 add_executable(streamer
@@ -53,15 +55,17 @@ add_executable(streamer
 target_link_libraries(streamer common)
 target_link_libraries(streamer tools_sdl)
 target_link_libraries(streamer tools_utils)
-target_link_libraries(streamer SDL2)
+target_link_libraries(streamer SDL2::SDL2)
 target_link_libraries(streamer Boost::program_options)
-target_link_libraries(streamer ${AVCodec_LIBRARY})
-target_link_libraries(streamer ${AVUtil_LIBRARY})
-target_link_libraries(streamer ${SWScale_LIBRARY})
-target_link_libraries(streamer OpenGL)
+target_link_libraries(streamer openssl::openssl)
+target_link_libraries(streamer ffmpeg::avcodec)
+target_link_libraries(streamer ffmpeg::avutil)
+target_link_libraries(streamer ffmpeg::swscale)
+target_link_libraries(streamer opengl::opengl)
 target_link_libraries(streamer glm::glm)
 target_link_libraries(streamer GLEW::GLEW)
-target_link_libraries(streamer LibDataChannel::LibDataChannel)
+target_link_libraries(streamer libdatachannel::libdatachannel)
+target_link_libraries(streamer nlohmann_json::nlohmann_json)
 
 configure_file(streamer/shader_program.fs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.fs COPYONLY)
 configure_file(streamer/shader_program.vs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.vs COPYONLY)
@@ -79,7 +83,9 @@ add_executable(receiver
 target_link_libraries(receiver tools_sdl)
 target_link_libraries(receiver tools_utils)
 target_link_libraries(receiver Boost::program_options)
-target_link_libraries(receiver ${AVCodec_LIBRARY})
-target_link_libraries(receiver ${AVUtil_LIBRARY})
-target_link_libraries(receiver ${SWScale_LIBRARY})
-target_link_libraries(receiver LibDataChannel::LibDataChannel)
+target_link_libraries(receiver openssl::openssl)
+target_link_libraries(receiver ffmpeg::avcodec)
+target_link_libraries(receiver ffmpeg::avutil)
+target_link_libraries(receiver ffmpeg::swscale)
+target_link_libraries(receiver libdatachannel::libdatachannel)
+target_link_libraries(receiver nlohmann_json::nlohmann_json)

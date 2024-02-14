@@ -82,7 +82,8 @@ void Decoder::set_video_stream_info(const VideoStreamInfo &video_stream_info) {
   context_->height = video_stream_info.height;
   context_->thread_count = 4;
 
-  if (codec_->capabilities & AV_CODEC_CAP_TRUNCATED) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; }
+  // todo: adopt to latest ffmpeg
+  /* if (codec_->capabilities & AV_CODEC_CAP_TRUNCATED) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; } */
   if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
 
   if (video_stream_info_callback_) { video_stream_info_callback_(video_stream_info); }
@@ -112,11 +113,11 @@ bool Decoder::upload_package(const void *data, const std::size_t size, int *used
 void Decoder::store_on_buffer(const void *data, const std::size_t size) {
   buffer_.insert(buffer_.end(),
                  reinterpret_cast<const std::uint8_t *>(data),
-                 reinterpret_cast<const std::uint8_t *>(data + size));
+                 reinterpret_cast<const std::uint8_t *>(data) + size);
 }
 
 void Decoder::yuv_to_rgb() {
-  const int in_linesize[1] = {CHANNELS_NUM * context_->width};
+  const int in_linesize[1] = {static_cast<int>(CHANNELS_NUM * context_->width)};
 
   sws_context_ = sws_getCachedContext(sws_context_,
                                       context_->width,

@@ -5,6 +5,10 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <GL/gl.h>
 
 #include <fstream>
@@ -32,7 +36,7 @@ private:
   AVFrame *frame_{nullptr};
   AVPacket *packet_{nullptr};
   AVCodecParserContext *parser_{nullptr};
-  AVCodec *codec_{nullptr};
+  const AVCodec *codec_{nullptr};
   AVCodecContext *context_{nullptr};
 
   std::int64_t frame_num_{0};

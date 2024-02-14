@@ -26,7 +26,8 @@ Decoder::Decoder(int width, int height, AVCodecID codec_id)
   if (!codec_) { throw std::runtime_error{"avcodec_find_decoder failed"}; }
   if (!context_) { throw std::runtime_error{"avcodec_alloc_context3 failed"}; }
 
-  if (codec_->capabilities & AV_CODEC_CAP_TRUNCATED) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; }
+  // todo: adopt to latest ffmpeg
+  /* if (codec_->capabilities & AV_CODEC_CAP_TRUNCATED) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; } */
 
   if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
 
@@ -51,7 +52,7 @@ bool Decoder::prepare_frame() {
     if (try_parse(&used)) { break; }
     if (!read_more()) {
       std::fill(rgb_frame_->begin(), rgb_frame_->end(), 0u);
-      printf("decoded frame %li\n", frame_num_++);
+      printf("decoded frame %lli\n", frame_num_++);
       return true;
     }
   } while (true);
@@ -60,7 +61,7 @@ bool Decoder::prepare_frame() {
   buffer_.erase(buffer_.begin(), buffer_.begin() + used);
   if (success) {
     yuv_to_rgb();
-    printf("decoded frame %li\n", frame_num_++);
+    printf("decoded frame %lli\n", frame_num_++);
     av_frame_unref(frame_);
   }
   return success;
@@ -102,7 +103,8 @@ bool Decoder::read_more() {
 
 bool Decoder::decode_frame() {
   auto got_picture = 0;
-  if (avcodec_decode_video2(context_, frame_, &got_picture, packet_) < 0) {
+  // todo: adopt to latest ffmpeg
+  /* if (avcodec_decode_video2(context_, frame_, &got_picture, packet_) < 0) */ {
     throw std::runtime_error{"avcodec_decode_video2 failed"};
   }
   av_packet_unref(packet_);
@@ -110,7 +112,7 @@ bool Decoder::decode_frame() {
 }
 
 void Decoder::yuv_to_rgb() {
-  const int in_linesize[1] = {CHANNELS_NUM * context_->width};
+  const int in_linesize[1] = {static_cast<int>(CHANNELS_NUM * context_->width)};
 
   sws_context_ = sws_getCachedContext(sws_context_,
                                       context_->width,
