@@ -11,11 +11,8 @@ if(POLICY CMP0072)
 endif()
 find_package(OpenGL REQUIRED)
 # FFmpeg
-find_path(AVCodec_INCLUDE_DIR libavcodec/avcodec.h)
 find_library(AVCodec_LIBRARY avcodec)
-find_path(AVFormat_INCLUDE_DIR libavformat/avformat.h)
 find_library(AVFormat_LIBRARY avformat)
-find_path(AVUtil_INCLUDE_DIR libavutil/avutil.h)
 find_library(AVUtil_LIBRARY avutil)
 
 add_subdirectory(projects)

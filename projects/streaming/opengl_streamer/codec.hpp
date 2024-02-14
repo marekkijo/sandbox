@@ -16,7 +16,7 @@ public:
   Codec(Codec &&other) noexcept            = delete;
   Codec &operator=(Codec &&other) noexcept = delete;
 
-  Codec();
+  Codec(int width, int height);
   ~Codec();
 
 private:

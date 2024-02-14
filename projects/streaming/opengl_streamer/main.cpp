@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 
   auto buffer_data = std::vector<std::uint8_t>(program_setup.width * program_setup.height * 3);
 
-  auto codec = streaming::Codec();
+  auto codec = streaming::Codec(program_setup.width, program_setup.height);
   while (!quit) {
     SDL_Event event;
     while (!quit && SDL_PollEvent(&event)) {
