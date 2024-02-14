@@ -65,7 +65,7 @@ Encoder::~Encoder() {
 }
 
 void Encoder::encode_frame() {
-  printf("encoding frame %li\n", frame_num_);
+  printf("encoding frame %lli\n", frame_num_);
 
   flip_frame();
   rgb_to_yuv();
@@ -73,7 +73,8 @@ void Encoder::encode_frame() {
   frame_->pts = frame_num_++;
 
   int got_output;
-  if (avcodec_encode_video2(context_, packet_, frame_, &got_output) < 0) {
+  // todo: adopt to latest ffmpeg
+  /* if (avcodec_encode_video2(context_, packet_, frame_, &got_output) < 0) */ {
     throw std::runtime_error{"avcodec_encode_video2 failed"};
   }
   if (got_output) {
@@ -96,7 +97,7 @@ void Encoder::flip_frame() {
 }
 
 void Encoder::rgb_to_yuv() {
-  const int in_linesize[1] = {CHANNELS_NUM * context_->width};
+  const int in_linesize[1] = {static_cast<int>(CHANNELS_NUM * context_->width)};
 
   sws_context_ = sws_getCachedContext(sws_context_,
                                       context_->width,
@@ -118,7 +119,8 @@ void Encoder::close_stream() {
   int got_output;
   do {
     fflush(stdout);
-    if (avcodec_encode_video2(context_, packet_, NULL, &got_output) < 0) {
+    // todo: adopt to latest ffmpeg
+    /* if (avcodec_encode_video2(context_, packet_, NULL, &got_output) < 0) */ {
       throw std::runtime_error{"avcodec_encode_video2 failed"};
     }
     if (got_output) {

@@ -79,7 +79,8 @@ int main(int argc, char *argv[]) {
                                        SDL_WINDOWPOS_CENTERED,
                                        program_setup.width,
                                        program_setup.height,
-                                       SDL_WINDOW_RESIZABLE,
+                                       // todo: remove SDL_WINDOW_OPENGL and adopt SDLSystem
+                                       SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL,
                                        -1,
                                        SDL_RENDERER_SOFTWARE};
 
