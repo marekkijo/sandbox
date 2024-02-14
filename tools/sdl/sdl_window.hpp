@@ -6,7 +6,7 @@
 namespace tools::sdl {
 class SDLWindow {
 public:
-  SDLWindow(const SDLWindow &)            = delete;
+  SDLWindow(const SDLWindow &) = delete;
   SDLWindow &operator=(const SDLWindow &) = delete;
 
   SDLWindow(const char *title, int x, int y, int w, int h, Uint32 flags);

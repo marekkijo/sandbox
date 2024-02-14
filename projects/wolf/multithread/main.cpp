@@ -25,11 +25,11 @@
 struct ProgramSetup {
   bool exit{};
 
-  std::string   asciimap{};
-  std::string   maphead{};
-  std::string   gamemaps{};
-  int           width{};
-  int           height{};
+  std::string asciimap{};
+  std::string maphead{};
+  std::string gamemaps{};
+  int width{};
+  int height{};
   std::uint32_t rays{};
   std::uint32_t threads{};
 };
@@ -88,8 +88,8 @@ int main(int argc, char *argv[]) {
                                        -1,
                                        SDL_RENDERER_SOFTWARE};
 
-  auto       raw_map_from_wolf = wolf::RawMapFromWolf{program_setup.maphead, program_setup.gamemaps};
-  const auto raw_map           = std::shared_ptr(std::move(raw_map_from_wolf.create_map(0u)));
+  auto raw_map_from_wolf = wolf::RawMapFromWolf{program_setup.maphead, program_setup.gamemaps};
+  const auto raw_map = std::shared_ptr(std::move(raw_map_from_wolf.create_map(0u)));
 
   // auto       raw_map_from_ascii = wolf::RawMapFromAscii{program_setup.asciimap};
   // const auto raw_map            = std::shared_ptr(std::move(raw_map_from_ascii.create_map()));
@@ -110,21 +110,24 @@ int main(int argc, char *argv[]) {
                                                      program_setup.threads};
 
   auto last_timestamp_ms = SDL_GetTicks();
-  auto animation         = tools::sdl::SDLAnimation(30u);
-  auto quit              = false;
+  auto animation = tools::sdl::SDLAnimation(30u);
+  auto quit = false;
 
   while (!quit) {
     SDL_Event event;
     while (!quit && SDL_PollEvent(&event)) {
       switch (event.type) {
-      case SDL_QUIT: quit = true; break;
+      case SDL_QUIT:
+        quit = true;
+        break;
       case SDL_WINDOWEVENT:
         switch (event.window.event) {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
           wolf_renderer.Renderer::resize();
           map_renderer.Renderer::resize();
           break;
-        default: break;
+        default:
+          break;
         }
         break;
       case SDL_USEREVENT:
@@ -140,7 +143,8 @@ int main(int argc, char *argv[]) {
         map_renderer.redraw();
         SDL_RenderPresent(sdl_sys.r());
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }

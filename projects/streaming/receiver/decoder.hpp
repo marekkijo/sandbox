@@ -17,34 +17,34 @@ extern "C" {
 namespace streaming {
 class Decoder {
 public:
-  Decoder(const Decoder &)                     = delete;
-  Decoder &operator=(const Decoder &)          = delete;
-  Decoder(Decoder &&other) noexcept            = delete;
+  Decoder(const Decoder &) = delete;
+  Decoder &operator=(const Decoder &) = delete;
+  Decoder(Decoder &&other) noexcept = delete;
   Decoder &operator=(Decoder &&other) noexcept = delete;
 
   Decoder();
   ~Decoder();
 
   std::shared_ptr<std::vector<std::uint8_t>> &rgb_frame();
-  void                                        set_video_stream_info_callback(
-                                             std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback);
+  void set_video_stream_info_callback(
+      std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback);
   [[nodiscard]] bool prepare_frame();
-  void               incoming_data(const std::byte *data, const std::size_t size);
-  void               set_video_stream_info(const VideoStreamInfo &video_stream_info);
+  void incoming_data(const std::byte *data, const std::size_t size);
+  void set_video_stream_info(const VideoStreamInfo &video_stream_info);
 
 private:
   std::shared_ptr<std::vector<std::uint8_t>> rgb_frame_{};
 
   std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback_{};
 
-  AVFrame              *frame_{nullptr};
-  AVPacket             *packet_{nullptr};
+  AVFrame *frame_{nullptr};
+  AVPacket *packet_{nullptr};
   AVCodecParserContext *parser_{nullptr};
-  AVCodec              *codec_{nullptr};
-  AVCodecContext       *context_{nullptr};
+  AVCodec *codec_{nullptr};
+  AVCodecContext *context_{nullptr};
 
   std::vector<std::uint8_t> buffer_{};
-  SwsContext               *sws_context_{nullptr};
+  SwsContext *sws_context_{nullptr};
 
   std::mutex mutex_{};
 

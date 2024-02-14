@@ -13,7 +13,9 @@ constexpr auto CHANNELS_NUM = std::size_t{4u};
 } // namespace
 
 namespace streaming {
-Decoder::Decoder() : frame_{av_frame_alloc()}, packet_{av_packet_alloc()} {
+Decoder::Decoder()
+    : frame_{av_frame_alloc()}
+    , packet_{av_packet_alloc()} {
   if (!frame_) { throw std::runtime_error{"av_frame_alloc failed"}; }
   if (!packet_) { throw std::runtime_error{"av_packet_alloc failed"}; }
 }
@@ -76,8 +78,8 @@ void Decoder::set_video_stream_info(const VideoStreamInfo &video_stream_info) {
 bool Decoder::try_parse(int *used) {
   if (buffer_.size() == 0u) { return false; }
 
-  std::uint8_t *poutbuf      = nullptr;
-  auto          poutbuf_size = 0;
+  std::uint8_t *poutbuf = nullptr;
+  auto poutbuf_size = 0;
 
   *used = av_parser_parse2(parser_,
                            context_,

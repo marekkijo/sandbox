@@ -9,10 +9,10 @@
 #include <numbers>
 
 namespace wolf {
-WolfRendererSinglethread::WolfRendererSinglethread(tools::sdl::SDLSystem                   &sdl_sys,
-                                                   const std::shared_ptr<const VectorMap>   vector_map,
+WolfRendererSinglethread::WolfRendererSinglethread(tools::sdl::SDLSystem &sdl_sys,
+                                                   const std::shared_ptr<const VectorMap> vector_map,
                                                    const std::shared_ptr<const PlayerState> player_state,
-                                                   const std::uint32_t                      rays)
+                                                   const std::uint32_t rays)
     : WolfRenderer(sdl_sys, vector_map, player_state, rays) {}
 
 void WolfRendererSinglethread::prepare_walls() {
@@ -34,13 +34,13 @@ void WolfRendererSinglethread::prepare_walls() {
   for (auto r_it = std::size_t{0u}; r_it < ray_rots_.size(); r_it++) {
     const auto ray_cos = ray_rots_[r_it].cos;
     const auto ray_sin = ray_rots_[r_it].sin;
-    const auto ray_x   = (ray_cos * dir.x - ray_sin * dir.y) * ray_length + pos.x;
-    const auto ray_y   = (ray_sin * dir.x + ray_cos * dir.y) * ray_length + pos.y;
+    const auto ray_x = (ray_cos * dir.x - ray_sin * dir.y) * ray_length + pos.x;
+    const auto ray_y = (ray_sin * dir.x + ray_cos * dir.y) * ray_length + pos.y;
 
-    auto v_index  = std::numeric_limits<std::size_t>::max();
+    auto v_index = std::numeric_limits<std::size_t>::max();
     auto min_dist = ray_length * 2.0f;
-    auto min_x    = 0.0f;
-    auto min_y    = 0.0f;
+    auto min_x = 0.0f;
+    auto min_y = 0.0f;
     for (auto v_it = std::size_t{0u}; v_it < vector_map_->vectors().size(); v_it++) {
       const auto &v = vector_map_->vectors()[v_it];
 
@@ -54,22 +54,22 @@ void WolfRendererSinglethread::prepare_walls() {
       const auto curr_dist = std::sqrtf((cross_x - pos.x) * (cross_x - pos.x) + (cross_y - pos.y) * (cross_y - pos.y));
       if (curr_dist < min_dist) {
         min_dist = curr_dist;
-        min_x    = cross_x;
-        min_y    = cross_y;
-        v_index  = v_it;
+        min_x = cross_x;
+        min_y = cross_y;
+        v_index = v_it;
       }
     }
 
     auto cam_dist = std::numeric_limits<float>::max();
     if (v_index != std::numeric_limits<std::size_t>::max()) {
-      cam_dist  = (cam_x2 - cam_x1) * (cam_y1 - min_y) - (cam_x1 - min_x) * (cam_y2 - cam_y1);
+      cam_dist = (cam_x2 - cam_x1) * (cam_y1 - min_y) - (cam_x1 - min_x) * (cam_y2 - cam_y1);
       cam_dist /= std::sqrtf((cam_x2 - cam_x1) * (cam_x2 - cam_x1) + (cam_y2 - cam_y1) * (cam_y2 - cam_y1));
       if (cam_dist < 0.0f) { cam_dist = 0.0f; }
     }
 
-    walls_[r_it].rect.h        = 1.0f / cam_dist * height_;
-    walls_[r_it].rect.y        = (height_ - walls_[r_it].rect.h) / 2.0f;
-    walls_[r_it].color_index   = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
+    walls_[r_it].rect.h = 1.0f / cam_dist * height_;
+    walls_[r_it].rect.y = (height_ - walls_[r_it].rect.h) / 2.0f;
+    walls_[r_it].color_index = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
     walls_[r_it].shadow_factor = 1.0f - std::min(0.75f, static_cast<float>(walls_[r_it].rect.h) / height_);
   }
 }

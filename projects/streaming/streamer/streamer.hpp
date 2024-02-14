@@ -13,18 +13,18 @@
 namespace streaming {
 class Streamer {
 public:
-  Streamer(const Streamer &)                     = delete;
-  Streamer &operator=(const Streamer &)          = delete;
-  Streamer(Streamer &&other) noexcept            = delete;
+  Streamer(const Streamer &) = delete;
+  Streamer &operator=(const Streamer &) = delete;
+  Streamer(Streamer &&other) noexcept = delete;
   Streamer &operator=(Streamer &&other) noexcept = delete;
 
   Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> &encoder);
 
 private:
   struct Peer {
-    std::string                          id{};
+    std::string id{};
     std::shared_ptr<rtc::PeerConnection> connection{};
-    std::shared_ptr<rtc::DataChannel>    data_channel{};
+    std::shared_ptr<rtc::DataChannel> data_channel{};
   };
 
   void init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket);
@@ -45,15 +45,15 @@ private:
   void on_data_channel_string_message(std::string message);
 
   [[nodiscard]] std::shared_ptr<Peer> create_peer(const std::string &id);
-  void                                send_video_stream_info();
+  void send_video_stream_info();
 
   void video_stream_callback(const std::byte *data, const std::size_t size);
 
-  const std::string               id_{};
-  const VideoStreamInfo           video_stream_info_{};
-  bool                            connection_open_{false};
-  rtc::Configuration              configuration_{};
+  const std::string id_{};
+  const VideoStreamInfo video_stream_info_{};
+  bool connection_open_{false};
+  rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
-  std::shared_ptr<Peer>           peer_{};
+  std::shared_ptr<Peer> peer_{};
 };
 } // namespace streaming

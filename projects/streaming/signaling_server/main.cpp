@@ -33,7 +33,7 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
 }
 
 auto should_exit = std::atomic_bool{false};
-auto mutex       = std::mutex{};
+auto mutex = std::mutex{};
 
 void wait_for_exit() {
   printf("Press 'enter' to exit\n");
@@ -41,7 +41,7 @@ void wait_for_exit() {
   printf("exiting...\n");
   {
     auto unique_lock = std::unique_lock{mutex};
-    should_exit      = true;
+    should_exit = true;
   }
 }
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 
   try {
     streaming::Server server(program_setup.port);
-    std::thread       wait_thread(wait_for_exit);
+    std::thread wait_thread(wait_for_exit);
     while (true) {
       std::this_thread::sleep_for(1000ms);
       auto unique_lock = std::unique_lock{mutex};

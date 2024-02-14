@@ -12,21 +12,21 @@
 
 namespace streaming {
 struct StreamerInfo {
-  std::string     id{};
-  bool            paired{false};
+  std::string id{};
+  bool paired{false};
   VideoStreamInfo video_stream_info{};
 };
 
 struct ReceiverInfo {
   std::string id{};
-  bool        paired{false};
+  bool paired{false};
 };
 
 class Server {
 public:
-  Server(const Server &)                     = delete;
-  Server &operator=(const Server &)          = delete;
-  Server(Server &&other) noexcept            = delete;
+  Server(const Server &) = delete;
+  Server &operator=(const Server &) = delete;
+  Server(Server &&other) noexcept = delete;
   Server &operator=(Server &&other) noexcept = delete;
 
   explicit Server(std::uint16_t port);
@@ -45,10 +45,10 @@ private:
   void parse_video_stream_info(std::shared_ptr<Client> &client, const nlohmann::json &json_video_stream_info);
   void parse_command(std::shared_ptr<Client> &client, const nlohmann::json &json_command);
 
-  rtc::WebSocketServer                                     server_{};
-  std::unordered_set<std::shared_ptr<Client>>              temporary_store_{};
+  rtc::WebSocketServer server_{};
+  std::unordered_set<std::shared_ptr<Client>> temporary_store_{};
   std::unordered_map<std::string, std::shared_ptr<Client>> clients_{};
-  std::unordered_map<std::string, StreamerInfo>            streamers_{};
-  std::unordered_map<std::string, ReceiverInfo>            receivers_{};
+  std::unordered_map<std::string, StreamerInfo> streamers_{};
+  std::unordered_map<std::string, ReceiverInfo> receivers_{};
 };
 } // namespace streaming

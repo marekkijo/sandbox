@@ -9,11 +9,11 @@ class RawMap;
 
 class RawMapFromAscii {
 public:
-  RawMapFromAscii(const RawMapFromAscii &)                = default;
-  RawMapFromAscii &operator=(const RawMapFromAscii &)     = default;
-  RawMapFromAscii(RawMapFromAscii &&) noexcept            = default;
+  RawMapFromAscii(const RawMapFromAscii &) = default;
+  RawMapFromAscii &operator=(const RawMapFromAscii &) = default;
+  RawMapFromAscii(RawMapFromAscii &&) noexcept = default;
   RawMapFromAscii &operator=(RawMapFromAscii &&) noexcept = default;
-  ~RawMapFromAscii()                                      = default;
+  ~RawMapFromAscii() = default;
 
   RawMapFromAscii(const std::string &asciimap_filename);
 

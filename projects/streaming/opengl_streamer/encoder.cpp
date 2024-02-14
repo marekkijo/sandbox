@@ -12,11 +12,11 @@ constexpr auto CHANNELS_NUM = std::size_t{4u};
 } // namespace
 
 namespace streaming {
-Encoder::Encoder(int                                    width,
-                 int                                    height,
+Encoder::Encoder(int width,
+                 int height,
                  std::shared_ptr<std::vector<GLubyte>> &gl_frame,
-                 std::uint16_t                          fps,
-                 AVCodecID                              codec_id)
+                 std::uint16_t fps,
+                 AVCodecID codec_id)
     : gl_frame_{gl_frame}
     , rgb_frame_(gl_frame_->size())
     , frame_{av_frame_alloc()}
@@ -30,21 +30,21 @@ Encoder::Encoder(int                                    width,
 
   const auto pixel_format = AV_PIX_FMT_YUV420P;
 
-  context_->bit_rate      = 131072 * 2;
-  context_->width         = width;
-  context_->height        = height;
+  context_->bit_rate = 131072 * 2;
+  context_->width = width;
+  context_->height = height;
   context_->time_base.num = 1;
   context_->time_base.den = fps;
-  context_->gop_size      = fps / 3;
-  context_->max_b_frames  = 1;
-  context_->pix_fmt       = pixel_format;
+  context_->gop_size = fps / 3;
+  context_->max_b_frames = 1;
+  context_->pix_fmt = pixel_format;
 
   if (codec_id == AV_CODEC_ID_H264) { av_opt_set(context_->priv_data, "preset", "slow", 0); }
 
   if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
 
   frame_->format = pixel_format;
-  frame_->width  = width;
+  frame_->width = width;
   frame_->height = height;
 
   if (av_image_alloc(frame_->data, frame_->linesize, width, height, pixel_format, 32) < 0) {
@@ -83,12 +83,12 @@ void Encoder::encode_frame() {
 }
 
 void Encoder::flip_frame() {
-  const auto width  = context_->width;
+  const auto width = context_->width;
   const auto height = context_->height;
 
   for (std::size_t i = 0; i < height; i++) {
     for (std::size_t j = 0; j < width; j++) {
-      auto ptr_gl  = gl_frame_->data() + (CHANNELS_NUM * (width * (height - i - 1) + j));
+      auto ptr_gl = gl_frame_->data() + (CHANNELS_NUM * (width * (height - i - 1) + j));
       auto ptr_rgb = rgb_frame_.data() + (CHANNELS_NUM * (width * i + j));
       memcpy(ptr_rgb, ptr_gl, CHANNELS_NUM);
     }

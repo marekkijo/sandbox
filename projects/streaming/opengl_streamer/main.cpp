@@ -24,10 +24,10 @@ constexpr auto CHANNELS_NUM = std::size_t{4u};
 struct ProgramSetup {
   bool exit{};
 
-  int           width{};
-  int           height{};
+  int width{};
+  int height{};
   std::uint16_t fps{};
-  unsigned int  seconds{};
+  unsigned int seconds{};
 };
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
@@ -98,20 +98,20 @@ void encode(const ProgramSetup &program_setup) {
 
   glewInit();
 
-  GLuint    elementsBuf;
-  GLuint    vertexBuf;
-  GLuint    colorBuffer;
-  GLuint    program;
-  int       width  = program_setup.width;
-  int       height = program_setup.height;
+  GLuint elementsBuf;
+  GLuint vertexBuf;
+  GLuint colorBuffer;
+  GLuint program;
+  int width = program_setup.width;
+  int height = program_setup.height;
   glm::mat4 viewPortMat;
   glm::mat4 Projection;
   glm::mat4 View;
   glm::mat4 identityMat;
   glm::mat4 cameraRotMat;
   glm::vec3 cameraPos;
-  GLuint    viewPortLoc;
-  GLuint    cameraRotLoc;
+  GLuint viewPortLoc;
+  GLuint cameraRotLoc;
 
   glEnable(GL_DEPTH_TEST);
   glFrontFace(GL_CW);
@@ -119,12 +119,12 @@ void encode(const ProgramSetup &program_setup) {
   glClearColor(0, 0, 0, 0);
   glViewport(0, 0, width, height);
 
-  Projection   = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 1.0f, 1024.0f);
-  identityMat  = glm::mat4(1.0f);
+  Projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 1.0f, 1024.0f);
+  identityMat = glm::mat4(1.0f);
   cameraRotMat = identityMat;
-  cameraPos    = glm::vec3(4, 4, 0);
-  View         = glm::lookAt(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
-  viewPortMat  = Projection * View;
+  cameraPos = glm::vec3(4, 4, 0);
+  View = glm::lookAt(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+  viewPortMat = Projection * View;
 
   program = glCreateProgram();
 
@@ -140,7 +140,7 @@ void encode(const ProgramSetup &program_setup) {
 
   viewPortMat = Projection * View;
 
-  GLuint VertexShaderID   = glCreateShader(GL_VERTEX_SHADER);
+  GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
   GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
   std::string VertexShaderCode;
@@ -181,7 +181,7 @@ void encode(const ProgramSetup &program_setup) {
 )";
 
   GLint Result = GL_FALSE;
-  int   InfoLogLength;
+  int InfoLogLength;
 
   printf("Compiling vertex shader\n");
   const char *VertexSourcePointer = VertexShaderCode.c_str();
@@ -254,12 +254,12 @@ void encode(const ProgramSetup &program_setup) {
   glBufferData(GL_ARRAY_BUFFER, sizeof(colorData), colorData, GL_STATIC_DRAW);
   glVertexAttribPointer(glGetAttribLocation(program, "colorBuffer"), 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-  viewPortLoc  = glGetUniformLocation(program, "viewPort");
+  viewPortLoc = glGetUniformLocation(program, "viewPort");
   cameraRotLoc = glGetUniformLocation(program, "cameraRot");
 
   auto last_timestamp_ms = SDL_GetTicks();
-  auto animation         = tools::sdl::SDLAnimation(program_setup.fps);
-  auto quit              = false;
+  auto animation = tools::sdl::SDLAnimation(program_setup.fps);
+  auto quit = false;
 
   glReadBuffer(GL_BACK);
 
@@ -271,7 +271,9 @@ void encode(const ProgramSetup &program_setup) {
     SDL_Event event;
     while (!quit && SDL_PollEvent(&event)) {
       switch (event.type) {
-      case SDL_QUIT: quit = true; break;
+      case SDL_QUIT:
+        quit = true;
+        break;
       case SDL_USEREVENT:
         SDL_PumpEvents();
         {
@@ -287,15 +289,15 @@ void encode(const ProgramSetup &program_setup) {
         glUseProgram(program);
 
         if (reqAngleX != currentAngleX) {
-          cameraRotMat  = glm::rotate(cameraRotMat, glm::radians(reqAngleX - currentAngleX), glm::vec3(0, 1, 0));
+          cameraRotMat = glm::rotate(cameraRotMat, glm::radians(reqAngleX - currentAngleX), glm::vec3(0, 1, 0));
           currentAngleX = reqAngleX;
         }
         if (reqAngleY != currentAngleY) {
-          cameraRotMat  = glm::rotate(cameraRotMat, glm::radians(reqAngleY - currentAngleY), glm::vec3(0, 1, 0));
+          cameraRotMat = glm::rotate(cameraRotMat, glm::radians(reqAngleY - currentAngleY), glm::vec3(0, 1, 0));
           currentAngleY = reqAngleY;
         }
         if (reqAngleZ != currentAngleZ) {
-          cameraRotMat  = glm::rotate(cameraRotMat, glm::radians(reqAngleZ - currentAngleZ), glm::vec3(0, 0, 1));
+          cameraRotMat = glm::rotate(cameraRotMat, glm::radians(reqAngleZ - currentAngleZ), glm::vec3(0, 0, 1));
           currentAngleZ = reqAngleZ;
         }
         if (autoRotate) { cameraRotMat = glm::rotate(cameraRotMat, glm::radians(autodelay), glm::vec3(1, 0, 0)); }
@@ -312,7 +314,8 @@ void encode(const ProgramSetup &program_setup) {
         frames--;
         if (frames == 0) { quit = true; }
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }
@@ -334,14 +337,14 @@ void decode(const ProgramSetup &program_setup) {
   auto screen = SDL_GetWindowSurface(sdl_sys.wnd());
 
   auto last_timestamp_ms = SDL_GetTicks();
-  auto animation         = tools::sdl::SDLAnimation(program_setup.fps);
-  auto quit              = false;
+  auto animation = tools::sdl::SDLAnimation(program_setup.fps);
+  auto quit = false;
 
-  auto       decoder   = streaming::Decoder(program_setup.width, program_setup.height, AV_CODEC_ID_H264);
-  auto       rgb_frame = decoder.rgb_frame();
-  const auto pitch     = CHANNELS_NUM * program_setup.width;
+  auto decoder = streaming::Decoder(program_setup.width, program_setup.height, AV_CODEC_ID_H264);
+  auto rgb_frame = decoder.rgb_frame();
+  const auto pitch = CHANNELS_NUM * program_setup.width;
 
-  auto         frame_surface = SDL_CreateRGBSurfaceFrom(rgb_frame->data(),
+  auto frame_surface = SDL_CreateRGBSurfaceFrom(rgb_frame->data(),
                                                 program_setup.width,
                                                 program_setup.height,
                                                 8 * CHANNELS_NUM,
@@ -350,12 +353,14 @@ void decode(const ProgramSetup &program_setup) {
                                                 0x0000FF00,
                                                 0x00FF0000,
                                                 0x00000000);
-  unsigned int frames        = program_setup.seconds * program_setup.fps + 1;
+  unsigned int frames = program_setup.seconds * program_setup.fps + 1;
   while (!quit) {
     SDL_Event event;
     while (!quit && SDL_PollEvent(&event)) {
       switch (event.type) {
-      case SDL_QUIT: quit = true; break;
+      case SDL_QUIT:
+        quit = true;
+        break;
       case SDL_USEREVENT:
         SDL_PumpEvents();
         if (decoder.prepare_frame()) {
@@ -365,7 +370,8 @@ void decode(const ProgramSetup &program_setup) {
           if (frames == 0) { quit = true; }
         }
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }

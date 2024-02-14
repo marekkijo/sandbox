@@ -4,11 +4,13 @@
 #include <string>
 
 namespace tools::sdl {
-SDLGLContext::SDLGLContext(SDL_Window *window) : gl_context_{SDL_GL_CreateContext(window)} {
+SDLGLContext::SDLGLContext(SDL_Window *window)
+    : gl_context_{SDL_GL_CreateContext(window)} {
   if (!gl()) { throw std::runtime_error{std::string{"SDL_GL_CreateContext error:"} + SDL_GetError()}; }
 }
 
-SDLGLContext::SDLGLContext(SDLGLContext &&other) noexcept : gl_context_{other.gl_context_} {
+SDLGLContext::SDLGLContext(SDLGLContext &&other) noexcept
+    : gl_context_{other.gl_context_} {
   other.gl_context_ = nullptr;
 }
 
@@ -17,7 +19,7 @@ SDLGLContext &SDLGLContext::operator=(SDLGLContext &&other) noexcept {
 
   SDL_GL_DeleteContext(gl_context_);
 
-  gl_context_       = other.gl_context_;
+  gl_context_ = other.gl_context_;
   other.gl_context_ = nullptr;
 
   return *this;

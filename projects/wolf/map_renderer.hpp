@@ -14,16 +14,16 @@
 namespace wolf {
 class MapRenderer final : public Renderer {
 public:
-  MapRenderer(const MapRenderer &)                = default;
-  MapRenderer &operator=(const MapRenderer &)     = default;
-  MapRenderer(MapRenderer &&) noexcept            = default;
+  MapRenderer(const MapRenderer &) = default;
+  MapRenderer &operator=(const MapRenderer &) = default;
+  MapRenderer(MapRenderer &&) noexcept = default;
   MapRenderer &operator=(MapRenderer &&) noexcept = default;
-  ~MapRenderer() final                            = default;
+  ~MapRenderer() final = default;
 
-  MapRenderer(tools::sdl::SDLSystem                   &sdl_sys,
-              const std::shared_ptr<const VectorMap>   vector_map,
+  MapRenderer(tools::sdl::SDLSystem &sdl_sys,
+              const std::shared_ptr<const VectorMap> vector_map,
               const std::shared_ptr<const PlayerState> player_state,
-              const bool                               player_oriented = false);
+              const bool player_oriented = false);
 
   void redraw() final;
 
@@ -31,11 +31,11 @@ protected:
   void resize(const int width, const int height) final;
 
 private:
-  const std::shared_ptr<const VectorMap>   vector_map_{};
+  const std::shared_ptr<const VectorMap> vector_map_{};
   const std::shared_ptr<const PlayerState> player_state_{};
-  const bool                               player_oriented_{};
+  const bool player_oriented_{};
 
-  float     scale_{};
+  float scale_{};
   glm::vec3 screen_center_translation_{};
 
   void redraw_player_oriented() const;

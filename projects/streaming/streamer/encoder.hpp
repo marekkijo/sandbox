@@ -18,17 +18,18 @@ extern "C" {
 namespace streaming {
 class Encoder {
 public:
-  Encoder(const Encoder &)                     = delete;
-  Encoder &operator=(const Encoder &)          = delete;
-  Encoder(Encoder &&other) noexcept            = delete;
+  Encoder(const Encoder &) = delete;
+  Encoder &operator=(const Encoder &) = delete;
+  Encoder(Encoder &&other) noexcept = delete;
   Encoder &operator=(Encoder &&other) noexcept = delete;
 
   Encoder(int width, int height, std::uint16_t fps, AVCodecID codec_id = AV_CODEC_ID_H264);
   ~Encoder();
 
   [[nodiscard]] std::shared_ptr<std::vector<GLubyte>> &gl_frame();
-  [[nodiscard]] VideoStreamInfo                        get_video_stream_info() const;
-  void set_video_stream_callback(std::function<void(const std::byte *data, const std::size_t size)> video_stream_callback);
+  [[nodiscard]] VideoStreamInfo get_video_stream_info() const;
+  void
+  set_video_stream_callback(std::function<void(const std::byte *data, const std::size_t size)> video_stream_callback);
   void encode_frame();
   void close_stream();
 
@@ -38,13 +39,13 @@ private:
   std::function<void(const std::byte *data, const std::size_t size)> video_stream_callback_{};
 
   std::vector<std::uint8_t> rgb_frame_{};
-  AVFrame                  *frame_{nullptr};
-  AVPacket                 *packet_{nullptr};
-  AVCodec                  *codec_{nullptr};
-  AVCodecContext           *context_{nullptr};
+  AVFrame *frame_{nullptr};
+  AVPacket *packet_{nullptr};
+  AVCodec *codec_{nullptr};
+  AVCodecContext *context_{nullptr};
 
   std::int64_t frame_num_{0};
-  SwsContext  *sws_context_{nullptr};
+  SwsContext *sws_context_{nullptr};
 
   void flip_frame();
   void rgb_to_yuv();

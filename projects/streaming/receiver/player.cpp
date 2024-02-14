@@ -5,7 +5,8 @@
 #include <functional>
 
 namespace streaming {
-Player::Player(std::shared_ptr<Decoder> &decoder) : decoder_{decoder} {
+Player::Player(std::shared_ptr<Decoder> &decoder)
+    : decoder_{decoder} {
   auto video_stream_info_function = std::function<void(const VideoStreamInfo &video_stream_info)>{
       std::bind(&Player::video_stream_info_callback, this, std::placeholders::_1)};
   decoder_->set_video_stream_info_callback(video_stream_info_function);
@@ -20,7 +21,7 @@ void Player::video_stream_info_callback(const VideoStreamInfo &video_stream_info
   video_stream_info_ = video_stream_info;
 
   auto player_procedure = std::function<void()>{std::bind(&Player::player_procedure, this)};
-  player_thread_        = std::thread(player_procedure);
+  player_thread_ = std::thread(player_procedure);
 }
 
 void Player::player_procedure() {
@@ -32,7 +33,9 @@ void Player::player_procedure() {
     SDL_Event event;
     while (!quit_ && SDL_PollEvent(&event)) {
       switch (event.type) {
-      case SDL_QUIT: quit_ = true; break;
+      case SDL_QUIT:
+        quit_ = true;
+        break;
       case SDL_USEREVENT:
         SDL_PumpEvents();
         if (decoder_->prepare_frame()) {
@@ -40,7 +43,8 @@ void Player::player_procedure() {
           SDL_UpdateWindowSurface(sdl_sys_->wnd());
         }
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }
@@ -52,7 +56,7 @@ void Player::player_procedure() {
 }
 
 void Player::init_player() {
-  sdl_sys_   = std::make_unique<tools::sdl::SDLSystem>(SDL_INIT_EVERYTHING,
+  sdl_sys_ = std::make_unique<tools::sdl::SDLSystem>(SDL_INIT_EVERYTHING,
                                                      RECEIVER_ID,
                                                      SDL_WINDOWPOS_CENTERED,
                                                      SDL_WINDOWPOS_CENTERED,
@@ -66,7 +70,7 @@ void Player::init_player() {
   screen_surface_ = SDL_GetWindowSurface(sdl_sys_->wnd());
 
   const auto pitch = CHANNELS_NUM * video_stream_info_.width;
-  frame_surface_   = SDL_CreateRGBSurfaceFrom(decoder_->rgb_frame()->data(),
+  frame_surface_ = SDL_CreateRGBSurfaceFrom(decoder_->rgb_frame()->data(),
                                             video_stream_info_.width,
                                             video_stream_info_.height,
                                             8 * CHANNELS_NUM,

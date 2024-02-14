@@ -9,14 +9,17 @@ SDLRenderer::SDLRenderer(SDL_Window *window, int index, Uint32 flags)
   if (!r()) { throw std::runtime_error{std::string{"SDL_CreateRenderer error:"} + SDL_GetError()}; }
 }
 
-SDLRenderer::SDLRenderer(SDLRenderer &&other) noexcept : renderer_{other.renderer_} { other.renderer_ = nullptr; }
+SDLRenderer::SDLRenderer(SDLRenderer &&other) noexcept
+    : renderer_{other.renderer_} {
+  other.renderer_ = nullptr;
+}
 
 SDLRenderer &SDLRenderer::operator=(SDLRenderer &&other) noexcept {
   if (this == &other) { return *this; }
 
   SDL_DestroyRenderer(renderer_);
 
-  renderer_       = other.renderer_;
+  renderer_ = other.renderer_;
   other.renderer_ = nullptr;
 
   return *this;
