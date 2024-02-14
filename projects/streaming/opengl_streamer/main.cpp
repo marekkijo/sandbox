@@ -1,4 +1,4 @@
-#include "codec.hpp"
+#include "encoder.hpp"
 
 #include "tools/sdl/sdl_animation.hpp"
 #include "tools/sdl/sdl_system.hpp"
@@ -19,8 +19,10 @@
 struct ProgramSetup {
   bool exit{};
 
-  int width{};
-  int height{};
+  int          width{};
+  int          height{};
+  unsigned int fps{};
+  unsigned int seconds{};
 };
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
@@ -28,6 +30,12 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   desc.add_options()("help", "This help message");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(512), "Width of the frame buffer");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(384), "Height of the frame buffer");
+  desc.add_options()("fps",
+                     boost::program_options::value<unsigned int>()->default_value(30u),
+                     "Number of frames per second");
+  desc.add_options()("seconds",
+                     boost::program_options::value<unsigned int>()->default_value(10u),
+                     "Length of the stream in seconds");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -38,7 +46,11 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
     return {true};
   }
 
-  return {false, vm["width"].as<int>(), vm["height"].as<int>()};
+  return {false,
+          vm["width"].as<int>(),
+          vm["height"].as<int>(),
+          vm["fps"].as<unsigned int>(),
+          vm["seconds"].as<unsigned int>()};
 }
 
 int main(int argc, char *argv[]) {
@@ -59,29 +71,19 @@ int main(int argc, char *argv[]) {
   auto gl_context = SDL_GL_CreateContext(sdl_sys.wnd());
 
   auto last_timestamp_ms = SDL_GetTicks();
-  auto animation         = tools::sdl::SDLAnimation(30u);
+  auto animation         = tools::sdl::SDLAnimation(program_setup.fps);
   auto quit              = false;
 
   glReadBuffer(GL_BACK);
 
-  auto buffer_data = std::vector<std::uint8_t>(program_setup.width * program_setup.height * 3);
-
-  auto codec = streaming::Codec(program_setup.width, program_setup.height);
+  auto         gl_frame = std::make_shared<std::vector<GLubyte>>(program_setup.width * program_setup.height * 4);
+  auto         encoder  = streaming::Encoder(program_setup.width, program_setup.height, gl_frame, program_setup.fps);
+  unsigned int frames   = program_setup.seconds * program_setup.fps + 1;
   while (!quit) {
     SDL_Event event;
     while (!quit && SDL_PollEvent(&event)) {
       switch (event.type) {
       case SDL_QUIT: quit = true; break;
-      case SDL_WINDOWEVENT:
-        switch (event.window.event) {
-        case SDL_WINDOWEVENT_SIZE_CHANGED: {
-          int width, height;
-          SDL_GetWindowSize(sdl_sys.wnd(), &width, &height);
-          glViewport(0, 0, width, height);
-        } break;
-        default: break;
-        }
-        break;
       case SDL_USEREVENT:
         SDL_PumpEvents();
         {
@@ -93,10 +95,11 @@ int main(int argc, char *argv[]) {
         }
         glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glReadPixels(0, 0, program_setup.width, program_setup.height, GL_RGB, GL_UNSIGNED_BYTE, buffer_data.data());
-        printf("RGB(%i, %i, %i)\n", buffer_data[0], buffer_data[1], buffer_data[2]);
-        // SDL_GL_SwapWindow(sdl_sys.wnd());
-
+        glFlush();
+        glReadPixels(0, 0, program_setup.width, program_setup.height, GL_RGBA, GL_UNSIGNED_BYTE, gl_frame->data());
+        encoder.encode_frame();
+        frames--;
+        if (frames == 0) { quit = true; }
         break;
       default: break;
       }
