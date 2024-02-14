@@ -1,4 +1,4 @@
-#include "projects/wolf/raw_map_from_wolf.hpp"
+#include "raw_map_from_wolf.hpp"
 
 #include <algorithm>
 #include <array>

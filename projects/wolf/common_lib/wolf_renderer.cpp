@@ -1,4 +1,4 @@
-#include "projects/wolf/wolf_renderer.hpp"
+#include "wolf_renderer.hpp"
 
 #include "tools/math/math.hpp"
 

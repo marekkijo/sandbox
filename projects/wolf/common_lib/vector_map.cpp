@@ -1,4 +1,4 @@
-#include "projects/wolf/vector_map.hpp"
+#include "vector_map.hpp"
 
 #include <cmath>
 #include <numbers>

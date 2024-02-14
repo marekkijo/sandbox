@@ -1,4 +1,4 @@
-#include "projects/wolf/multithread/wolf_renderer_multithread.hpp"
+#include "wolf_renderer_multithread.hpp"
 
 #include "tools/math/math.hpp"
 

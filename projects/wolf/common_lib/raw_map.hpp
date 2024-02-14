@@ -1,6 +1,6 @@
 #pragma once
 
-#include "projects/wolf/wolf_map_info.hpp"
+#include "wolf_map_info.hpp"
 
 #include <array>
 #include <cstdint>
