@@ -17,8 +17,9 @@ SDLSystem::SDLSystem(Uint32      sys_flags,
                      Uint32      r_flags)
     : ready_{SDL_Init(sys_flags) == 0}
     , window_{ready_ ? std::make_unique<SDLWindow>(title, x, y, w, h, wnd_flags) : nullptr}
-    , renderer_{wnd() ? std::make_unique<SDLRenderer>(wnd(), r_index, r_flags) : nullptr} {
-  if (!ready_) { throw std::runtime_error{std::string{"SDL Init Error:"} + SDL_GetError()}; }
+    , renderer_{wnd() ? std::make_unique<SDLRenderer>(wnd(), r_index, r_flags) : nullptr}
+    , gl_context_{wnd() ? std::make_unique<SDLGLContext>(wnd()) : nullptr} {
+  if (!ready_) { throw std::runtime_error{std::string{"SDL_Init error:"} + SDL_GetError()}; }
 }
 
 SDLSystem::SDLSystem(SDLSystem &&other) noexcept
@@ -56,4 +57,6 @@ SDLSystem::~SDLSystem() {
 SDL_Window *SDLSystem::wnd() { return window_ ? window_->wnd() : nullptr; }
 
 SDL_Renderer *SDLSystem::r() { return renderer_ ? renderer_->r() : nullptr; }
+
+SDL_GLContext SDLSystem::gl() { return gl_context_ ? gl_context_->gl() : nullptr; }
 } // namespace tools::sdl

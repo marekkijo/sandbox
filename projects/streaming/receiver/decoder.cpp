@@ -13,25 +13,9 @@ constexpr auto CHANNELS_NUM = std::size_t{4u};
 } // namespace
 
 namespace streaming {
-Decoder::Decoder(int width, int height, AVCodecID codec_id)
-    : rgb_frame_{std::make_shared<std::vector<std::uint8_t>>(width * height * CHANNELS_NUM)}
-    , frame_{av_frame_alloc()}
-    , packet_{av_packet_alloc()}
-    , parser_{av_parser_init(codec_id)}
-    , codec_{avcodec_find_decoder(codec_id)}
-    , context_{codec_ ? avcodec_alloc_context3(codec_) : nullptr} {
+Decoder::Decoder() : frame_{av_frame_alloc()}, packet_{av_packet_alloc()} {
   if (!frame_) { throw std::runtime_error{"av_frame_alloc failed"}; }
   if (!packet_) { throw std::runtime_error{"av_packet_alloc failed"}; }
-  if (!parser_) { throw std::runtime_error{"av_parser_init failed"}; }
-  if (!codec_) { throw std::runtime_error{"avcodec_find_decoder failed"}; }
-  if (!context_) { throw std::runtime_error{"avcodec_alloc_context3 failed"}; }
-
-  if (codec_->capabilities & AV_CODEC_CAP_TRUNCATED) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; }
-
-  if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
-
-  file_.open("file.h264", std::ios::binary);
-  if (!file_.is_open()) { throw std::runtime_error{"cannot open file"}; }
 }
 
 Decoder::~Decoder() {
@@ -45,29 +29,52 @@ Decoder::~Decoder() {
 
 std::shared_ptr<std::vector<std::uint8_t>> &Decoder::rgb_frame() { return rgb_frame_; }
 
+void Decoder::set_video_stream_info_callback(
+    std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback) {
+  video_stream_info_callback_ = video_stream_info_callback;
+}
+
 bool Decoder::prepare_frame() {
+  const auto lg = std::lock_guard{mutex_};
+
   auto used = 0;
-  do {
-    if (try_parse(&used)) { break; }
-    if (!read_more()) {
-      std::fill(rgb_frame_->begin(), rgb_frame_->end(), 0u);
-      printf("decoded frame %li\n", frame_num_++);
-      return true;
-    }
-  } while (true);
+  if (!try_parse(&used)) { return false; }
 
   auto success = decode_frame();
   buffer_.erase(buffer_.begin(), buffer_.begin() + used);
   if (success) {
     yuv_to_rgb();
-    printf("decoded frame %li\n", frame_num_++);
     av_frame_unref(frame_);
   }
   return success;
 }
 
+void Decoder::incoming_data(const std::byte *data, const std::size_t size) {
+  const auto lg = std::lock_guard{mutex_};
+  buffer_.insert(buffer_.end(),
+                 reinterpret_cast<const std::uint8_t *>(data),
+                 reinterpret_cast<const std::uint8_t *>(data + size));
+}
+
+void Decoder::set_video_stream_info(const VideoStreamInfo &video_stream_info) {
+  rgb_frame_ =
+      std::make_shared<std::vector<std::uint8_t>>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM);
+  parser_ = av_parser_init(video_stream_info.codec_id);
+  if (!parser_) { throw std::runtime_error{"av_parser_init failed"}; }
+  codec_ = avcodec_find_decoder(video_stream_info.codec_id);
+  if (!codec_) { throw std::runtime_error{"avcodec_find_decoder failed"}; }
+  context_ = avcodec_alloc_context3(codec_);
+  if (!context_) { throw std::runtime_error{"avcodec_alloc_context3 failed"}; }
+
+  if (codec_->capabilities & AV_CODEC_CAP_TRUNCATED) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; }
+
+  if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
+
+  if (video_stream_info_callback_) { video_stream_info_callback_(video_stream_info); }
+}
+
 bool Decoder::try_parse(int *used) {
-  if (buffer_.size() == 0) { return false; }
+  if (buffer_.size() == 0u) { return false; }
 
   std::uint8_t *poutbuf      = nullptr;
   auto          poutbuf_size = 0;
@@ -89,22 +96,9 @@ bool Decoder::try_parse(int *used) {
   return true;
 }
 
-bool Decoder::read_more() {
-  if (file_.eof()) { return false; }
-
-  const std::size_t read_size    = 16384u;
-  const auto        current_size = buffer_.size();
-  buffer_.resize(current_size + read_size);
-  file_.read(reinterpret_cast<char *>(buffer_.data() + current_size), read_size);
-  buffer_.resize(current_size + file_.gcount());
-  return true;
-}
-
 bool Decoder::decode_frame() {
   auto got_picture = 0;
-  if (avcodec_decode_video2(context_, frame_, &got_picture, packet_) < 0) {
-    throw std::runtime_error{"avcodec_decode_video2 failed"};
-  }
+  if (avcodec_decode_video2(context_, frame_, &got_picture, packet_) < 0) { printf("avcodec_decode_video2 failed"); }
   av_packet_unref(packet_);
   return got_picture != 0;
 }

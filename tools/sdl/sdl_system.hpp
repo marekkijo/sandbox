@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sdl_gl_context.hpp"
 #include "sdl_renderer.hpp"
 #include "sdl_window.hpp"
 
@@ -30,11 +31,13 @@ public:
 
   [[nodiscard]] SDL_Window   *wnd();
   [[nodiscard]] SDL_Renderer *r();
+  [[nodiscard]] SDL_GLContext gl();
 
 private:
-  bool                         ready_{false};
-  bool                         should_quit_{true};
-  std::unique_ptr<SDLWindow>   window_{};
-  std::unique_ptr<SDLRenderer> renderer_{};
+  bool                          ready_{false};
+  bool                          should_quit_{true};
+  std::unique_ptr<SDLWindow>    window_{};
+  std::unique_ptr<SDLRenderer>  renderer_{};
+  std::unique_ptr<SDLGLContext> gl_context_{};
 };
 } // namespace tools::sdl
