@@ -2,6 +2,8 @@ add_executable(opengl_streamer
   opengl_streamer/main.cpp
   opengl_streamer/encoder.cpp
   opengl_streamer/encoder.hpp
+  opengl_streamer/decoder.cpp
+  opengl_streamer/decoder.hpp
 )
 
 include_directories(${PROJECT_SOURCE_DIR})

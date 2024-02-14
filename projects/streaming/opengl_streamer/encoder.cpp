@@ -13,9 +13,7 @@ Encoder::Encoder(int                                    width,
                  std::shared_ptr<std::vector<GLubyte>> &gl_frame,
                  unsigned int                           fps,
                  AVCodecID                              codec_id)
-    : width_{width}
-    , height_{height}
-    , gl_frame_{gl_frame}
+    : gl_frame_{gl_frame}
     , rgb_frame_(gl_frame_->size())
     , channels_(gl_frame_->size() / (width * height))
     , frame_{av_frame_alloc()}

@@ -1,18 +1,13 @@
+#include "decoder.hpp"
 #include "encoder.hpp"
 
 #include "tools/sdl/sdl_animation.hpp"
 #include "tools/sdl/sdl_system.hpp"
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_opengl.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_timer.h>
-#include <SDL2/SDL_video.h>
 
 #include <boost/program_options.hpp>
 
-#include <cstdint>
 #include <iostream>
 #include <memory>
 
@@ -26,7 +21,7 @@ struct ProgramSetup {
 };
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
-  boost::program_options::options_description desc("Wolf options");
+  boost::program_options::options_description desc("Options");
   desc.add_options()("help", "This help message");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(512), "Width of the frame buffer");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(384), "Height of the frame buffer");
@@ -53,13 +48,10 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["seconds"].as<unsigned int>()};
 }
 
-int main(int argc, char *argv[]) {
-  const auto program_setup = process_args(argc, argv);
-  if (program_setup.exit) { return 1; }
+void encode(const ProgramSetup &program_setup) {
+  const auto wnd_title = "OpenGL Encoder";
 
-  const auto wnd_title = "OpenGL Streamer";
-
-  auto sdl_sys    = tools::sdl::SDLSystem{SDL_INIT_EVERYTHING,
+  auto sdl_sys = tools::sdl::SDLSystem{SDL_INIT_EVERYTHING,
                                        wnd_title,
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
@@ -68,6 +60,7 @@ int main(int argc, char *argv[]) {
                                        SDL_WINDOW_OPENGL,
                                        -1,
                                        SDL_RENDERER_SOFTWARE};
+
   auto gl_context = SDL_GL_CreateContext(sdl_sys.wnd());
 
   auto last_timestamp_ms = SDL_GetTicks();
@@ -105,6 +98,50 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+}
+
+void decode(const ProgramSetup &program_setup) {
+  const auto wnd_title = "Video Decoder";
+
+  auto sdl_sys = tools::sdl::SDLSystem{SDL_INIT_EVERYTHING,
+                                       wnd_title,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       program_setup.width,
+                                       program_setup.height,
+                                       0,
+                                       -1,
+                                       SDL_RENDERER_SOFTWARE};
+
+  auto last_timestamp_ms = SDL_GetTicks();
+  auto animation         = tools::sdl::SDLAnimation(program_setup.fps);
+  auto quit              = false;
+
+  auto         decoder = streaming::Decoder();
+  unsigned int frames  = program_setup.seconds * program_setup.fps + 1;
+  while (!quit) {
+    SDL_Event event;
+    while (!quit && SDL_PollEvent(&event)) {
+      switch (event.type) {
+      case SDL_QUIT: quit = true; break;
+      case SDL_USEREVENT:
+        SDL_PumpEvents();
+        decoder.get_frame();
+        frames--;
+        if (frames == 0) { quit = true; }
+        break;
+      default: break;
+      }
+    }
+  }
+}
+
+int main(int argc, char *argv[]) {
+  const auto program_setup = process_args(argc, argv);
+  if (program_setup.exit) { return 1; }
+
+  encode(program_setup);
+  decode(program_setup);
 
   return 0;
 }
