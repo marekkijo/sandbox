@@ -3,6 +3,7 @@
 #include "common/common.hpp"
 
 #include "encoder.hpp"
+#include "renderer.hpp"
 
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>
@@ -18,7 +19,10 @@ public:
   Streamer(Streamer &&other) noexcept = delete;
   Streamer &operator=(Streamer &&other) noexcept = delete;
 
-  Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> &encoder);
+  Streamer(const std::string &server_ip,
+           const std::uint16_t server_port,
+           std::shared_ptr<Encoder> &encoder,
+           std::shared_ptr<Renderer> &renderer);
 
 private:
   struct Peer {
@@ -46,8 +50,8 @@ private:
 
   [[nodiscard]] std::shared_ptr<Peer> create_peer(const std::string &id);
   void send_video_stream_info();
-
   void video_stream_callback(const std::byte *data, const std::size_t size);
+  void parse_user_input(const nlohmann::json &json_user_input);
 
   const std::string id_{};
   const VideoStreamInfo video_stream_info_{};
@@ -55,5 +59,6 @@ private:
   rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
   std::shared_ptr<Peer> peer_{};
+  std::shared_ptr<Renderer> renderer_{};
 };
 } // namespace streaming

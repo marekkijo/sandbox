@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
   try {
     auto decoder = std::make_shared<streaming::Decoder>();
     auto player = std::make_shared<streaming::Player>(decoder);
-    streaming::Receiver receiver(program_setup.ip, program_setup.port, decoder);
+    streaming::Receiver receiver(program_setup.ip, program_setup.port, decoder, player);
     std::thread wait_thread(wait_for_exit);
     while (true) {
       std::this_thread::sleep_for(1000ms);

@@ -127,5 +127,4 @@ void Decoder::yuv_to_rgb() {
   const auto rgb_frame_data = rgb_frame_->data();
   sws_scale(sws_context_, &frame_->data[0], frame_->linesize, 0, context_->height, &rgb_frame_data, in_linesize);
 }
-
 } // namespace streaming

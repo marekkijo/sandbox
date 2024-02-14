@@ -2,20 +2,27 @@
 
 #include "tools/utils/utils.hpp"
 
+#include <SDL2/SDL_events.h>
+
 namespace streaming {
-Receiver::Receiver(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Decoder> &decoder)
+Receiver::Receiver(const std::string &server_ip,
+                   const std::uint16_t server_port,
+                   std::shared_ptr<Decoder> &decoder,
+                   std::shared_ptr<Player> &player)
     : receiver_id_{tools::utils::generate_random_string(16u)}
     , id_{std::string{RECEIVER_ID} + ":" + receiver_id_}
     , decoder_{decoder} {
-  std::size_t max_message_size = 1024 * 1024; // 1MB
-
-  configuration_.maxMessageSize = max_message_size;
+  configuration_.maxMessageSize = MAX_MESSAGE_SIZE;
 
   web_socket_ = std::make_shared<rtc::WebSocket>();
   init_web_socket(web_socket_);
   const auto url = std::string{"ws://"} + server_ip + ":" + std::to_string(server_port) + "/" + id_;
   printf("Connection url: %s\n", url.c_str());
   web_socket_->open(url);
+
+  auto user_input_function = std::function<void(const UserInput &user_input)>{
+      std::bind(&Receiver::user_input_callback, this, std::placeholders::_1)};
+  player->set_user_input_callback(user_input_function);
 }
 
 void Receiver::init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket) {
@@ -222,6 +229,52 @@ void Receiver::parse_video_stream_infos(const nlohmann::json &json_video_stream_
 
     decoder_->set_video_stream_info(streamer_infos_.back().video_stream_info);
     command_request_video_stream(streamer_infos_.back().streamer_id);
+  }
+}
+
+void Receiver::user_input_callback(const UserInput &user_input) {
+  if (peer_ && peer_->data_channel && peer_->data_channel->isOpen()) {
+    auto user_input_json = nlohmann::json{
+        {     "type",      user_input.type},
+        {"timestamp", user_input.timestamp}
+    };
+    switch (user_input.type) {
+    case SDL_MOUSEMOTION:
+      user_input_json["state"] = user_input.state;
+      user_input_json["x"] = user_input.x;
+      user_input_json["y"] = user_input.y;
+      user_input_json["x_relative"] = user_input.x_relative;
+      user_input_json["y_relative"] = user_input.y_relative;
+      break;
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+      user_input_json["state"] = user_input.state;
+      user_input_json["x"] = user_input.x;
+      user_input_json["y"] = user_input.y;
+      user_input_json["button"] = user_input.button;
+      user_input_json["clicks"] = user_input.clicks;
+      break;
+    case SDL_MOUSEWHEEL:
+      user_input_json["x"] = user_input.x;
+      user_input_json["y"] = user_input.y;
+      user_input_json["x_float"] = user_input.x_float;
+      user_input_json["x_float"] = user_input.x_float;
+      break;
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+      user_input_json["state"] = user_input.state;
+      user_input_json["repeat"] = user_input.repeat;
+      user_input_json["keysym_scancode"] = user_input.keysym_scancode;
+      user_input_json["keysym_sym"] = user_input.keysym_sym;
+      user_input_json["keysym_mod"] = user_input.keysym_mod;
+      break;
+    default:
+      break;
+    }
+    const auto json = nlohmann::json{
+        {"user_input", user_input_json}
+    };
+    peer_->data_channel->send(json.dump());
   }
 }
 } // namespace streaming

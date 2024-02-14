@@ -21,8 +21,13 @@ public:
   Player(std::shared_ptr<Decoder> &decoder);
   ~Player();
 
+  void set_user_input_callback(std::function<void(const UserInput &user_input)> user_input_callback);
+
 private:
   std::shared_ptr<Decoder> decoder_{};
+
+  std::function<void(const UserInput &user_input)> user_input_callback_{};
+
   VideoStreamInfo video_stream_info_{};
   std::unique_ptr<tools::sdl::SDLSystem> sdl_sys_{};
   std::unique_ptr<tools::sdl::SDLAnimation> animation_{};

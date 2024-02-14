@@ -136,5 +136,4 @@ void Encoder::close_stream() {
     video_stream_callback_(reinterpret_cast<const std::byte *>(endcode), sizeof(endcode));
   }
 }
-
 } // namespace streaming

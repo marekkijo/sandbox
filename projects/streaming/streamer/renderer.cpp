@@ -2,8 +2,6 @@
 
 #include "renderer.hpp"
 
-#include "common/common.hpp"
-
 #include "tools/utils/utils.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,6 +26,26 @@ Renderer::~Renderer() {
   render_thread_.join();
 }
 
+void Renderer::process_user_input(const UserInput &user_input) {
+  switch (user_input.type) {
+  case SDL_MOUSEMOTION:
+    if (user_input.state & SDL_BUTTON_LMASK) {
+      const float speed_factor = 0.1f;
+
+      const auto lg = std::lock_guard{mutex_};
+      camera_rot_.x += user_input.y_relative * speed_factor;
+      camera_rot_.y += user_input.x_relative * speed_factor;
+    }
+    break;
+  case SDL_MOUSEBUTTONDOWN: {
+    const auto lg = std::lock_guard{mutex_};
+    animate_ = false;
+  } break;
+  default:
+    break;
+  }
+}
+
 void Renderer::render_procedure() {
   init_rendering();
 
@@ -50,12 +68,16 @@ void Renderer::render_procedure() {
 
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-          auto camera_rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(camera_rot_.x), glm::vec3(1.0f, 0.0f, 0.0f));
-          camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.y), glm::vec3(0.0f, 1.0f, 0.0f));
-          camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.z), glm::vec3(0.0f, 0.0f, 1.0f));
-          glUniformMatrix4fv(camera_rot_location_, 1, GL_FALSE, glm::value_ptr(camera_rot_mat));
+          {
+            const auto lg = std::lock_guard{mutex_};
+            auto camera_rot_mat =
+                glm::rotate(glm::mat4(1.0f), glm::radians(camera_rot_.x), glm::vec3(1.0f, 0.0f, 0.0f));
+            camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.z), glm::vec3(0.0f, 0.0f, 1.0f));
+            glUniformMatrix4fv(camera_rot_location_, 1, GL_FALSE, glm::value_ptr(camera_rot_mat));
+          }
 
-          const auto view = glm::lookAt(camera_pos_, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+          const auto view = glm::lookAt(camera_pos_, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
           const auto viewport_mat = projection_ * view;
           glUniformMatrix4fv(viewport_location_, 1, GL_FALSE, glm::value_ptr(viewport_mat));
 
@@ -104,8 +126,8 @@ void Renderer::init_rendering() {
   glReadBuffer(GL_BACK);
 
   projection_ = glm::perspective(glm::radians(60.0f), static_cast<float>(width_) / height_, 1.0f, 1024.0f);
-  camera_pos_ = glm::vec3{4.0f, 4.0f, 0.0f};
-  camera_rot_ = glm::vec3{45.0f, 45.0f, 45.0f};
+  camera_pos_ = glm::vec3{0.0f, 2.0f, 4.0f};
+  camera_rot_ = glm::vec3{0.0f, 0.0f, 0.0f};
 
   shader_program_ = load_shader_program("projects/streaming/shader_program");
   configure_program();
@@ -114,7 +136,11 @@ void Renderer::init_rendering() {
 void Renderer::animate(Uint32 time_elapsed_ms) {
   const float speed_factor = static_cast<float>(time_elapsed_ms) / 100.0f;
 
-  camera_rot_ += speed_factor;
+  const auto lg = std::lock_guard{mutex_};
+  if (animate_) {
+    camera_rot_.x += speed_factor;
+    camera_rot_.y += speed_factor;
+  }
 }
 
 void Renderer::start_render_thread() {
@@ -204,5 +230,4 @@ void Renderer::check_status(GLuint program, GLenum status) {
     printf("Shader error:\n%s\n", error_message.c_str());
   }
 }
-
 } // namespace streaming
