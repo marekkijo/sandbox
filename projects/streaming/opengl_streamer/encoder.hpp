@@ -30,14 +30,12 @@ public:
   void encode_frame();
 
 private:
-  int                                   width_{};
-  int                                   height_{};
   std::shared_ptr<std::vector<GLubyte>> gl_frame_{};
 
   std::vector<std::uint8_t> rgb_frame_{};
   int                       channels_{};
-  AVPacket                 *packet_{nullptr};
   AVFrame                  *frame_{nullptr};
+  AVPacket                 *packet_{nullptr};
   AVCodec                  *codec_{nullptr};
   AVCodecContext           *context_{nullptr};
 
