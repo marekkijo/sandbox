@@ -7,17 +7,9 @@ extern "C" {
 
 #include <stdexcept>
 
-namespace {
-constexpr auto CHANNELS_NUM = std::size_t{4u};
-} // namespace
-
 namespace streaming {
-Encoder::Encoder(int                                    width,
-                 int                                    height,
-                 std::shared_ptr<std::vector<GLubyte>> &gl_frame,
-                 std::uint16_t                          fps,
-                 AVCodecID                              codec_id)
-    : gl_frame_{gl_frame}
+Encoder::Encoder(int width, int height, std::uint16_t fps, AVCodecID codec_id)
+    : gl_frame_{std::make_shared<std::vector<GLubyte>>(width * height * CHANNELS_NUM)}
     , rgb_frame_(gl_frame_->size())
     , frame_{av_frame_alloc()}
     , packet_{av_packet_alloc()}
@@ -30,7 +22,7 @@ Encoder::Encoder(int                                    width,
 
   const auto pixel_format = AV_PIX_FMT_YUV420P;
 
-  context_->bit_rate      = 131072 * 2;
+  context_->bit_rate      = 65536;
   context_->width         = width;
   context_->height        = height;
   context_->time_base.num = 1;
@@ -39,7 +31,7 @@ Encoder::Encoder(int                                    width,
   context_->max_b_frames  = 1;
   context_->pix_fmt       = pixel_format;
 
-  if (codec_id == AV_CODEC_ID_H264) { av_opt_set(context_->priv_data, "preset", "slow", 0); }
+  if (codec_->id == AV_CODEC_ID_H264) { av_opt_set(context_->priv_data, "preset", "slow", 0); }
 
   if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
 
@@ -50,23 +42,31 @@ Encoder::Encoder(int                                    width,
   if (av_image_alloc(frame_->data, frame_->linesize, width, height, pixel_format, 32) < 0) {
     throw std::runtime_error{"av_image_alloc failed"};
   }
-
-  file_.open("file.h264", std::ios::binary);
-  if (!file_.is_open()) { throw std::runtime_error{"cannot open file"}; }
 }
 
 Encoder::~Encoder() {
-  close_stream();
-
   av_freep(&frame_->data[0]);
   avcodec_free_context(&context_);
   av_packet_free(&packet_);
   av_frame_free(&frame_);
 }
 
-void Encoder::encode_frame() {
-  printf("encoding frame %li\n", frame_num_);
+std::shared_ptr<std::vector<GLubyte>> &Encoder::gl_frame() { return gl_frame_; }
 
+VideoStreamInfo Encoder::get_video_stream_info() const {
+  return {context_->width,
+          context_->height,
+          context_->time_base.den,
+          codec_->id,
+          std::string{avcodec_get_name(codec_->id)}};
+}
+
+void Encoder::set_video_stream_callback(
+    std::function<void(const std::byte *data, const std::size_t size)> video_stream_callback) {
+  video_stream_callback_ = video_stream_callback;
+}
+
+void Encoder::encode_frame() {
   flip_frame();
   rgb_to_yuv();
 
@@ -77,7 +77,9 @@ void Encoder::encode_frame() {
     throw std::runtime_error{"avcodec_encode_video2 failed"};
   }
   if (got_output) {
-    file_.write(reinterpret_cast<char *>(packet_->data), packet_->size);
+    if (video_stream_callback_) {
+      video_stream_callback_(reinterpret_cast<const std::byte *>(packet_->data), packet_->size);
+    }
     av_packet_unref(packet_);
   }
 }
@@ -122,13 +124,17 @@ void Encoder::close_stream() {
       throw std::runtime_error{"avcodec_encode_video2 failed"};
     }
     if (got_output) {
-      file_.write(reinterpret_cast<char *>(packet_->data), packet_->size);
+      if (video_stream_callback_) {
+        video_stream_callback_(reinterpret_cast<const std::byte *>(packet_->data), packet_->size);
+      }
       av_packet_unref(packet_);
     }
   } while (got_output);
 
-  uint8_t endcode[] = {0, 0, 1, 0xb7};
-  file_.write(reinterpret_cast<char *>(endcode), sizeof(endcode));
+  if (video_stream_callback_) {
+    static const uint8_t endcode[] = {0, 0, 1, 0xb7};
+    video_stream_callback_(reinterpret_cast<const std::byte *>(endcode), sizeof(endcode));
+  }
 }
 
 } // namespace streaming

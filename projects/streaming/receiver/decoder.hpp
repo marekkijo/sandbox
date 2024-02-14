@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/common.hpp"
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
@@ -7,9 +9,9 @@ extern "C" {
 
 #include <GL/gl.h>
 
-#include <fstream>
+#include <functional>
 #include <memory>
-#include <string>
+#include <mutex>
 #include <vector>
 
 namespace streaming {
@@ -20,15 +22,20 @@ public:
   Decoder(Decoder &&other) noexcept            = delete;
   Decoder &operator=(Decoder &&other) noexcept = delete;
 
-  Decoder(int width, int height, AVCodecID codec_id = AV_CODEC_ID_H264);
+  Decoder();
   ~Decoder();
 
   std::shared_ptr<std::vector<std::uint8_t>> &rgb_frame();
-
+  void                                        set_video_stream_info_callback(
+                                             std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback);
   [[nodiscard]] bool prepare_frame();
+  void               incoming_data(const std::byte *data, const std::size_t size);
+  void               set_video_stream_info(const VideoStreamInfo &video_stream_info);
 
 private:
   std::shared_ptr<std::vector<std::uint8_t>> rgb_frame_{};
+
+  std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback_{};
 
   AVFrame              *frame_{nullptr};
   AVPacket             *packet_{nullptr};
@@ -36,13 +43,12 @@ private:
   AVCodec              *codec_{nullptr};
   AVCodecContext       *context_{nullptr};
 
-  std::int64_t              frame_num_{0};
-  std::ifstream             file_{};
   std::vector<std::uint8_t> buffer_{};
   SwsContext               *sws_context_{nullptr};
 
+  std::mutex mutex_{};
+
   [[nodiscard]] bool try_parse(int *used);
-  [[nodiscard]] bool read_more();
   [[nodiscard]] bool decode_frame();
 
   void yuv_to_rgb();
