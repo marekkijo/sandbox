@@ -6,7 +6,8 @@
 #include <stdexcept>
 
 namespace tools::sdl {
-SDLKeyboardState::SDLKeyboardState() : sdl_keys_{SDL_GetKeyboardState(nullptr)} {
+SDLKeyboardState::SDLKeyboardState()
+    : sdl_keys_{SDL_GetKeyboardState(nullptr)} {
   if (!sdl_keys_) { throw std::runtime_error{"retrieving SDL keyboard state failed"}; }
 }
 

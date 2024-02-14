@@ -12,11 +12,14 @@
 namespace {
 class PrepareWallsThreadCallable {
 public:
-  PrepareWallsThreadCallable(const std::size_t                                                     id,
-                             const std::size_t                                                     ray_first,
-                             const std::size_t                                                     ray_one_past_last,
+  PrepareWallsThreadCallable(const std::size_t id,
+                             const std::size_t ray_first,
+                             const std::size_t ray_one_past_last,
                              wolf::WolfRendererMultithread::CommonPrepareWallsThreadCallableState &common_state)
-      : id_{id}, ray_first_{ray_first}, ray_one_past_last_{ray_one_past_last}, common_state_{common_state} {}
+      : id_{id}
+      , ray_first_{ray_first}
+      , ray_one_past_last_{ray_one_past_last}
+      , common_state_{common_state} {}
 
   void operator()() {
     constexpr auto ray_length{100.0f};
@@ -34,13 +37,13 @@ public:
       for (auto r_it = ray_first_; r_it < ray_one_past_last_; r_it++) {
         const auto ray_cos = common_state_.ray_rots.at(r_it).cos;
         const auto ray_sin = common_state_.ray_rots.at(r_it).sin;
-        const auto ray_x   = (ray_cos * dir.x - ray_sin * dir.y) * ray_length + pos.x;
-        const auto ray_y   = (ray_sin * dir.x + ray_cos * dir.y) * ray_length + pos.y;
+        const auto ray_x = (ray_cos * dir.x - ray_sin * dir.y) * ray_length + pos.x;
+        const auto ray_y = (ray_sin * dir.x + ray_cos * dir.y) * ray_length + pos.y;
 
-        auto v_index  = std::numeric_limits<std::size_t>::max();
+        auto v_index = std::numeric_limits<std::size_t>::max();
         auto min_dist = ray_length * 2.0f;
-        auto min_x    = 0.0f;
-        auto min_y    = 0.0f;
+        auto min_x = 0.0f;
+        auto min_y = 0.0f;
         for (auto v_it = std::size_t{0u}; v_it < common_state_.vector_map.vectors().size(); v_it++) {
           const auto &v = common_state_.vector_map.vectors().at(v_it);
 
@@ -55,9 +58,9 @@ public:
               std::sqrtf((cross_x - pos.x) * (cross_x - pos.x) + (cross_y - pos.y) * (cross_y - pos.y));
           if (curr_dist < min_dist) {
             min_dist = curr_dist;
-            min_x    = cross_x;
-            min_y    = cross_y;
-            v_index  = v_it;
+            min_x = cross_x;
+            min_y = cross_y;
+            v_index = v_it;
           }
         }
 
@@ -71,8 +74,8 @@ public:
           if (cam_dist < 0.0f) { cam_dist = 0.0f; }
         }
 
-        common_state_.walls.at(r_it).rect.h      = 1.0f / cam_dist * common_state_.height;
-        common_state_.walls.at(r_it).rect.y      = (common_state_.height - common_state_.walls.at(r_it).rect.h) / 2.0f;
+        common_state_.walls.at(r_it).rect.h = 1.0f / cam_dist * common_state_.height;
+        common_state_.walls.at(r_it).rect.y = (common_state_.height - common_state_.walls.at(r_it).rect.h) / 2.0f;
         common_state_.walls.at(r_it).color_index = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
         common_state_.walls.at(r_it).shadow_factor =
             1.0f - std::min(0.75f, static_cast<float>(common_state_.walls.at(r_it).rect.h) / common_state_.height);
@@ -85,19 +88,19 @@ public:
   }
 
 private:
-  const std::size_t                                                     id_{};
-  const std::size_t                                                     ray_first_{};
-  const std::size_t                                                     ray_one_past_last_{};
+  const std::size_t id_{};
+  const std::size_t ray_first_{};
+  const std::size_t ray_one_past_last_{};
   wolf::WolfRendererMultithread::CommonPrepareWallsThreadCallableState &common_state_;
 };
 } // namespace
 
 namespace wolf {
-WolfRendererMultithread::WolfRendererMultithread(tools::sdl::SDLSystem                   &sdl_sys,
-                                                 const std::shared_ptr<const VectorMap>   vector_map,
+WolfRendererMultithread::WolfRendererMultithread(tools::sdl::SDLSystem &sdl_sys,
+                                                 const std::shared_ptr<const VectorMap> vector_map,
                                                  const std::shared_ptr<const PlayerState> player_state,
-                                                 const std::uint32_t                      rays,
-                                                 const std::uint32_t                      threads)
+                                                 const std::uint32_t rays,
+                                                 const std::uint32_t threads)
     : WolfRenderer(sdl_sys, vector_map, player_state, rays)
     , common_state_{height_, *player_state_, *vector_map_, ray_rots_, walls_} {
   common_state_.do_work = std::vector<bool>(threads, false);

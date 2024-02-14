@@ -69,8 +69,8 @@ bool Decoder::prepare_frame() {
 bool Decoder::try_parse(int *used) {
   if (buffer_.size() == 0) { return false; }
 
-  std::uint8_t *poutbuf      = nullptr;
-  auto          poutbuf_size = 0;
+  std::uint8_t *poutbuf = nullptr;
+  auto poutbuf_size = 0;
 
   *used = av_parser_parse2(parser_,
                            context_,
@@ -92,8 +92,8 @@ bool Decoder::try_parse(int *used) {
 bool Decoder::read_more() {
   if (file_.eof()) { return false; }
 
-  const std::size_t read_size    = 16384u;
-  const auto        current_size = buffer_.size();
+  const std::size_t read_size = 16384u;
+  const auto current_size = buffer_.size();
   buffer_.resize(current_size + read_size);
   file_.read(reinterpret_cast<char *>(buffer_.data() + current_size), read_size);
   buffer_.resize(current_size + file_.gcount());

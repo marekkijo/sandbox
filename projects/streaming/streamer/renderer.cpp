@@ -15,7 +15,11 @@
 
 namespace streaming {
 Renderer::Renderer(int width, int height, std::uint16_t fps, std::shared_ptr<Encoder> &encoder)
-    : width_{width}, height_{height}, fps_{fps}, encoder_{encoder}, gl_frame_{encoder_->gl_frame()} {
+    : width_{width}
+    , height_{height}
+    , fps_{fps}
+    , encoder_{encoder}
+    , gl_frame_{encoder_->gl_frame()} {
   start_render_thread();
 }
 
@@ -33,7 +37,9 @@ void Renderer::render_procedure() {
     SDL_Event event;
     while (!quit_ && SDL_PollEvent(&event)) {
       switch (event.type) {
-      case SDL_QUIT: quit_ = true; break;
+      case SDL_QUIT:
+        quit_ = true;
+        break;
       case SDL_USEREVENT:
         SDL_PumpEvents();
         {
@@ -45,11 +51,11 @@ void Renderer::render_procedure() {
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
           auto camera_rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(camera_rot_.x), glm::vec3(1.0f, 0.0f, 0.0f));
-          camera_rot_mat      = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.y), glm::vec3(0.0f, 1.0f, 0.0f));
-          camera_rot_mat      = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.z), glm::vec3(0.0f, 0.0f, 1.0f));
+          camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.y), glm::vec3(0.0f, 1.0f, 0.0f));
+          camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.z), glm::vec3(0.0f, 0.0f, 1.0f));
           glUniformMatrix4fv(camera_rot_location_, 1, GL_FALSE, glm::value_ptr(camera_rot_mat));
 
-          const auto view         = glm::lookAt(camera_pos_, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+          const auto view = glm::lookAt(camera_pos_, glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
           const auto viewport_mat = projection_ * view;
           glUniformMatrix4fv(viewport_location_, 1, GL_FALSE, glm::value_ptr(viewport_mat));
 
@@ -63,7 +69,8 @@ void Renderer::render_procedure() {
           SDL_GL_SwapWindow(sdl_sys_->wnd());
         }
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }
@@ -75,7 +82,7 @@ void Renderer::render_procedure() {
 }
 
 void Renderer::init_rendering() {
-  sdl_sys_   = std::make_unique<tools::sdl::SDLSystem>(SDL_INIT_EVERYTHING,
+  sdl_sys_ = std::make_unique<tools::sdl::SDLSystem>(SDL_INIT_EVERYTHING,
                                                      STREAMER_ID,
                                                      SDL_WINDOWPOS_CENTERED,
                                                      SDL_WINDOWPOS_CENTERED,
@@ -112,7 +119,7 @@ void Renderer::animate(Uint32 time_elapsed_ms) {
 
 void Renderer::start_render_thread() {
   auto render_procedure = std::function<void()>{std::bind(&Renderer::render_procedure, this)};
-  render_thread_        = std::thread(render_procedure);
+  render_thread_ = std::thread(render_procedure);
 }
 
 void Renderer::configure_program() {
@@ -145,12 +152,12 @@ void Renderer::configure_program() {
   glBufferData(GL_ARRAY_BUFFER, sizeof(color_data), color_data, GL_STATIC_DRAW);
   glVertexAttribPointer(glGetAttribLocation(shader_program_, "color_buf"), 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-  viewport_location_   = glGetUniformLocation(shader_program_, "viewport");
+  viewport_location_ = glGetUniformLocation(shader_program_, "viewport");
   camera_rot_location_ = glGetUniformLocation(shader_program_, "camera_rot");
 }
 
 GLuint Renderer::load_shader_program(const std::string &program_name) {
-  const auto vert_shader_code       = tools::utils::load_txt_file(program_name + ".vs");
+  const auto vert_shader_code = tools::utils::load_txt_file(program_name + ".vs");
   const auto vert_shader_code_c_str = vert_shader_code.c_str();
 
   const auto vert_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -159,7 +166,7 @@ GLuint Renderer::load_shader_program(const std::string &program_name) {
 
   check_status(vert_shader, GL_COMPILE_STATUS);
 
-  const auto frag_shader_code       = tools::utils::load_txt_file(program_name + ".fs");
+  const auto frag_shader_code = tools::utils::load_txt_file(program_name + ".fs");
   const auto frag_shader_code_c_str = frag_shader_code.c_str();
 
   const auto frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -186,7 +193,7 @@ GLuint Renderer::load_shader_program(const std::string &program_name) {
 }
 
 void Renderer::check_status(GLuint program, GLenum status) {
-  auto result          = GL_FALSE;
+  auto result = GL_FALSE;
   auto info_log_length = 0;
 
   glGetShaderiv(program, status, &result);

@@ -22,7 +22,9 @@ std::uint16_t &RawMap::BlockType::operator[](const std::size_t index) {
 }
 
 RawMap::RawMap(const std::size_t width, const std::size_t height, std::vector<BlockType> &&blocks)
-    : width_{width}, height_{height}, blocks_{std::move(blocks)} {
+    : width_{width}
+    , height_{height}
+    , blocks_{std::move(blocks)} {
   process_doors();
   process_ambush_tiles();
   process_start_position();
@@ -66,12 +68,17 @@ void RawMap::process_doors() {
       case Map::Walls::door_vertical:
       case Map::Walls::door_vertical_gold_key:
       case Map::Walls::door_vertical_silver_key:
-      case Map::Walls::elevator_door_vertical: block(w, h).wall = Map::Walls::nothing; break;
+      case Map::Walls::elevator_door_vertical:
+        block(w, h).wall = Map::Walls::nothing;
+        break;
       case Map::Walls::door_horizontal:
       case Map::Walls::door_horizontal_gold_key:
       case Map::Walls::door_horizontal_silver_key:
-      case Map::Walls::elevator_door_horizontal: block(w, h).wall = Map::Walls::nothing; break;
-      default: break;
+      case Map::Walls::elevator_door_horizontal:
+        block(w, h).wall = Map::Walls::nothing;
+        break;
+      default:
+        break;
       }
     }
   }
@@ -81,8 +88,11 @@ void RawMap::process_ambush_tiles() {
   for (auto h = std::size_t{0u}; h < height(); h++) {
     for (auto w = std::size_t{0u}; w < width(); w++) {
       switch (block(w, h).wall) {
-      case Map::Walls::floor_deaf_guard: block(w, h).wall = Map::Walls::nothing; break;
-      default: break;
+      case Map::Walls::floor_deaf_guard:
+        block(w, h).wall = Map::Walls::nothing;
+        break;
+      default:
+        break;
       }
     }
   }
@@ -104,7 +114,8 @@ void RawMap::process_start_position() {
         player_pos_w_ = w;
         player_pos_h_ = h;
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }

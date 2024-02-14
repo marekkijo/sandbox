@@ -8,7 +8,7 @@ namespace tools::math {
 bool nearly_equal(float a,
                   float b,
                   float epsilon = 128.0f * std::numeric_limits<float>::epsilon(),
-                  float abs_th  = std::numeric_limits<float>::min());
+                  float abs_th = std::numeric_limits<float>::min());
 
 /// source: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 bool do_intersect(float a_x, float a_y, float b_x, float b_y, float c_x, float c_y, float d_x, float d_y);

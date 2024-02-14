@@ -8,7 +8,7 @@
 namespace tools::sdl {
 class SDLGLContext {
 public:
-  SDLGLContext(const SDLGLContext &)            = delete;
+  SDLGLContext(const SDLGLContext &) = delete;
   SDLGLContext &operator=(const SDLGLContext &) = delete;
 
   SDLGLContext(SDL_Window *window);

@@ -6,15 +6,15 @@
 #include <string>
 
 namespace tools::sdl {
-SDLSystem::SDLSystem(Uint32      sys_flags,
+SDLSystem::SDLSystem(Uint32 sys_flags,
                      const char *title,
-                     int         x,
-                     int         y,
-                     int         w,
-                     int         h,
-                     Uint32      wnd_flags,
-                     int         r_index,
-                     Uint32      r_flags)
+                     int x,
+                     int y,
+                     int w,
+                     int h,
+                     Uint32 wnd_flags,
+                     int r_index,
+                     Uint32 r_flags)
     : ready_{SDL_Init(sys_flags) == 0}
     , window_{ready_ ? std::make_unique<SDLWindow>(title, x, y, w, h, wnd_flags) : nullptr}
     , renderer_{wnd() ? std::make_unique<SDLRenderer>(wnd(), r_index, r_flags) : nullptr}
@@ -27,7 +27,7 @@ SDLSystem::SDLSystem(SDLSystem &&other) noexcept
     , should_quit_{other.should_quit_}
     , window_{std::move(other.window_)}
     , renderer_{std::move(other.renderer_)} {
-  other.ready_       = false;
+  other.ready_ = false;
   other.should_quit_ = false;
 }
 
@@ -38,13 +38,13 @@ SDLSystem &SDLSystem::operator=(SDLSystem &&other) noexcept {
   window_.reset();
   if (should_quit_) { SDL_Quit(); }
 
-  ready_       = other.ready_;
+  ready_ = other.ready_;
   other.ready_ = false;
 
-  should_quit_       = other.should_quit_;
+  should_quit_ = other.should_quit_;
   other.should_quit_ = false;
 
-  window_   = std::move(other.window_);
+  window_ = std::move(other.window_);
   renderer_ = std::move(other.renderer_);
 
   return *this;

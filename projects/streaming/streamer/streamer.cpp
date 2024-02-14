@@ -10,7 +10,7 @@ Streamer::Streamer(const std::string &server_ip, const std::uint16_t server_port
 
   configuration_.iceServers.emplace_back("stun.l.google.com", 19302);
   configuration_.disableAutoNegotiation = true;
-  configuration_.maxMessageSize         = max_message_size;
+  configuration_.maxMessageSize = max_message_size;
 
   web_socket_ = std::make_shared<rtc::WebSocket>();
   init_web_socket(web_socket_);
@@ -24,7 +24,7 @@ Streamer::Streamer(const std::string &server_ip, const std::uint16_t server_port
 }
 
 void Streamer::init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket) {
-  auto on_web_socket_open_function   = std::function<void()>{std::bind(&Streamer::on_web_socket_open, this)};
+  auto on_web_socket_open_function = std::function<void()>{std::bind(&Streamer::on_web_socket_open, this)};
   auto on_web_socket_closed_function = std::function<void()>{std::bind(&Streamer::on_web_socket_closed, this)};
   auto on_web_socket_error_function =
       std::function<void(std::string error)>{std::bind(&Streamer::on_web_socket_error, this, std::placeholders::_1)};
@@ -60,13 +60,13 @@ void Streamer::on_web_socket_string_message(std::string message) {
   auto json = nlohmann::json::parse(message);
 
   if (json.contains("id") && json.contains("type") && json.contains("sdp")) {
-    std::string id   = json.at("id");
+    std::string id = json.at("id");
     std::string type = json.at("type");
-    std::string sdp  = json.at("sdp");
+    std::string sdp = json.at("sdp");
 
     if (type == "answer") {
       if (peer_ && id == peer_->id) {
-        auto connection  = peer_->connection;
+        auto connection = peer_->connection;
         auto description = rtc::Description{sdp, type};
         connection->setRemoteDescription(description);
       }
@@ -101,8 +101,12 @@ void Streamer::on_data_channel_string_message(std::string /* message */) {
 
 void Streamer::on_peer_state_change(rtc::PeerConnection::State state) {
   switch (state) {
-  case rtc::PeerConnection::State::Connecting: printf("Peer state: Connecting\n"); break;
-  case rtc::PeerConnection::State::Connected: printf("Peer state: Connected\n"); break;
+  case rtc::PeerConnection::State::Connecting:
+    printf("Peer state: Connecting\n");
+    break;
+  case rtc::PeerConnection::State::Connected:
+    printf("Peer state: Connected\n");
+    break;
   case rtc::PeerConnection::State::Disconnected:
     printf("Peer state: Disconnected\n");
     peer_ = nullptr;
@@ -116,25 +120,26 @@ void Streamer::on_peer_state_change(rtc::PeerConnection::State state) {
     peer_ = nullptr;
     break;
 
-  default: break;
+  default:
+    break;
   }
 }
 
 void Streamer::on_peer_gathering_state_change(rtc::PeerConnection::GatheringState state) {
   if (state == rtc::PeerConnection::GatheringState::Complete) {
-    auto       description = peer_->connection->localDescription();
-    const auto json        = nlohmann::json{
-               {  "id",                        peer_->id},
-               {"type",        description->typeString()},
-               { "sdp", std::string(description.value())}
+    auto description = peer_->connection->localDescription();
+    const auto json = nlohmann::json{
+        {  "id",                        peer_->id},
+        {"type",        description->typeString()},
+        { "sdp", std::string(description.value())}
     };
     web_socket_->send(json.dump());
   }
 }
 
 std::shared_ptr<Streamer::Peer> Streamer::create_peer(const std::string &id) {
-  auto peer        = std::make_shared<Peer>();
-  peer->id         = id;
+  auto peer = std::make_shared<Peer>();
+  peer->id = id;
   peer->connection = std::make_shared<rtc::PeerConnection>(configuration_);
 
   auto on_peer_state_change_function = std::function<void(rtc::PeerConnection::State state)>{
@@ -146,7 +151,7 @@ std::shared_ptr<Streamer::Peer> Streamer::create_peer(const std::string &id) {
 
   peer->data_channel = peer->connection->createDataChannel(DATA_CHANNEL_ID);
 
-  auto on_data_channel_open_function   = std::function<void()>{std::bind(&Streamer::on_data_channel_open, this)};
+  auto on_data_channel_open_function = std::function<void()>{std::bind(&Streamer::on_data_channel_open, this)};
   auto on_data_channel_closed_function = std::function<void()>{std::bind(&Streamer::on_data_channel_closed, this)};
   auto on_data_channel_error_function =
       std::function<void(std::string error)>{std::bind(&Streamer::on_data_channel_error, this, std::placeholders::_1)};

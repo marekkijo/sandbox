@@ -18,10 +18,10 @@ using namespace std::literals::chrono_literals;
 struct ProgramSetup {
   bool exit{};
 
-  std::string   ip{};
+  std::string ip{};
   std::uint16_t port{};
-  int           width{};
-  int           height{};
+  int width{};
+  int height{};
   std::uint16_t fps{};
 
   AVCodecID codec_id{AV_CODEC_ID_H264};
@@ -56,7 +56,7 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
 }
 
 auto should_exit = std::atomic_bool{false};
-auto mutex       = std::mutex{};
+auto mutex = std::mutex{};
 
 void wait_for_exit() {
   printf("Press 'enter' to exit\n");
@@ -64,7 +64,7 @@ void wait_for_exit() {
   printf("exiting...\n");
   {
     auto unique_lock = std::unique_lock{mutex};
-    should_exit      = true;
+    should_exit = true;
   }
 }
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     auto renderer =
         std::make_shared<streaming::Renderer>(program_setup.width, program_setup.height, program_setup.fps, encoder);
     streaming::Streamer streamer(program_setup.ip, program_setup.port, encoder);
-    std::thread         wait_thread(wait_for_exit);
+    std::thread wait_thread(wait_for_exit);
     while (true) {
       std::this_thread::sleep_for(1000ms);
       auto unique_lock = std::unique_lock{mutex};

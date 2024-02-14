@@ -14,22 +14,22 @@
 namespace streaming {
 class Receiver {
 public:
-  Receiver(const Receiver &)                     = delete;
-  Receiver &operator=(const Receiver &)          = delete;
-  Receiver(Receiver &&other) noexcept            = delete;
+  Receiver(const Receiver &) = delete;
+  Receiver &operator=(const Receiver &) = delete;
+  Receiver(Receiver &&other) noexcept = delete;
   Receiver &operator=(Receiver &&other) noexcept = delete;
 
   Receiver(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Decoder> &decoder);
 
 private:
   struct Peer {
-    std::string                          id{};
+    std::string id{};
     std::shared_ptr<rtc::PeerConnection> connection{};
-    std::shared_ptr<rtc::DataChannel>    data_channel{};
+    std::shared_ptr<rtc::DataChannel> data_channel{};
   };
 
   struct StreamerInfo {
-    std::string     streamer_id;
+    std::string streamer_id;
     VideoStreamInfo video_stream_info;
   };
 
@@ -59,13 +59,13 @@ private:
   void command_request_video_stream(const std::string &streamer_id);
   void parse_video_stream_infos(const nlohmann::json &json_video_stream_infos);
 
-  const std::string               receiver_id_{};
-  const std::string               id_{};
-  bool                            connection_open_{false};
-  rtc::Configuration              configuration_{};
+  const std::string receiver_id_{};
+  const std::string id_{};
+  bool connection_open_{false};
+  rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
-  std::shared_ptr<Peer>           peer_{};
-  std::shared_ptr<Decoder>        decoder_{};
-  std::vector<StreamerInfo>       streamer_infos_{};
+  std::shared_ptr<Peer> peer_{};
+  std::shared_ptr<Decoder> decoder_{};
+  std::vector<StreamerInfo> streamer_infos_{};
 };
 } // namespace streaming

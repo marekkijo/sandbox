@@ -17,7 +17,7 @@ RawMapFromWolf::RawMapFromWolf(const std::string &maphead_filename, const std::s
 
   struct {
     std::uint16_t RLEWtag;
-    std::int32_t  headeroffsets[100];
+    std::int32_t headeroffsets[100];
     /* skipped:
     std::uint8_t  tileinfo[];
     */
@@ -39,10 +39,10 @@ std::unique_ptr<RawMap> RawMapFromWolf::create_map(const std::size_t map_index) 
 #pragma pack(push, 1)
 
   struct {
-    std::int32_t  planestart[3];
+    std::int32_t planestart[3];
     std::uint16_t planelength[3];
     std::uint16_t width, height;
-    char          name[16];
+    char name[16];
   } map_type;
 
 #pragma pack(pop)
@@ -67,13 +67,13 @@ std::unique_ptr<RawMap> RawMapFromWolf::create_map(const std::size_t map_index) 
 }
 
 void RawMapFromWolf::decarmacize_plane(const std::vector<std::uint16_t> &plane_data,
-                                       std::vector<RawMap::BlockType>   &blocks,
-                                       const std::size_t                 plane) const {
+                                       std::vector<RawMap::BlockType> &blocks,
+                                       const std::size_t plane) const {
   constexpr auto near_tag = std::uint16_t{0xa7};
-  constexpr auto far_tag  = std::uint16_t{0xa8};
+  constexpr auto far_tag = std::uint16_t{0xa8};
 
   auto extended_plane = std::vector<std::uint16_t>(plane_data.at(0u) / 2u);
-  auto in_ptr         = reinterpret_cast<const std::uint8_t *>(&plane_data.at(1u));
+  auto in_ptr = reinterpret_cast<const std::uint8_t *>(&plane_data.at(1u));
 
   for (auto e_it = std::size_t{0u}; e_it < extended_plane.size(); e_it++) {
     std::uint16_t ch;
@@ -113,8 +113,8 @@ void RawMapFromWolf::decarmacize_plane(const std::vector<std::uint16_t> &plane_d
 }
 
 void RawMapFromWolf::expand_plane(const std::vector<std::uint16_t> &plane_data,
-                                  std::vector<RawMap::BlockType>   &blocks,
-                                  const std::size_t                 plane) const {
+                                  std::vector<RawMap::BlockType> &blocks,
+                                  const std::size_t plane) const {
   for (auto b_it = std::size_t{0u}, p_it = std::size_t{1u}; b_it < blocks.size(); b_it++) {
     blocks[b_it][plane] = plane_data.at(p_it++);
 

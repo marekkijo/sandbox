@@ -12,7 +12,7 @@ Server::Server(std::uint16_t port)
 }
 
 void Server::on_client(std::shared_ptr<rtc::WebSocket> incoming) {
-  auto client        = std::make_shared<Client>();
+  auto client = std::make_shared<Client>();
   client->web_socket = incoming;
 
   if (auto remote_address = client->web_socket->remoteAddress()) {
@@ -51,15 +51,17 @@ void Server::on_client_open(std::weak_ptr<Client> weak_client) {
       client->info.parse(*path);
 
       switch (client->info.type()) {
-      case Client::Type::unknown: printf("Unknown client connected\n  ignoring... connection will be closed\n"); break;
+      case Client::Type::unknown:
+        printf("Unknown client connected\n  ignoring... connection will be closed\n");
+        break;
       case Client::Type::streamer:
         printf("Streamer '%s' connected\n", client->info.id().c_str());
-        clients_[client->info.id()]      = client;
+        clients_[client->info.id()] = client;
         streamers_[client->info.id()].id = client->info.id();
         break;
       case Client::Type::receiver:
         printf("Receiver '%s' connected\n", client->info.id().c_str());
-        clients_[client->info.id()]      = client;
+        clients_[client->info.id()] = client;
         receivers_[client->info.id()].id = client->info.id();
         break;
       }
@@ -77,7 +79,9 @@ void Server::on_client_closed(std::weak_ptr<Client> weak_client) {
   }
 
   switch (type) {
-  case Client::Type::unknown: printf("Unknown client disconnected\n"); break;
+  case Client::Type::unknown:
+    printf("Unknown client disconnected\n");
+    break;
   case Client::Type::streamer:
     printf("Streamer '%s' disconnected\n", client->info.id().c_str());
     streamers_.erase(client->info.id());
@@ -94,9 +98,15 @@ void Server::on_client_error(std::weak_ptr<Client> weak_client, std::string erro
   auto client = weak_client.lock();
 
   switch (client->info.type()) {
-  case Client::Type::unknown: printf("Unknown client error: %s\n", error.c_str()); break;
-  case Client::Type::streamer: printf("Streamer '%s' error: %s\n", client->info.id().c_str(), error.c_str()); break;
-  case Client::Type::receiver: printf("Receiver '%s' error: %s\n", client->info.id().c_str(), error.c_str()); break;
+  case Client::Type::unknown:
+    printf("Unknown client error: %s\n", error.c_str());
+    break;
+  case Client::Type::streamer:
+    printf("Streamer '%s' error: %s\n", client->info.id().c_str(), error.c_str());
+    break;
+  case Client::Type::receiver:
+    printf("Receiver '%s' error: %s\n", client->info.id().c_str(), error.c_str());
+    break;
   }
 }
 
@@ -106,7 +116,7 @@ void Server::on_client_binary_message(std::weak_ptr<Client> /* weak_client */, r
 
 void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::string message) {
   auto client = weak_client.lock();
-  auto json   = nlohmann::json::parse(message);
+  auto json = nlohmann::json::parse(message);
 
   if (json.contains("video_stream_info")) {
     parse_video_stream_info(client, json.at("video_stream_info"));
@@ -119,9 +129,9 @@ void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::st
   }
 
   if (json.contains("id") && json.contains("type") && json.contains("sdp")) {
-    std::string id   = json.at("id");
+    std::string id = json.at("id");
     std::string type = json.at("type");
-    std::string sdp  = json.at("sdp");
+    std::string sdp = json.at("sdp");
 
     if (type == "offer") {
       auto response_json = nlohmann::json{
@@ -146,11 +156,11 @@ void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::st
 }
 
 void Server::parse_video_stream_info(std::shared_ptr<Client> &client, const nlohmann::json &json_video_stream_info) {
-  auto &video_stream_info      = streamers_[client->info.id()].video_stream_info;
-  video_stream_info.width      = json_video_stream_info.at("width");
-  video_stream_info.height     = json_video_stream_info.at("height");
-  video_stream_info.fps        = json_video_stream_info.at("fps");
-  video_stream_info.codec_id   = json_video_stream_info.at("codec_id");
+  auto &video_stream_info = streamers_[client->info.id()].video_stream_info;
+  video_stream_info.width = json_video_stream_info.at("width");
+  video_stream_info.height = json_video_stream_info.at("height");
+  video_stream_info.fps = json_video_stream_info.at("fps");
+  video_stream_info.codec_id = json_video_stream_info.at("codec_id");
   video_stream_info.codec_name = json_video_stream_info.at("codec_name");
 }
 
