@@ -9,6 +9,7 @@
 
 #include <SDL2/SDL.h>
 
+#include <chrono>
 #include <functional>
 
 namespace streaming {
@@ -18,12 +19,18 @@ Renderer::Renderer(int width, int height, std::uint16_t fps, std::shared_ptr<Enc
     , fps_{fps}
     , encoder_{encoder}
     , gl_frame_{encoder_->gl_frame()} {
-  start_render_thread();
+  // start_render_thread();
 }
 
 Renderer::~Renderer() {
   quit_ = true;
-  render_thread_.join();
+  if (render_thread_.joinable()) { render_thread_.join(); }
+}
+
+void Renderer::start_render_thread() {
+  if (render_thread_.joinable()) { return; }
+  auto render_procedure = std::function<void()>{std::bind(&Renderer::render_procedure, this)};
+  render_thread_ = std::thread(render_procedure);
 }
 
 void Renderer::process_user_input(const UserInput &user_input) {
@@ -104,16 +111,16 @@ void Renderer::render_procedure() {
 }
 
 void Renderer::init_rendering() {
+  const auto wnd_title = std::string(STREAMER_ID) + " (" + encoder_->get_video_stream_info().codec_name + ")";
   sdl_sys_ = std::make_unique<tools::sdl::SDLSystem>(SDL_INIT_EVERYTHING,
-                                                     STREAMER_ID,
-                                                     SDL_WINDOWPOS_CENTERED,
-                                                     SDL_WINDOWPOS_CENTERED,
+                                                     wnd_title.c_str(),
+                                                     0,
+                                                     0,
                                                      width_,
                                                      height_,
                                                      SDL_WINDOW_OPENGL,
                                                      -1,
                                                      SDL_RENDERER_ACCELERATED);
-  animation_ = std::make_unique<tools::sdl::SDLAnimation>(fps_);
 
   glewInit();
 
@@ -131,6 +138,9 @@ void Renderer::init_rendering() {
 
   shader_program_ = load_shader_program("projects/streaming/shader_program");
   configure_program();
+
+  std::this_thread::sleep_for(std::chrono::seconds{3});
+  animation_ = std::make_unique<tools::sdl::SDLAnimation>(fps_);
 }
 
 void Renderer::animate(Uint32 time_elapsed_ms) {
@@ -141,11 +151,6 @@ void Renderer::animate(Uint32 time_elapsed_ms) {
     camera_rot_.x += speed_factor;
     camera_rot_.y += speed_factor;
   }
-}
-
-void Renderer::start_render_thread() {
-  auto render_procedure = std::function<void()>{std::bind(&Renderer::render_procedure, this)};
-  render_thread_ = std::thread(render_procedure);
 }
 
 void Renderer::configure_program() {

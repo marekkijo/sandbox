@@ -48,9 +48,8 @@ private:
 
   std::mutex mutex_{};
 
-  [[nodiscard]] bool try_parse(int *used);
-  [[nodiscard]] bool decode_frame();
-
+  bool upload_package(const void *data, const std::size_t size, int *used);
+  void store_on_buffer(const void *data, const std::size_t size);
   void yuv_to_rgb();
 };
 } // namespace streaming

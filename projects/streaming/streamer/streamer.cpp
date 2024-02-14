@@ -89,7 +89,10 @@ void Streamer::on_web_socket_string_message(std::string message) {
   printf("Unknown message: %s\n", message.c_str());
 }
 
-void Streamer::on_data_channel_open() { printf("Data channel opened\n"); }
+void Streamer::on_data_channel_open() {
+  printf("Data channel opened\n");
+  renderer_->start_render_thread();
+}
 
 void Streamer::on_data_channel_closed() { printf("Data channel closed\n"); }
 
