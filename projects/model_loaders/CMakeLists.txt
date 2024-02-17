@@ -1,6 +1,8 @@
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(SOLUTION_FOLDER projects/model_loaders)
+
 add_executable(assimp_loader
   assimp_loader/main.cpp
   assimp_loader/model_format.cpp
@@ -27,3 +29,5 @@ target_link_libraries(assimp_loader imgui::imgui)
 
 configure_file(assimp_loader/shader_program.fs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.fs COPYONLY)
 configure_file(assimp_loader/shader_program.vs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.vs COPYONLY)
+
+set_target_properties(assimp_loader PROPERTIES FOLDER ${SOLUTION_FOLDER})

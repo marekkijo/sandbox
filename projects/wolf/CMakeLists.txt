@@ -1,5 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR})
 
+set(SOLUTION_FOLDER projects/wolf)
+
 add_library(wolf_commonlib STATIC
         common_lib/map_renderer.cpp
         common_lib/map_renderer.hpp
@@ -25,6 +27,8 @@ target_link_libraries(wolf_commonlib tools_sdl)
 target_link_libraries(wolf_commonlib SDL2::SDL2)
 target_link_libraries(wolf_commonlib glm::glm)
 
+set_target_properties(wolf_commonlib PROPERTIES FOLDER ${SOLUTION_FOLDER})
+
 add_executable(wolf_singlethread
         singlethread/main.cpp
         singlethread/wolf_renderer_singlethread.cpp
@@ -43,6 +47,8 @@ target_link_libraries(wolf_singlethread SDL2::SDL2main)
 target_link_libraries(wolf_singlethread glm::glm)
 target_link_libraries(wolf_singlethread Boost::program_options)
 
+set_target_properties(wolf_singlethread PROPERTIES FOLDER ${SOLUTION_FOLDER})
+
 add_executable(wolf_multithread
         multithread/main.cpp
         multithread/wolf_renderer_multithread.cpp
@@ -60,3 +66,5 @@ target_link_libraries(wolf_multithread SDL2::SDL2)
 target_link_libraries(wolf_multithread SDL2::SDL2main)
 target_link_libraries(wolf_multithread glm::glm)
 target_link_libraries(wolf_multithread Boost::program_options)
+
+set_target_properties(wolf_multithread PROPERTIES FOLDER ${SOLUTION_FOLDER})
