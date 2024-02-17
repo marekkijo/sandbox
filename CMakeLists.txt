@@ -15,6 +15,6 @@ find_package(imgui REQUIRED)
 
 add_subdirectory(tools)
 
-add_subdirectory(projects/assimp_loader)
+add_subdirectory(projects/model_loaders)
 add_subdirectory(projects/streaming)
 add_subdirectory(projects/wolf)
