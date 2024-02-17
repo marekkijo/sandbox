@@ -27,7 +27,12 @@ target_link_libraries(assimp_loader GLEW::GLEW)
 target_link_libraries(assimp_loader assimp::assimp)
 target_link_libraries(assimp_loader imgui::imgui)
 
-configure_file(assimp_loader/shader_program.fs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.fs COPYONLY)
-configure_file(assimp_loader/shader_program.vs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.vs COPYONLY)
+add_custom_command(TARGET assimp_loader PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/assimp_loader/shaders $<TARGET_FILE_DIR:assimp_loader>/shaders
+)
 
-set_target_properties(assimp_loader PROPERTIES FOLDER ${SOLUTION_FOLDER})
+set_target_properties(assimp_loader PROPERTIES
+  FOLDER ${SOLUTION_FOLDER}
+  VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:assimp_loader>
+)

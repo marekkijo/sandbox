@@ -219,7 +219,7 @@ void Renderer::init_rendering() {
   camera_pos_ = glm::vec3{0.0f, 1.0f, 6.0f};
   camera_rot_ = glm::vec3{0.0f, 0.0f, 0.0f};
 
-  shader_program_ = load_shader_program("shader_program");
+  shader_program_ = load_shader_program("shaders/shader_program");
   configure_program();
 
   animation_ = std::make_unique<tools::sdl::SDLAnimation>(fps_);
