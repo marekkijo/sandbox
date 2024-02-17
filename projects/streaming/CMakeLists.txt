@@ -1,6 +1,8 @@
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(SOLUTION_FOLDER projects/streaming)
+
 add_executable(opengl_streamer
   opengl_streamer/main.cpp
   opengl_streamer/encoder.cpp
@@ -21,12 +23,16 @@ target_link_libraries(opengl_streamer ffmpeg::swscale)
 target_link_libraries(opengl_streamer glm::glm)
 target_link_libraries(opengl_streamer GLEW::GLEW)
 
+set_target_properties(opengl_streamer PROPERTIES FOLDER ${SOLUTION_FOLDER})
+
 add_library(common INTERFACE
   common/common.hpp
   common/ffmpeg.hpp
 )
 
 target_link_libraries(common INTERFACE ffmpeg::avcodec)
+
+set_target_properties(common PROPERTIES FOLDER ${SOLUTION_FOLDER})
 
 add_executable(signaling_server
   signaling_server/main.cpp
@@ -41,6 +47,8 @@ target_link_libraries(signaling_server tools_utils)
 target_link_libraries(signaling_server Boost::program_options)
 target_link_libraries(signaling_server libdatachannel::libdatachannel)
 target_link_libraries(signaling_server nlohmann_json::nlohmann_json)
+
+set_target_properties(signaling_server PROPERTIES FOLDER ${SOLUTION_FOLDER})
 
 add_executable(streamer
   streamer/encoder.cpp
@@ -71,6 +79,8 @@ target_link_libraries(streamer nlohmann_json::nlohmann_json)
 configure_file(streamer/shader_program.fs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.fs COPYONLY)
 configure_file(streamer/shader_program.vs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.vs COPYONLY)
 
+set_target_properties(streamer PROPERTIES FOLDER ${SOLUTION_FOLDER})
+
 add_executable(receiver
   receiver/main.cpp
   receiver/decoder.cpp
@@ -92,3 +102,5 @@ target_link_libraries(receiver ffmpeg::avutil)
 target_link_libraries(receiver ffmpeg::swscale)
 target_link_libraries(receiver libdatachannel::libdatachannel)
 target_link_libraries(receiver nlohmann_json::nlohmann_json)
+
+set_target_properties(receiver PROPERTIES FOLDER ${SOLUTION_FOLDER})

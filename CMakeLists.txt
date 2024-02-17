@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(sandbox CXX)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(ffmpeg COMPONENTS avcodec avformat avutil swscale REQUIRED)
 find_package(GLEW REQUIRED)
@@ -14,7 +16,4 @@ find_package(assimp REQUIRED)
 find_package(imgui REQUIRED)
 
 add_subdirectory(tools)
-
-add_subdirectory(projects/model_loaders)
-add_subdirectory(projects/streaming)
-add_subdirectory(projects/wolf)
+add_subdirectory(projects)

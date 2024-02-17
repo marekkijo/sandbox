@@ -1,11 +1,17 @@
+set(SOLUTION_FOLDER tools)
+
 add_library(tools_common INTERFACE
   common/user_input.hpp
 )
+
+set_target_properties(tools_common PROPERTIES FOLDER ${SOLUTION_FOLDER})
 
 add_library(tools_math STATIC
   math/math.cpp
   math/math.hpp
 )
+
+set_target_properties(tools_math PROPERTIES FOLDER ${SOLUTION_FOLDER})
 
 add_library(tools_sdl STATIC
   sdl/sdl_animation.cpp
@@ -24,7 +30,11 @@ add_library(tools_sdl STATIC
 
 target_link_libraries(tools_sdl SDL2::SDL2)
 
+set_target_properties(tools_sdl PROPERTIES FOLDER ${SOLUTION_FOLDER})
+
 add_library(tools_utils STATIC
   utils/utils.cpp
   utils/utils.hpp
 )
+
+set_target_properties(tools_utils PROPERTIES FOLDER ${SOLUTION_FOLDER})
