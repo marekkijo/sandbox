@@ -3,6 +3,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SOLUTION_FOLDER projects/streaming)
 
+set(LIBDATACHANNEL_DLL "$<IF:$<CONFIG:Debug>,${libdatachannel_PACKAGE_FOLDER_DEBUG}/bin/datachannel.dll,${libdatachannel_PACKAGE_FOLDER_RELEASE}/bin/datachannel.dll>")
+
 add_executable(opengl_streamer
   opengl_streamer/main.cpp
   opengl_streamer/encoder.cpp
@@ -23,7 +25,9 @@ target_link_libraries(opengl_streamer ffmpeg::swscale)
 target_link_libraries(opengl_streamer glm::glm)
 target_link_libraries(opengl_streamer GLEW::GLEW)
 
-set_target_properties(opengl_streamer PROPERTIES FOLDER ${SOLUTION_FOLDER})
+set_target_properties(opengl_streamer PROPERTIES
+  FOLDER ${SOLUTION_FOLDER}
+)
 
 add_library(common INTERFACE
   common/common.hpp
@@ -32,7 +36,9 @@ add_library(common INTERFACE
 
 target_link_libraries(common INTERFACE ffmpeg::avcodec)
 
-set_target_properties(common PROPERTIES FOLDER ${SOLUTION_FOLDER})
+set_target_properties(common PROPERTIES
+  FOLDER ${SOLUTION_FOLDER}
+)
 
 add_executable(signaling_server
   signaling_server/main.cpp
@@ -48,7 +54,15 @@ target_link_libraries(signaling_server Boost::program_options)
 target_link_libraries(signaling_server libdatachannel::libdatachannel)
 target_link_libraries(signaling_server nlohmann_json::nlohmann_json)
 
-set_target_properties(signaling_server PROPERTIES FOLDER ${SOLUTION_FOLDER})
+add_custom_command(TARGET signaling_server PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy
+  ${LIBDATACHANNEL_DLL} $<TARGET_FILE_DIR:signaling_server>/
+)
+
+set_target_properties(signaling_server PROPERTIES
+  FOLDER ${SOLUTION_FOLDER}
+  ${LIBDATACHANNEL_DLL} $<TARGET_FILE_DIR:signaling_server>
+)
 
 add_executable(streamer
   streamer/encoder.cpp
@@ -76,10 +90,20 @@ target_link_libraries(streamer GLEW::GLEW)
 target_link_libraries(streamer libdatachannel::libdatachannel)
 target_link_libraries(streamer nlohmann_json::nlohmann_json)
 
-configure_file(streamer/shader_program.fs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.fs COPYONLY)
-configure_file(streamer/shader_program.vs ${CMAKE_CURRENT_BINARY_DIR}/shader_program.vs COPYONLY)
+add_custom_command(TARGET streamer PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy
+  ${LIBDATACHANNEL_DLL} $<TARGET_FILE_DIR:streamer>/
+)
 
-set_target_properties(streamer PROPERTIES FOLDER ${SOLUTION_FOLDER})
+add_custom_command(TARGET streamer PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/streamer/shaders $<TARGET_FILE_DIR:streamer>/shaders
+)
+
+set_target_properties(streamer PROPERTIES
+  FOLDER ${SOLUTION_FOLDER}
+  VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:streamer>
+)
 
 add_executable(receiver
   receiver/main.cpp
@@ -103,4 +127,12 @@ target_link_libraries(receiver ffmpeg::swscale)
 target_link_libraries(receiver libdatachannel::libdatachannel)
 target_link_libraries(receiver nlohmann_json::nlohmann_json)
 
-set_target_properties(receiver PROPERTIES FOLDER ${SOLUTION_FOLDER})
+add_custom_command(TARGET receiver PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy
+  ${LIBDATACHANNEL_DLL} $<TARGET_FILE_DIR:receiver>/
+)
+
+set_target_properties(receiver PROPERTIES
+  FOLDER ${SOLUTION_FOLDER}
+  VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:receiver>
+)

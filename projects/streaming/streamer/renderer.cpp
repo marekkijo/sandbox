@@ -136,7 +136,7 @@ void Renderer::init_rendering() {
   camera_pos_ = glm::vec3{0.0f, 2.0f, 4.0f};
   camera_rot_ = glm::vec3{0.0f, 0.0f, 0.0f};
 
-  shader_program_ = load_shader_program("projects/streaming/shader_program");
+  shader_program_ = load_shader_program("shaders/shader_program");
   configure_program();
 
   std::this_thread::sleep_for(std::chrono::seconds{3});

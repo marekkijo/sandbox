@@ -6,6 +6,10 @@
 #include <string>
 
 namespace tools::sdl {
+namespace {
+bool should_create_gl_context(Uint32 wnd_flags) { return wnd_flags & SDL_WINDOW_OPENGL; }
+} // namespace
+
 SDLSystem::SDLSystem(Uint32 sys_flags,
                      const char *title,
                      int x,
@@ -18,7 +22,7 @@ SDLSystem::SDLSystem(Uint32 sys_flags,
     : ready_{SDL_Init(sys_flags) == 0}
     , window_{ready_ ? std::make_unique<SDLWindow>(title, x, y, w, h, wnd_flags) : nullptr}
     , renderer_{wnd() ? std::make_unique<SDLRenderer>(wnd(), r_index, r_flags) : nullptr}
-    , gl_context_{wnd() ? std::make_unique<SDLGLContext>(wnd()) : nullptr} {
+    , gl_context_{wnd() && should_create_gl_context(wnd_flags) ? std::make_unique<SDLGLContext>(wnd()) : nullptr} {
   if (!ready_) { throw std::runtime_error{std::string{"SDL_Init error:"} + SDL_GetError()}; }
 }
 
