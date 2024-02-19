@@ -8,8 +8,11 @@ class SandboxRecipe(ConanFile):
 
     def requirements(self):
         self.requires("boost/1.84.0")
+        self.requires("fmt/10.2.1")
         self.requires("ffmpeg/6.1")
+        self.requires("glad/0.1.36")
         self.requires("glew/2.2.0")
+        self.requires("glfw/3.3.8")
         self.requires("glm/0.9.9.8")
         self.requires("libdatachannel/0.20.1")
         self.requires("nlohmann_json/3.11.3")

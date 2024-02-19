@@ -1,0 +1,30 @@
+file(GLOB SRC_FILES *.cpp *.hpp)
+
+add_executable(streaming_streamer ${SRC_FILES})
+
+target_link_libraries(streaming_streamer gp)
+target_link_libraries(streaming_streamer streaming_common)
+target_link_libraries(streaming_streamer SDL2::SDL2)
+target_link_libraries(streaming_streamer SDL2::SDL2main)
+target_link_libraries(streaming_streamer Boost::program_options)
+target_link_libraries(streaming_streamer openssl::openssl)
+target_link_libraries(streaming_streamer libdatachannel::libdatachannel)
+target_link_libraries(streaming_streamer nlohmann_json::nlohmann_json)
+target_link_libraries(streaming_streamer glm::glm)
+
+add_custom_command(TARGET streaming_streamer PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+  ${LIBDATACHANNEL_DLL_BIN} $<TARGET_FILE_DIR:streaming_streamer>
+)
+
+add_custom_command(TARGET streaming_streamer PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+  ${CMAKE_CURRENT_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:streaming_streamer>/shaders
+)
+
+set_target_properties(streaming_streamer PROPERTIES
+  FOLDER ${SOLUTION_FOLDER}
+  VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:streaming_streamer>
+)
+
+source_group(${SOURCE_GROUP_LABEL} FILES ${SRC_FILES})
