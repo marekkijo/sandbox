@@ -2,7 +2,7 @@
 
 #include "streaming_common/decoder.hpp"
 
-#include <gp/common/user_input.hpp>
+#include <gp/misc/event.hpp>
 #include <gp/sdl/animation.hpp>
 #include <gp/sdl/system.hpp>
 
@@ -20,7 +20,7 @@ public:
   Player(std::shared_ptr<Decoder> &decoder);
   ~Player();
 
-  void set_user_input_callback(std::function<void(const gp::common::UserInput &user_input)> user_input_callback);
+  void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
 
 private:
   void video_stream_info_callback(const VideoStreamInfo &video_stream_info);
@@ -29,7 +29,7 @@ private:
 
   std::shared_ptr<Decoder> decoder_{};
 
-  std::function<void(const gp::common::UserInput &user_input)> user_input_callback_{};
+  std::function<void(const gp::misc::Event &event)> event_callback_{};
 
   VideoStreamInfo video_stream_info_{};
   std::unique_ptr<gp::sdl::System> sdl_sys_{};

@@ -2,6 +2,7 @@
 
 #include "renderer.hpp"
 
+#include <gp/sdl/misc.hpp>
 #include <gp/utils/utils.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -65,25 +66,25 @@ void Renderer::start_render_thread() {
   render_thread_ = std::thread(render_procedure);
 }
 
-void Renderer::process_user_input(const gp::common::UserInput &user_input) {
-  switch (user_input.type) {
-  case SDL_MOUSEMOTION:
-    if (user_input.state & SDL_BUTTON_LMASK) {
-      const float speed_factor = 0.1f;
-
-      const auto lg = std::lock_guard{mutex_};
-      camera_rot_.x += user_input.y_relative * speed_factor;
-      camera_rot_.y += user_input.x_relative * speed_factor;
-    }
-    break;
-  case SDL_MOUSEBUTTONDOWN: {
+void Renderer::process_event(const gp::misc::Event &event) {
+  switch (event.type) {
+  case gp::misc::Event::Type::MouseButton: {
     const auto lg = std::lock_guard{mutex_};
     animate_ = false;
   } break;
-  case SDL_MOUSEWHEEL: {
+  case gp::misc::Event::Type::MouseMove:
+    if (event.mouse_move.left_is_down()) {
+      const float speed_factor = 0.1f;
+
+      const auto lg = std::lock_guard{mutex_};
+      camera_rot_.x += event.mouse_move.y_rel * speed_factor;
+      camera_rot_.y += event.mouse_move.x_rel * speed_factor;
+    }
+    break;
+  case gp::misc::Event::Type::MouseScroll: {
     const float speed_factor = 0.1f;
-    const auto zoom_direction = user_input.y_float < 0.0f;
-    const auto zoom_amount = std::fabsf(user_input.y_float) * speed_factor;
+    const auto zoom_direction = event.mouse_scroll.vertical < 0.0f;
+    const auto zoom_amount = std::fabsf(event.mouse_scroll.vertical) * speed_factor;
 
     const auto lg = std::lock_guard{mutex_};
     animate_ = false;
@@ -104,9 +105,9 @@ void Renderer::render_procedure() {
   auto last_timestamp_ms = SDL_GetTicks();
 
   while (!quit_) {
-    SDL_Event event;
-    while (!quit_ && SDL_PollEvent(&event)) {
-      switch (event.type) {
+    SDL_Event sdl_event;
+    while (!quit_ && SDL_PollEvent(&sdl_event)) {
+      switch (sdl_event.type) {
       case SDL_QUIT:
         quit_ = true;
         break;
@@ -114,9 +115,9 @@ void Renderer::render_procedure() {
         SDL_PumpEvents();
         {
           glUseProgram(shader_program_);
-          const auto time_elapsed_ms = event.user.timestamp - last_timestamp_ms;
+          const auto time_elapsed_ms = sdl_event.user.timestamp - last_timestamp_ms;
           animate(time_elapsed_ms);
-          last_timestamp_ms = event.user.timestamp;
+          last_timestamp_ms = sdl_event.user.timestamp;
 
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -145,42 +146,14 @@ void Renderer::render_procedure() {
           SDL_GL_SwapWindow(sdl_sys_->wnd());
         }
         break;
-      case SDL_MOUSEMOTION: {
-        auto user_input = gp::common::UserInput{event.motion.type, event.motion.timestamp};
-        user_input.state = event.motion.state;
-        user_input.x = event.motion.x;
-        user_input.y = event.motion.y;
-        user_input.x_relative = event.motion.xrel;
-        user_input.y_relative = event.motion.yrel;
-        process_user_input(user_input);
-      } break;
+      case SDL_MOUSEMOTION:
       case SDL_MOUSEBUTTONDOWN:
-      case SDL_MOUSEBUTTONUP: {
-        auto user_input = gp::common::UserInput{event.button.type, event.button.timestamp};
-        user_input.state = event.button.state;
-        user_input.x = event.button.x;
-        user_input.y = event.button.y;
-        user_input.button = event.button.button;
-        user_input.clicks = event.button.clicks;
-        process_user_input(user_input);
-      } break;
-      case SDL_MOUSEWHEEL: {
-        auto user_input = gp::common::UserInput{event.wheel.type, event.wheel.timestamp};
-        user_input.x = event.wheel.x;
-        user_input.y = event.wheel.y;
-        user_input.x_float = event.wheel.preciseX;
-        user_input.y_float = event.wheel.preciseY;
-        process_user_input(user_input);
-      } break;
+      case SDL_MOUSEBUTTONUP:
+      case SDL_MOUSEWHEEL:
       case SDL_KEYDOWN:
       case SDL_KEYUP: {
-        auto user_input = gp::common::UserInput{event.key.type, event.key.timestamp};
-        user_input.state = event.key.state;
-        user_input.repeat = event.key.repeat;
-        user_input.keysym_scancode = event.key.keysym.scancode;
-        user_input.keysym_sym = event.key.keysym.sym;
-        user_input.keysym_mod = event.key.keysym.mod;
-        process_user_input(user_input);
+        const auto event = gp::sdl::to_event(sdl_event);
+        process_event(event);
       } break;
       default:
         break;

@@ -9,6 +9,8 @@ target_link_libraries(streaming_encode_decode SDL2::SDL2main)
 target_link_libraries(streaming_encode_decode Boost::program_options)
 target_link_libraries(streaming_encode_decode fmt::fmt)
 target_link_libraries(streaming_encode_decode glm::glm)
+target_link_libraries(streaming_encode_decode glad::glad)
+target_link_libraries(streaming_encode_decode glfw)
 
 set_target_properties(streaming_encode_decode PROPERTIES
   FOLDER ${SOLUTION_FOLDER}  

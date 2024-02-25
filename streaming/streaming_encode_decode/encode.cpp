@@ -1,5 +1,7 @@
 #include "encode.hpp"
 
+#include <gp/glfw/glfw.hpp>
+
 #include <fstream>
 #include <memory>
 #include <optional>
@@ -7,8 +9,6 @@
 
 #include "streaming_common/common.hpp"
 #include "streaming_common/encoder.hpp"
-#include "streaming_common/opengl.hpp"
-#include "streaming_common/utils.hpp"
 
 #include "rgb_cube_gl_scene.hpp"
 
@@ -25,7 +25,7 @@ struct RenderingContext {
 };
 
 void init_rendering(RenderingContext &rendering_context) {
-  rendering_context.glfw_window = initialize_glfw(rendering_context.width, rendering_context.height, "OpenGL Encoder");
+  rendering_context.glfw_window = gp::glfw::init(rendering_context.width, rendering_context.height, "OpenGL Encoder");
 
   if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) { printf("Couldn't initialize GLAD\n"); }
 
@@ -59,7 +59,7 @@ void encode(const VideoStreamInfo &video_stream_info, const int length_s) {
       }};
   encoder.set_video_stream_callback(video_stream_function);
 
-  auto gl_frame = encoder.gl_frame();
+  auto video_frame = encoder.video_frame();
 
   const auto number_of_frames = length_s * video_stream_info.fps;
   auto frame_num = 1;
@@ -68,7 +68,13 @@ void encode(const VideoStreamInfo &video_stream_info, const int length_s) {
     rendering_context.gl_scene->draw();
 
     constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
-    glReadPixels(0, 0, rendering_context.width, rendering_context.height, format, GL_UNSIGNED_BYTE, gl_frame->data());
+    glReadPixels(0,
+                 0,
+                 rendering_context.width,
+                 rendering_context.height,
+                 format,
+                 GL_UNSIGNED_BYTE,
+                 video_frame->data());
     encoder.encode();
 
     glfwSwapBuffers(rendering_context.glfw_window);
@@ -82,7 +88,7 @@ void encode(const VideoStreamInfo &video_stream_info, const int length_s) {
   encoder.close_stream();
 
   rendering_context.gl_scene.reset();
-  terminate_glfw(rendering_context.glfw_window);
+  gp::glfw::terminate(rendering_context.glfw_window);
   rendering_context.glfw_window = nullptr;
 }
 } // namespace streaming

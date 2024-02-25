@@ -1,8 +1,9 @@
 #include "renderer.hpp"
 #include "streamer.hpp"
+
 #include "streaming_common/encoder.hpp"
 
-#include "streaming_common/ffmpeg.hpp"
+#include <gp/ffmpeg/ffmpeg.hpp>
 
 #include <boost/program_options.hpp>
 

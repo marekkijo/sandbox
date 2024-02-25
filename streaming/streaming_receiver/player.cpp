@@ -2,7 +2,10 @@
 
 #include "streaming_common/common.hpp"
 
+#include <gp/sdl/misc.hpp>
+
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_timer.h>
 
 #include <functional>
 
@@ -19,8 +22,8 @@ Player::~Player() {
   if (player_thread_.joinable()) { player_thread_.join(); }
 }
 
-void Player::set_user_input_callback(std::function<void(const gp::common::UserInput &user_input)> user_input_callback) {
-  user_input_callback_ = user_input_callback;
+void Player::set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback) {
+  event_callback_ = event_callback;
 }
 
 void Player::video_stream_info_callback(const VideoStreamInfo &video_stream_info) {
@@ -36,9 +39,9 @@ void Player::player_procedure() {
   auto last_timestamp_ms = SDL_GetTicks();
 
   while (!quit_) {
-    SDL_Event event;
-    while (!quit_ && SDL_PollEvent(&event)) {
-      switch (event.type) {
+    SDL_Event sdl_event;
+    while (!quit_ && SDL_PollEvent(&sdl_event)) {
+      switch (sdl_event.type) {
       case SDL_QUIT:
         quit_ = true;
         break;
@@ -62,50 +65,24 @@ void Player::player_procedure() {
           case Decoder::Status::Code::NODATA:
             printf("Decoding: no data left to decode\n");
             break;
-          case Decoder::Status::Code::ERROR:
+          case Decoder::Status::Code::ERROR_:
             printf("Decoding: ERROR\n");
             quit_ = true;
             break;
           }
         }
         break;
-      case SDL_MOUSEMOTION: {
-        auto user_input = gp::common::UserInput{event.motion.type, event.motion.timestamp};
-        user_input.state = event.motion.state;
-        user_input.x = event.motion.x;
-        user_input.y = event.motion.y;
-        user_input.x_relative = event.motion.xrel;
-        user_input.y_relative = event.motion.yrel;
-        if (user_input_callback_) { user_input_callback_(user_input); }
-      } break;
+      case SDL_MOUSEMOTION:
       case SDL_MOUSEBUTTONDOWN:
-      case SDL_MOUSEBUTTONUP: {
-        auto user_input = gp::common::UserInput{event.button.type, event.button.timestamp};
-        user_input.state = event.button.state;
-        user_input.x = event.button.x;
-        user_input.y = event.button.y;
-        user_input.button = event.button.button;
-        user_input.clicks = event.button.clicks;
-        if (user_input_callback_) { user_input_callback_(user_input); }
-      } break;
-      case SDL_MOUSEWHEEL: {
-        auto user_input = gp::common::UserInput{event.wheel.type, event.wheel.timestamp};
-        user_input.x = event.wheel.x;
-        user_input.y = event.wheel.y;
-        user_input.x_float = event.wheel.preciseX;
-        user_input.y_float = event.wheel.preciseY;
-        if (user_input_callback_) { user_input_callback_(user_input); }
-      } break;
+      case SDL_MOUSEBUTTONUP:
+      case SDL_MOUSEWHEEL:
       case SDL_KEYDOWN:
-      case SDL_KEYUP: {
-        auto user_input = gp::common::UserInput{event.key.type, event.key.timestamp};
-        user_input.state = event.key.state;
-        user_input.repeat = event.key.repeat;
-        user_input.keysym_scancode = event.key.keysym.scancode;
-        user_input.keysym_sym = event.key.keysym.sym;
-        user_input.keysym_mod = event.key.keysym.mod;
-        if (user_input_callback_) { user_input_callback_(user_input); }
-      } break;
+      case SDL_KEYUP:
+        if (event_callback_) {
+          const auto event = gp::sdl::to_event(sdl_event);
+          event_callback_(event);
+        }
+        break;
       default:
         break;
       }

@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "streaming_common/opengl.hpp"
-#include <gp/common/user_input.hpp>
+#include <gp/glfw/glfw.hpp>
+#include <gp/misc/event.hpp>
 
 class GLScene {
 public:
@@ -26,7 +26,7 @@ public:
 
   virtual void init() = 0;
   virtual void draw() = 0;
-  virtual void process_user_input(const gp::common::UserInput2 &user_input);
+  virtual void process_event(const gp::misc::Event &event);
 
   static constexpr float dpi_scale_factor{1.0f};
 

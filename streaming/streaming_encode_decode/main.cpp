@@ -2,9 +2,10 @@
 
 #include <iostream>
 
+#include <gp/ffmpeg/ffmpeg.hpp>
+
 #include "decode.hpp"
 #include "encode.hpp"
-#include "streaming_common/utils.hpp"
 
 struct ProgramSetup {
   bool exit{};
@@ -44,7 +45,7 @@ ProgramSetup process_args(const int argc, const char **const argv) {
           vm["width"].as<int>(),
           vm["height"].as<int>(),
           vm["fps"].as<std::uint16_t>(),
-          streaming::codec_name_to_id(vm["codec"].as<std::string>()),
+          gp::ffmpeg::codec_name_to_id(vm["codec"].as<std::string>()),
           vm["length_s"].as<int>()};
 }
 

@@ -2,9 +2,8 @@
 
 #include "streaming_common/encoder.hpp"
 
-#include "streaming_common/opengl.hpp"
-
-#include <gp/common/user_input.hpp>
+#include <gp/glfw/glfw.hpp>
+#include <gp/misc/event.hpp>
 #include <gp/sdl/animation.hpp>
 #include <gp/sdl/system.hpp>
 
@@ -27,7 +26,7 @@ public:
   ~Renderer();
 
   void start_render_thread();
-  void process_user_input(const gp::common::UserInput &user_input);
+  void process_event(const gp::misc::Event &event);
 
 private:
   void render_procedure();
@@ -41,7 +40,7 @@ private:
   int height_{};
   std::uint16_t fps_{};
   std::shared_ptr<Encoder> encoder_{};
-  std::shared_ptr<std::vector<GLubyte>> gl_frame_{};
+  std::shared_ptr<std::vector<std::byte>> video_frame_{};
   std::unique_ptr<gp::sdl::System> sdl_sys_{};
   std::unique_ptr<gp::sdl::Animation> animation_{};
 

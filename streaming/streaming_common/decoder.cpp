@@ -81,8 +81,7 @@ void Decoder::set_video_stream_info(const VideoStreamInfo &video_stream_info) {
   if (context_ == nullptr) { throw std::runtime_error{"avcodec_alloc_context3 failed"}; }
   context_->width = video_stream_info.width;
   context_->height = video_stream_info.height;
-  context_->thread_count = 4;
-  // if ((codec_->capabilities & AV_CODEC_CAP_TRUNCATED) == 0) { context_->flags |= AV_CODEC_FLAG_TRUNCATED; }
+  context_->thread_count = DECODE_THREAD_COUNT;
 
   if (avcodec_open2(context_, codec_, nullptr) < 0) { throw std::runtime_error{"avcodec_open2 failed"}; }
 

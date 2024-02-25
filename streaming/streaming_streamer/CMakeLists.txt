@@ -8,9 +8,11 @@ target_link_libraries(streaming_streamer SDL2::SDL2)
 target_link_libraries(streaming_streamer SDL2::SDL2main)
 target_link_libraries(streaming_streamer Boost::program_options)
 target_link_libraries(streaming_streamer openssl::openssl)
-target_link_libraries(streaming_streamer libdatachannel::libdatachannel)
+target_link_libraries(streaming_streamer LibDataChannel::LibDataChannel)
 target_link_libraries(streaming_streamer nlohmann_json::nlohmann_json)
 target_link_libraries(streaming_streamer glm::glm)
+target_link_libraries(streaming_streamer glad::glad)
+target_link_libraries(streaming_streamer glfw)
 
 add_custom_command(TARGET streaming_streamer PRE_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
