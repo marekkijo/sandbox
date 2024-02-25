@@ -2,7 +2,7 @@
 
 #include "model.hpp"
 
-#include <gp/common/user_input.hpp>
+#include <gp/misc/event.hpp>
 #include <gp/sdl/animation.hpp>
 #include <gp/sdl/system.hpp>
 
@@ -51,7 +51,7 @@ private:
   std::mutex mutex_{};
 
   void start_render_thread();
-  void process_user_input(const gp::common::UserInput &user_input);
+  void process_event(const gp::misc::Event &event);
 
   void render_procedure();
   void init_rendering();

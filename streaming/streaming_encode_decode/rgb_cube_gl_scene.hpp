@@ -18,7 +18,7 @@ public:
 
   void init() final;
   void draw() final;
-  void process_user_input(const gp::common::UserInput2 &user_input) final;
+  void process_event(const gp::misc::Event &event) final;
 
   void toggle_animation_speed_factor();
 

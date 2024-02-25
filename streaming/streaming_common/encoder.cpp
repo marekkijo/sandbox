@@ -9,8 +9,9 @@ Encoder::~Encoder() { destroy(); }
 void Encoder::open_stream(const VideoStreamInfo &video_stream_info) {
   if (context_) { throw std::runtime_error{"open_stream already opened"}; }
 
-  gl_frame_ = std::make_shared<std::vector<GLubyte>>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM);
-  rgb_frame_.resize(gl_frame_->size());
+  video_frame_ =
+      std::make_shared<std::vector<std::byte>>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM);
+  rgb_frame_.resize(video_frame_->size());
 
   codec_ = avcodec_find_encoder(video_stream_info.codec_id);
   if (codec_ == nullptr) { throw std::runtime_error{"avcodec_find_encoder failed"}; }
@@ -23,7 +24,7 @@ void Encoder::open_stream(const VideoStreamInfo &video_stream_info) {
 
   const auto pixel_format = AV_PIX_FMT_YUV420P;
 
-  context_->bit_rate = BITRATE_kbits_64;
+  context_->bit_rate = ENCODE_BITRATE;
   context_->width = video_stream_info.width;
   context_->height = video_stream_info.height;
   context_->time_base = {1, video_stream_info.fps};
@@ -31,7 +32,7 @@ void Encoder::open_stream(const VideoStreamInfo &video_stream_info) {
   context_->gop_size = video_stream_info.fps;
   context_->max_b_frames = 0;
   context_->pix_fmt = pixel_format;
-  context_->thread_count = 4;
+  context_->thread_count = ENCODE_THREAD_COUNT;
 
   if (codec_->id == AV_CODEC_ID_H264) {
     av_opt_set(context_->priv_data, "preset", "ultrafast", 0);
@@ -58,10 +59,10 @@ void Encoder::close_stream() {
   encode_frame(nullptr);
 }
 
-std::shared_ptr<std::vector<GLubyte>> &Encoder::gl_frame() {
-  if (!context_) { throw std::runtime_error{"gl_frame stream closed"}; }
+std::shared_ptr<std::vector<std::byte>> &Encoder::video_frame() {
+  if (!context_) { throw std::runtime_error{"video_frame stream closed"}; }
 
-  return gl_frame_;
+  return video_frame_;
 }
 
 VideoStreamInfo Encoder::get_video_stream_info() const {
@@ -140,7 +141,7 @@ void Encoder::flip_frame() {
 
   for (std::size_t i = 0; i < height; i++) {
     for (std::size_t j = 0; j < width; j++) {
-      auto *ptr_gl = gl_frame_->data() + (CHANNELS_NUM * (width * (height - i - 1) + j));
+      auto *ptr_gl = video_frame_->data() + (CHANNELS_NUM * (width * (height - i - 1) + j));
       auto *ptr_rgb = rgb_frame_.data() + (CHANNELS_NUM * (width * i + j));
       memcpy(ptr_rgb, ptr_gl, CHANNELS_NUM);
     }

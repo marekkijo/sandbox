@@ -1,11 +1,8 @@
-#include "utils.hpp"
+#include "glfw.hpp"
 
-#include <algorithm>
-#include <cctype>
-#include <iterator>
 #include <stdexcept>
 
-namespace streaming {
+namespace gp::glfw {
 namespace {
 constexpr auto REQUESTED_CLIENT_API = GLFW_OPENGL_API;
 constexpr auto REQUESTED_CONTEXT_CREATION_API = GLFW_NATIVE_CONTEXT_API;
@@ -14,7 +11,7 @@ constexpr auto REQUESTED_GL_VERSION_MAJOR = 4;
 constexpr auto REQUESTED_GL_VERSION_MINOR = 3;
 } // namespace
 
-GLFWwindow *initialize_glfw(const int width, const int height, const std::string &wnd_title) {
+GLFWwindow *init(const int width, const int height, const std::string &wnd_title) {
   if (glfwInit() == GLFW_FALSE) { printf("Couldn't initialize GLFW\n"); }
 
   glfwWindowHint(GLFW_CLIENT_API, REQUESTED_CLIENT_API);
@@ -35,12 +32,12 @@ GLFWwindow *initialize_glfw(const int width, const int height, const std::string
   return glfw_window;
 }
 
-void terminate_glfw(GLFWwindow *glfw_window) {
+void terminate(GLFWwindow *glfw_window) {
   if (glfw_window != nullptr) { glfwDestroyWindow(glfw_window); }
   glfwTerminate();
 }
 
-void gl_debug(const char *file, const int line) {
+void debug(const char *file, const int line) {
   const auto gl_error_code = glGetError();
   if (gl_error_code == GL_NO_ERROR) { return; }
 
@@ -58,16 +55,4 @@ void gl_debug(const char *file, const int line) {
   printf("[OpenGL Error] %s:%i {%s}\n", file, line, gl_error_code_to_string(gl_error_code));
   throw std::runtime_error("OpenGL Error");
 }
-
-AVCodecID codec_name_to_id(const std::string &codec_name) {
-  auto normalized_codec_name = std::string{};
-  normalized_codec_name.reserve(codec_name.size());
-  std::transform(codec_name.begin(), codec_name.end(), std::back_inserter(normalized_codec_name), [](auto c) {
-    return std::tolower(c);
-  });
-
-  const auto *codec_descriptor = avcodec_descriptor_get_by_name(normalized_codec_name.c_str());
-  if (codec_descriptor == nullptr) { return AV_CODEC_ID_NONE; }
-  return codec_descriptor->id;
-}
-} // namespace streaming
+} // namespace gp::glfw

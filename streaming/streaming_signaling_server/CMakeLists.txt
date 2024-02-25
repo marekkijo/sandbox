@@ -5,7 +5,7 @@ add_executable(streaming_signaling_server ${SRC_FILES})
 target_link_libraries(streaming_signaling_server gp)
 target_link_libraries(streaming_signaling_server streaming_common)
 target_link_libraries(streaming_signaling_server Boost::program_options)
-target_link_libraries(streaming_signaling_server libdatachannel::libdatachannel)
+target_link_libraries(streaming_signaling_server LibDataChannel::LibDataChannel)
 target_link_libraries(streaming_signaling_server nlohmann_json::nlohmann_json)
 
 add_custom_command(TARGET streaming_signaling_server PRE_BUILD

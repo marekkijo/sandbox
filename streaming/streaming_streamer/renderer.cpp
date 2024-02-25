@@ -15,7 +15,7 @@ Renderer::Renderer(int width, int height, std::uint16_t fps, std::shared_ptr<Enc
     , height_{height}
     , fps_{fps}
     , encoder_{encoder}
-    , gl_frame_{encoder_->gl_frame()} {
+    , video_frame_{encoder_->video_frame()} {
   // start_render_thread();
 }
 
@@ -30,21 +30,28 @@ void Renderer::start_render_thread() {
   render_thread_ = std::thread(render_procedure);
 }
 
-void Renderer::process_user_input(const gp::common::UserInput &user_input) {
-  switch (user_input.type) {
-  case SDL_MOUSEMOTION:
-    if (user_input.state & SDL_BUTTON_LMASK) {
-      const float speed_factor = 0.1f;
+void Renderer::process_event(const gp::misc::Event &event) {
+  switch (event.type) {
+  case gp::misc::Event::Type::MouseMove: {
+    if (event.mouse_move.left_is_down()) {
+      static constexpr auto speed_factor = 0.1f;
 
       const auto lg = std::lock_guard{mutex_};
-      camera_rot_.x += user_input.y_relative * speed_factor;
-      camera_rot_.y += user_input.x_relative * speed_factor;
+      camera_rot_.x += event.mouse_move.y_rel * speed_factor;
+      camera_rot_.y += event.mouse_move.x_rel * speed_factor;
     }
     break;
-  case SDL_MOUSEBUTTONDOWN: {
+  }
+  case gp::misc::Event::Type::MouseButton: {
     const auto lg = std::lock_guard{mutex_};
-    animate_ = false;
-  } break;
+    switch (event.mouse_button.action) {
+    case gp::misc::Event::Action::Pressed:
+      animate_ = false;
+      break;
+    default:
+      break;
+    }
+  }
   default:
     break;
   }
@@ -89,7 +96,7 @@ void Renderer::render_procedure() {
 
           glFlush();
           constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
-          glReadPixels(0, 0, width_, height_, format, GL_UNSIGNED_BYTE, gl_frame_->data());
+          glReadPixels(0, 0, width_, height_, format, GL_UNSIGNED_BYTE, video_frame_->data());
           encoder_->encode();
 
           SDL_GL_SwapWindow(sdl_sys_->wnd());

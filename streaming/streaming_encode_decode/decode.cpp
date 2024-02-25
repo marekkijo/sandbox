@@ -1,5 +1,7 @@
 #include "decode.hpp"
 
+#include <gp/glfw/glfw.hpp>
+
 #include <chrono>
 #include <fstream>
 #include <optional>
@@ -8,8 +10,6 @@
 #include "fullscreen_texture_gl_scene.hpp"
 #include "streaming_common/common.hpp"
 #include "streaming_common/decoder.hpp"
-#include "streaming_common/opengl.hpp"
-#include "streaming_common/utils.hpp"
 
 namespace streaming {
 namespace {
@@ -38,7 +38,7 @@ void configure_texture(RenderingContext &rendering_context) {
 }
 
 void init_rendering(RenderingContext &rendering_context) {
-  rendering_context.glfw_window = initialize_glfw(rendering_context.width, rendering_context.height, "OpenGL Decoder");
+  rendering_context.glfw_window = gp::glfw::init(rendering_context.width, rendering_context.height, "OpenGL Decoder");
 
   if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
     printf("Couldn't initialize GLAD\n");
@@ -134,7 +134,7 @@ void decode(const VideoStreamInfo &video_stream_info) {
   }
 
   rendering_context.gl_scene.reset();
-  terminate_glfw(rendering_context.glfw_window);
+  gp::glfw::terminate(rendering_context.glfw_window);
   rendering_context.glfw_window = nullptr;
 }
 } // namespace streaming

@@ -3,7 +3,7 @@
 #include "player.hpp"
 #include "streaming_common/decoder.hpp"
 
-#include <gp/common/user_input.hpp>
+#include <gp/misc/event.hpp>
 
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>
@@ -63,7 +63,7 @@ private:
   void command_request_video_stream(const std::string &streamer_id);
   void parse_video_stream_infos(const nlohmann::json &json_video_stream_infos);
 
-  void user_input_callback(const gp::common::UserInput &user_input);
+  void event_callback(const gp::misc::Event &event);
 
   const std::string receiver_id_{};
   const std::string id_{};

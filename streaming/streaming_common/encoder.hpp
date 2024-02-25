@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common.hpp"
-#include "ffmpeg.hpp"
-#include "opengl.hpp"
+
+#include <gp/ffmpeg/ffmpeg.hpp>
 
 #include <fstream>
 #include <functional>
@@ -24,7 +24,7 @@ public:
   void open_stream(const VideoStreamInfo &video_stream_info);
   void close_stream();
 
-  [[nodiscard]] std::shared_ptr<std::vector<GLubyte>> &gl_frame();
+  [[nodiscard]] std::shared_ptr<std::vector<std::byte>> &video_frame();
   [[nodiscard]] VideoStreamInfo get_video_stream_info() const;
   void set_video_stream_callback(
       std::function<void(const std::byte *data, const std::size_t size, const bool eof)> video_stream_callback);
@@ -38,7 +38,7 @@ private:
 
   std::function<void(const std::byte *data, const std::size_t size, const bool eof)> video_stream_callback_{};
 
-  std::shared_ptr<std::vector<GLubyte>> gl_frame_{};
+  std::shared_ptr<std::vector<std::byte>> video_frame_{};
   std::vector<std::uint8_t> rgb_frame_{};
 
   const AVCodec *codec_{nullptr};

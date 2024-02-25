@@ -19,4 +19,4 @@ const GLFWwindow *GLScene::glfw_window() const { return glfw_window_; }
 
 void GLScene::set_glfw_window(GLFWwindow *glfw_window) { glfw_window_ = glfw_window; }
 
-void GLScene::process_user_input(const gp::common::UserInput2 & /*user_input*/) {}
+void GLScene::process_event(const gp::misc::Event & /* event */) {}

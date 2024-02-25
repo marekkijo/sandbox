@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common.hpp"
-#include "ffmpeg.hpp"
-#include "opengl.hpp"
+
+#include <gp/ffmpeg/ffmpeg.hpp>
 
 #include <array>
 #include <cstddef>

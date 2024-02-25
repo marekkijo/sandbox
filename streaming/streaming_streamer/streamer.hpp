@@ -1,8 +1,8 @@
 #pragma once
 
-#include "streaming_common/common.hpp"
-
 #include "renderer.hpp"
+
+#include "streaming_common/common.hpp"
 #include "streaming_common/encoder.hpp"
 
 #include <nlohmann/json.hpp>
@@ -51,7 +51,7 @@ private:
   [[nodiscard]] std::shared_ptr<Peer> create_peer(const std::string &id);
   void send_video_stream_info();
   void video_stream_callback(const std::byte *data, const std::size_t size, const bool eof);
-  void parse_user_input(const nlohmann::json &json_user_input);
+  void parse_event(const nlohmann::json &json_event);
 
   const std::string id_{};
   const VideoStreamInfo video_stream_info_{};

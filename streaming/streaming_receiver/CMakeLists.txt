@@ -8,7 +8,7 @@ target_link_libraries(streaming_receiver SDL2::SDL2)
 target_link_libraries(streaming_receiver SDL2::SDL2main)
 target_link_libraries(streaming_receiver Boost::program_options)
 target_link_libraries(streaming_receiver openssl::openssl)
-target_link_libraries(streaming_receiver libdatachannel::libdatachannel)
+target_link_libraries(streaming_receiver LibDataChannel::LibDataChannel)
 target_link_libraries(streaming_receiver nlohmann_json::nlohmann_json)
 
 add_custom_command(TARGET streaming_receiver PRE_BUILD

@@ -1,5 +1,6 @@
 #include "receiver.hpp"
 
+#include <gp/json/misc.hpp>
 #include <gp/utils/utils.hpp>
 
 #include <SDL2/SDL_events.h>
@@ -20,9 +21,9 @@ Receiver::Receiver(const std::string &server_ip,
   printf("Connection url: %s\n", url.c_str());
   web_socket_->open(url);
 
-  auto user_input_function = std::function<void(const gp::common::UserInput &user_input)>{
-      std::bind(&Receiver::user_input_callback, this, std::placeholders::_1)};
-  player->set_user_input_callback(user_input_function);
+  auto event_function = std::function<void(const gp::misc::Event &event)>{
+      std::bind(&Receiver::event_callback, this, std::placeholders::_1)};
+  player->set_event_callback(event_function);
 }
 
 void Receiver::init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket) {
@@ -232,49 +233,10 @@ void Receiver::parse_video_stream_infos(const nlohmann::json &json_video_stream_
   }
 }
 
-void Receiver::user_input_callback(const gp::common::UserInput &user_input) {
+void Receiver::event_callback(const gp::misc::Event &event) {
   if (peer_ && peer_->data_channel && peer_->data_channel->isOpen()) {
-    auto user_input_json = nlohmann::json{
-        {     "type",      user_input.type},
-        {"timestamp", user_input.timestamp}
-    };
-    switch (user_input.type) {
-    case SDL_MOUSEMOTION:
-      user_input_json["state"] = user_input.state;
-      user_input_json["x"] = user_input.x;
-      user_input_json["y"] = user_input.y;
-      user_input_json["x_relative"] = user_input.x_relative;
-      user_input_json["y_relative"] = user_input.y_relative;
-      break;
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
-      user_input_json["state"] = user_input.state;
-      user_input_json["x"] = user_input.x;
-      user_input_json["y"] = user_input.y;
-      user_input_json["button"] = user_input.button;
-      user_input_json["clicks"] = user_input.clicks;
-      break;
-    case SDL_MOUSEWHEEL:
-      user_input_json["x"] = user_input.x;
-      user_input_json["y"] = user_input.y;
-      user_input_json["x_float"] = user_input.x_float;
-      user_input_json["x_float"] = user_input.x_float;
-      break;
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-      user_input_json["state"] = user_input.state;
-      user_input_json["repeat"] = user_input.repeat;
-      user_input_json["keysym_scancode"] = user_input.keysym_scancode;
-      user_input_json["keysym_sym"] = user_input.keysym_sym;
-      user_input_json["keysym_mod"] = user_input.keysym_mod;
-      break;
-    default:
-      break;
-    }
-    const auto json = nlohmann::json{
-        {"user_input", user_input_json}
-    };
-    peer_->data_channel->send(json.dump());
+    const auto json_event = gp::json::from_event(event);
+    peer_->data_channel->send(json_event.dump());
   }
 }
 } // namespace streaming

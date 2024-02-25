@@ -61,27 +61,30 @@ void RGBCubeGLScene::draw() {
   last_timestamp = current_timestamp;
 }
 
-void RGBCubeGLScene::process_user_input(const gp::common::UserInput2 &user_input) {
-  switch (user_input.type) {
-  case gp::common::UserInput2::Type::MouseMotion: {
-    if ((user_input.state & gp::common::UserInput2::Mask::LeftMouseButton) != 0) {
-      static constexpr auto speed_factor = 0.1;
+void RGBCubeGLScene::process_event(const gp::misc::Event &event) {
+  switch (event.type) {
+  case gp::misc::Event::Type::MouseMove: {
+    if (event.mouse_move.left_is_down()) {
+      static constexpr auto speed_factor = 0.1f;
 
       const auto lg = std::lock_guard{mutex_};
-      camera_rot_.x += static_cast<float>(user_input.y_relative * speed_factor);
-      camera_rot_.y += static_cast<float>(user_input.x_relative * speed_factor);
+      camera_rot_.x += event.mouse_move.y_rel * speed_factor;
+      camera_rot_.y += event.mouse_move.x_rel * speed_factor;
     }
     break;
   }
-  case gp::common::UserInput2::Type::MouseButtonDown: {
+  case gp::misc::Event::Type::MouseButton: {
     const auto lg = std::lock_guard{mutex_};
-    animate_ = false;
-    break;
-  }
-  case gp::common::UserInput2::Type::MouseButtonUp: {
-    const auto lg = std::lock_guard{mutex_};
-    animate_ = true;
-    break;
+    switch (event.mouse_button.action) {
+    case gp::misc::Event::Action::Pressed:
+      animate_ = false;
+      break;
+    case gp::misc::Event::Action::Released:
+      animate_ = true;
+      break;
+    default:
+      break;
+    }
   }
   default:
     break;

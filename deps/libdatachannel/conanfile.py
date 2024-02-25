@@ -1,5 +1,7 @@
+import os
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
+from conan.tools.files import patch
 
 
 class libdatachannelRecipe(ConanFile):
@@ -12,7 +14,6 @@ class libdatachannelRecipe(ConanFile):
     url = "https://github.com/paullouisageneau/libdatachannel"
     description = "C/C++ WebRTC network library featuring Data Channels, Media Transport, and WebSockets"
     topics = ("c-plus-plus", "cpp", "websocket", "webrtc", "peer-to-peer", "p2p", "datachannel", "sctp", "webrtc-video", "libnice", "peerconnection", "webrtc-datachannel", "rtcpeerconnection", "rtcdatachannel", "libdatachannel", "rfc-8831", "rfc-8834")
-
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "shared": [True, False],
@@ -38,6 +39,7 @@ class libdatachannelRecipe(ConanFile):
         "CAPI_STDCALL": False,
         "SCTP_DEBUG": False
     }
+    exports_sources = "patches/*.patch"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -57,6 +59,8 @@ class libdatachannelRecipe(ConanFile):
         self.run("git clone https://github.com/paullouisageneau/libdatachannel.git " + self.source_folder)
         self.run("git -C " + self.source_folder + " checkout v" + self.version)
         self.run("git -C " + self.source_folder + " submodule update --init --recursive --depth 1")
+        patch_file = os.path.join(self.export_sources_folder, "patches/static-no-exclude-for-all.patch")
+        patch(self, patch_file=patch_file)
 
     def generate(self):
         deps = CMakeDeps(self)
@@ -85,6 +89,9 @@ class libdatachannelRecipe(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.components["libdatachannel"].set_property("cmake_target_name", "LibDataChannel::LibDataChannel")
-        self.cpp_info.components["libdatachannel"].set_property("pkg_config_name", "libdatachannel")
-        self.cpp_info.components["libdatachannel"].libs = ["datachannel"]
+        self.cpp_info.components["LibDataChannel"].set_property("cmake_target_name", "LibDataChannel::LibDataChannel")
+        self.cpp_info.components["LibDataChannel"].set_property("pkg_config_name", "LibDataChannel")
+        self.cpp_info.components["LibDataChannel"].libs = ["datachannel"]
+        self.cpp_info.components["LibDataChannelStatic"].set_property("cmake_target_name", "LibDataChannel::LibDataChannelStatic")
+        self.cpp_info.components["LibDataChannelStatic"].set_property("pkg_config_name", "LibDataChannelStatic")
+        self.cpp_info.components["LibDataChannelStatic"].libs = ["datachannel-static"]
