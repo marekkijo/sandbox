@@ -22,7 +22,6 @@ target_link_libraries(gp PRIVATE ffmpeg::swscale)
 target_link_libraries(gp PRIVATE glad::glad)
 target_link_libraries(gp PRIVATE glfw)
 target_link_libraries(gp PRIVATE nlohmann_json::nlohmann_json)
-target_link_libraries(gp PRIVATE opengl::opengl)
 target_link_libraries(gp PRIVATE SDL2::SDL2)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})

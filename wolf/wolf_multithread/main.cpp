@@ -15,7 +15,6 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
-
 #include <boost/program_options.hpp>
 
 #include <cstdint>

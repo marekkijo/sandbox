@@ -1,13 +1,13 @@
 #include "rgb_cube_gl_scene.hpp"
 
+#include "gl.hpp"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <array>
 #include <chrono>
 #include <string_view>
-
-#include "gl.hpp"
 
 RGBCubeGLScene::~RGBCubeGLScene() {
   gl::buffer::delete_buffer(vbo_);
@@ -62,20 +62,20 @@ void RGBCubeGLScene::draw() {
 }
 
 void RGBCubeGLScene::process_event(const gp::misc::Event &event) {
-  switch (event.type) {
+  switch (event.type()) {
   case gp::misc::Event::Type::MouseMove: {
-    if (event.mouse_move.left_is_down()) {
+    if (event.mouse_move().left_is_down()) {
       static constexpr auto speed_factor = 0.1f;
 
       const auto lg = std::lock_guard{mutex_};
-      camera_rot_.x += event.mouse_move.y_rel * speed_factor;
-      camera_rot_.y += event.mouse_move.x_rel * speed_factor;
+      camera_rot_.x += event.mouse_move().y_rel * speed_factor;
+      camera_rot_.y += event.mouse_move().x_rel * speed_factor;
     }
     break;
   }
   case gp::misc::Event::Type::MouseButton: {
     const auto lg = std::lock_guard{mutex_};
-    switch (event.mouse_button.action) {
+    switch (event.mouse_button().action) {
     case gp::misc::Event::Action::Pressed:
       animate_ = false;
       break;

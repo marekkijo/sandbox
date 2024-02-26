@@ -1,9 +1,8 @@
 #include "gl.hpp"
 
-#include <fmt/format.h>
-
 #include <array>
 #include <cassert>
+#include <stdexcept>
 
 namespace gl {
 namespace buffer {
@@ -72,7 +71,7 @@ void verify_shader(const GLuint shader_id) {
   {
     std::array<char, 512UL> info;
     glGetShaderInfoLog(shader_id, info.size(), nullptr, info.data());
-    throw std::runtime_error(fmt::format("shader compilation failed:\n{}\n", info.data()));
+    throw std::runtime_error(std::string("Shader compilation failed: ") + info.data());
   }
 }
 
@@ -83,7 +82,7 @@ void verify_program(const GLuint program_id) {
   {
     std::array<char, 512UL> info;
     glGetProgramInfoLog(program_id, info.size(), nullptr, info.data());
-    throw std::runtime_error(fmt::format("shader program linking failed:\n{}\n", info.data()));
+    throw std::runtime_error(std::string("Shader program linking failed: ") + info.data());
   }
 }
 } // namespace

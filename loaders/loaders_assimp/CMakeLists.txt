@@ -3,14 +3,11 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 add_executable(loaders_assimp ${SRC_FILES})
 
 target_link_libraries(loaders_assimp gp)
-target_link_libraries(loaders_assimp SDL2::SDL2)
-target_link_libraries(loaders_assimp SDL2::SDL2main)
 target_link_libraries(loaders_assimp Boost::program_options)
-target_link_libraries(loaders_assimp opengl::opengl)
+target_link_libraries(loaders_assimp glad::glad)
+target_link_libraries(loaders_assimp glfw)
 target_link_libraries(loaders_assimp glm::glm)
-target_link_libraries(loaders_assimp GLEW::GLEW)
 target_link_libraries(loaders_assimp assimp::assimp)
-target_link_libraries(loaders_assimp imgui::imgui)
 
 add_custom_command(TARGET loaders_assimp PRE_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different

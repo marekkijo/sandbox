@@ -1,10 +1,10 @@
 #pragma once
 
+#include "gl_scene.hpp"
+
 #include <glm/glm.hpp>
 
 #include <mutex>
-
-#include "gl_scene.hpp"
 
 class RGBCubeGLScene final : public GLScene {
 public:

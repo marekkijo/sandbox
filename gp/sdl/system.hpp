@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gl_context.hpp"
-#include "renderer.hpp"
-#include "window.hpp"
+#include <gp/sdl/gl_context.hpp>
+#include <gp/sdl/renderer.hpp>
+#include <gp/sdl/window.hpp>
 
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>

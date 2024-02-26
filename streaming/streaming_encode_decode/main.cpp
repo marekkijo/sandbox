@@ -1,11 +1,11 @@
+#include "decode.hpp"
+#include "encode.hpp"
+
+#include <gp/ffmpeg/misc.hpp>
+
 #include <boost/program_options.hpp>
 
 #include <iostream>
-
-#include <gp/ffmpeg/ffmpeg.hpp>
-
-#include "decode.hpp"
-#include "encode.hpp"
 
 struct ProgramSetup {
   bool exit{};

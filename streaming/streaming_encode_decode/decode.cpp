@@ -1,15 +1,16 @@
 #include "decode.hpp"
 
+#include "fullscreen_texture_gl_scene.hpp"
+
+#include "streaming_common/common.hpp"
+#include "streaming_common/decoder.hpp"
+
 #include <gp/glfw/glfw.hpp>
 
 #include <chrono>
 #include <fstream>
 #include <optional>
 #include <thread>
-
-#include "fullscreen_texture_gl_scene.hpp"
-#include "streaming_common/common.hpp"
-#include "streaming_common/decoder.hpp"
 
 namespace streaming {
 namespace {

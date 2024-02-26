@@ -1,10 +1,10 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
-
 #include <gp/glfw/glfw.hpp>
 #include <gp/misc/event.hpp>
+
+#include <cstddef>
+#include <cstdint>
 
 class GLScene {
 public:

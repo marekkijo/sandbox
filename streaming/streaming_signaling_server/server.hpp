@@ -1,8 +1,8 @@
 #pragma once
 
-#include "streaming_common/common.hpp"
-
 #include "client.hpp"
+
+#include "streaming_common/common.hpp"
 
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>

@@ -1,9 +1,9 @@
 #include "fullscreen_texture_gl_scene.hpp"
 
+#include "gl.hpp"
+
 #include <array>
 #include <string_view>
-
-#include "gl.hpp"
 
 FullscreenTextureGLScene::~FullscreenTextureGLScene() {
   gl::buffer::delete_buffer(vbo_);
