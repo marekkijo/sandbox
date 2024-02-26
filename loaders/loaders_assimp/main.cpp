@@ -1,15 +1,10 @@
 #include "model.hpp"
-#include "renderer.hpp"
+#include "model_scene.hpp"
 
 #include <boost/program_options.hpp>
 
-#include <chrono>
 #include <iostream>
 #include <memory>
-#include <mutex>
-#include <thread>
-
-using namespace std::literals::chrono_literals;
 
 struct ProgramSetup {
   bool exit{};
@@ -48,36 +43,13 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["fps"].as<std::uint16_t>()};
 }
 
-auto should_exit = std::atomic_bool{false};
-auto mutex = std::mutex{};
-
-void wait_for_exit() {
-  printf("Press 'enter' to exit\n");
-  std::cin.ignore();
-  printf("exiting...\n");
-  {
-    auto unique_lock = std::unique_lock{mutex};
-    should_exit = true;
-  }
-}
-
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
   if (program_setup.exit) { return 1; }
 
-  try {
     auto model = std::make_shared<const Model>(program_setup.filename);
-    auto renderer = std::make_shared<Renderer>(program_setup.width, program_setup.height, program_setup.fps, model);
-    model.reset();
-    std::thread wait_thread(wait_for_exit);
-    while (true) {
-      std::this_thread::sleep_for(1000ms);
-      auto unique_lock = std::unique_lock{mutex};
-      if (should_exit) { break; }
-    }
-    wait_thread.join();
-  } catch (const std::exception &e) {
-    printf("Error: %s\n", e.what());
-    return -1;
-  }
+  auto model_scene = std::make_unique<ModelScene>(model);
+  model_scene->set_fps(program_setup.fps);
+  model_scene->init(program_setup.width, program_setup.height, "loaders_assimp");
+  return model_scene->exec();
 }

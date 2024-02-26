@@ -1,16 +1,16 @@
 #include "encode.hpp"
 
+#include "rgb_cube_gl_scene.hpp"
+
+#include "streaming_common/common.hpp"
+#include "streaming_common/encoder.hpp"
+
 #include <gp/glfw/glfw.hpp>
 
 #include <fstream>
 #include <memory>
 #include <optional>
 #include <utility>
-
-#include "streaming_common/common.hpp"
-#include "streaming_common/encoder.hpp"
-
-#include "rgb_cube_gl_scene.hpp"
 
 namespace streaming {
 namespace {

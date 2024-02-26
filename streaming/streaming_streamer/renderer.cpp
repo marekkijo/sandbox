@@ -2,10 +2,9 @@
 
 #include <gp/utils/utils.hpp>
 
+#include <SDL2/SDL.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <SDL2/SDL.h>
 
 #include <functional>
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "player.hpp"
+
 #include "streaming_common/decoder.hpp"
 
 #include <gp/misc/event.hpp>

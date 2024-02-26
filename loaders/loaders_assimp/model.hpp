@@ -2,10 +2,10 @@
 
 #include "model_format.hpp"
 
-#include <glm/glm.hpp>
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <glm/glm.hpp>
+
 
 #include <string>
 #include <tuple>

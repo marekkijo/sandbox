@@ -1,5 +1,6 @@
 #include "player.hpp"
 #include "receiver.hpp"
+
 #include "streaming_common/decoder.hpp"
 
 #include <boost/program_options.hpp>

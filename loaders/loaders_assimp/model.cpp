@@ -1,16 +1,15 @@
 #include "model.hpp"
 
-#include <glm/gtx/transform.hpp>
+#include "model_format.hpp"
+#include "model_orientation.hpp"
 
 #include <assimp/importerdesc.h>
 #include <assimp/postprocess.h>
+#include <glm/gtx/transform.hpp>
 
 #include <algorithm>
 #include <iterator>
 #include <span>
-
-#include "model_format.hpp"
-#include "model_orientation.hpp"
 
 namespace {
 glm::mat4 to_glm(const aiMatrix4x4 &mat) {

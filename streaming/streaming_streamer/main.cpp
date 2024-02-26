@@ -3,7 +3,7 @@
 
 #include "streaming_common/encoder.hpp"
 
-#include <gp/ffmpeg/ffmpeg.hpp>
+#include <gp/ffmpeg/misc.hpp>
 
 #include <boost/program_options.hpp>
 

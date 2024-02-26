@@ -1,11 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "model_format.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/metadata.h>
-
-#include "model_format.hpp"
+#include <glm/glm.hpp>
 
 enum class Axis {
   x_minus,
