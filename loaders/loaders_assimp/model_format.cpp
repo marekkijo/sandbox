@@ -1,7 +1,5 @@
 #include "model_format.hpp"
 
-#include <assimp/importerdesc.h>
-
 #include <cstring>
 
 ModelFormat get_model_format(const Assimp::Importer &importer) {

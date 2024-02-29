@@ -1,6 +1,6 @@
 #pragma once
 
-#include <assimp/Importer.hpp>
+#include "assimp.hpp"
 
 enum class ModelFormat {
   unknown,

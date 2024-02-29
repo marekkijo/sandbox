@@ -14,15 +14,19 @@ SceneGL::SceneGL(std::shared_ptr<internal::GLFWContext> ctx)
 void SceneGL::init(const int width, const int height, const std::string &title) {
   if (wnd_) { return; }
 
-  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 #ifndef NDEBUG
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+  printf("OpenGL debug context enabled\n");
 #endif
 
   wnd_ = std::make_unique<internal::GLFWWindow>(ctx_, width, height, title);
+
+#ifndef NDEBUG
+  printf("OpenGL version: %s\n", glGetString(GL_VERSION));
+#endif
 
   wnd_->set_framebuffer_size_callback(
       [this](const int width, const int height) { framebuffer_size_callback(width, height); });

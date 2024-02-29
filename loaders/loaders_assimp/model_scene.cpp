@@ -1,7 +1,7 @@
 #include "model_scene.hpp"
 
+#include <gp/gl/misc.hpp>
 #include <gp/misc/event.hpp>
-#include <gp/utils/utils.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -68,13 +68,13 @@ void ModelScene::initialize(const int width, const int height) {
 
   resize(width, height);
 
-  shader_program_ = load_shader_program("shaders/shader_program");
-  configure_program();
+  upload_data();
+  shader_program_ = gp::gl::create_shader_program("shaders/shader_program");
 }
 
 void ModelScene::resize(const int width, const int height) {
   glViewport(0, 0, width, height);
-  projection_ = glm::perspective(glm::radians(60.0f), static_cast<float>(width) / height, 0.001f, 8192.0f);
+  projection_ = glm::perspective(glm::radians(60.0f), static_cast<float>(width) / height, 1.1f, 819200.0f);
 }
 
 void ModelScene::animate(const std::uint32_t timestamp) {
@@ -90,114 +90,58 @@ void ModelScene::animate(const std::uint32_t timestamp) {
 }
 
 void ModelScene::redraw() {
-  glUseProgram(shader_program_);
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
   auto camera_rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(camera_rot_.x), glm::vec3(1.0f, 0.0f, 0.0f));
   camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.y), glm::vec3(0.0f, 1.0f, 0.0f));
   camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.z), glm::vec3(0.0f, 0.0f, 1.0f));
-  glUniformMatrix4fv(camera_rot_location_, 1, GL_FALSE, glm::value_ptr(camera_rot_mat));
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  shader_program_->use();
+  shader_program_->setUniform("camera_rot", camera_rot_mat);
 
   const auto view = glm::lookAt(camera_pos_, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   const auto viewport_mat = projection_ * view;
-  glUniformMatrix4fv(viewport_location_, 1, GL_FALSE, glm::value_ptr(viewport_mat));
+  shader_program_->setUniform("viewport", viewport_mat);
 
-  const auto vertices_buf_location = glGetAttribLocation(shader_program_, "vertices_buf");
-  for (std::size_t i = 0; i < indices_bufs_.size(); i++) {
-    glBindBuffer(GL_ARRAY_BUFFER, vertices_bufs_[i]);
-    glVertexAttribPointer(vertices_buf_location, 4, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_bufs_[i]);
-    glUniform4fv(color_location_, 1, glm::value_ptr(colors_[i]));
+  for (std::size_t i = 0; i < number_of_meshes_; i++) {
+    vaos_->bind(i);
+    shader_program_->setUniform("color", colors_[i]);
+
     glDrawElements(GL_TRIANGLES, sizes_[i], GL_UNSIGNED_INT, 0);
   }
 }
 
-void ModelScene::configure_program() {
-  const auto vertices_buf_location = glGetAttribLocation(shader_program_, "vertices_buf");
-  glEnableVertexAttribArray(vertices_buf_location);
+void ModelScene::upload_data() {
+  number_of_meshes_ = model_->size();
 
-  for (std::size_t i = 0; i < model_->size(); i++) {
-    const auto [vertices, indices, color] = model_->get(i);
+  vaos_ = std::make_unique<gp::gl::VertexArrayObjects>(number_of_meshes_);
 
-    vertices_bufs_.emplace_back();
-    glGenBuffers(1, &vertices_bufs_.back());
-    glBindBuffer(GL_ARRAY_BUFFER, vertices_bufs_.back());
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), glm::value_ptr(vertices[0]), GL_STATIC_DRAW);
-    glVertexAttribPointer(vertices_buf_location, 4, GL_FLOAT, GL_FALSE, 0, 0);
+  vertices_buffers_ = std::make_unique<gp::gl::BufferObjects>(number_of_meshes_, GL_ARRAY_BUFFER);
+  normals_buffers_ = std::make_unique<gp::gl::BufferObjects>(number_of_meshes_, GL_ARRAY_BUFFER);
+  indices_buffers_ = std::make_unique<gp::gl::BufferObjects>(number_of_meshes_, GL_ELEMENT_ARRAY_BUFFER);
 
-    indices_bufs_.emplace_back();
-    glGenBuffers(1, &indices_bufs_.back());
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_bufs_.back());
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(indices[0]), indices.data(), GL_STATIC_DRAW);
+  colors_.reserve(number_of_meshes_);
+  sizes_.reserve(number_of_meshes_);
+
+  for (std::size_t i = 0; i < number_of_meshes_; i++) {
+    const auto [vertices, normals, indices, color] = model_->get(i);
+
+    vaos_->bind(i);
+
+    vertices_buffers_->bind(i);
+    vertices_buffers_->setData(vertices.size() * sizeof(vertices[0]), glm::value_ptr(vertices[0]), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(0);
+
+    normals_buffers_->bind(i);
+    normals_buffers_->setData(normals.size() * sizeof(normals[0]), glm::value_ptr(normals[0]), GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(1);
+
+    indices_buffers_->bind(i);
+    indices_buffers_->setData(indices.size() * sizeof(indices[0]), indices.data(), GL_STATIC_DRAW);
 
     colors_.emplace_back(color);
-    sizes_.emplace_back(indices.size());
-  }
-
-  color_location_ = glGetUniformLocation(shader_program_, "color");
-  viewport_location_ = glGetUniformLocation(shader_program_, "viewport");
-  camera_rot_location_ = glGetUniformLocation(shader_program_, "camera_rot");
-}
-
-GLuint ModelScene::load_shader_program(const std::string &program_name) {
-  const auto vert_shader_code = gp::utils::load_txt_file(program_name + ".vs");
-  const auto vert_shader_code_c_str = vert_shader_code.c_str();
-
-  const auto vert_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vert_shader, 1, &vert_shader_code_c_str, NULL);
-  glCompileShader(vert_shader);
-
-  check_shader_status(vert_shader, GL_COMPILE_STATUS);
-
-  const auto frag_shader_code = gp::utils::load_txt_file(program_name + ".fs");
-  const auto frag_shader_code_c_str = frag_shader_code.c_str();
-
-  const auto frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(frag_shader, 1, &frag_shader_code_c_str, NULL);
-  glCompileShader(frag_shader);
-
-  check_shader_status(frag_shader, GL_COMPILE_STATUS);
-
-  const auto shader_program = glCreateProgram();
-
-  glAttachShader(shader_program, vert_shader);
-  glAttachShader(shader_program, frag_shader);
-  glLinkProgram(shader_program);
-
-  check_program_status(shader_program, GL_LINK_STATUS);
-
-  glDetachShader(shader_program, vert_shader);
-  glDetachShader(shader_program, frag_shader);
-
-  glDeleteShader(vert_shader);
-  glDeleteShader(frag_shader);
-
-  return shader_program;
-}
-
-void ModelScene::check_shader_status(GLuint shader, GLenum status) {
-  auto result = GL_FALSE;
-  auto info_log_length = 0;
-
-  glGetShaderiv(shader, status, &result);
-  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_log_length);
-  if (info_log_length > 0) {
-    auto error_message = std::string(info_log_length + 1, '\0');
-    glGetShaderInfoLog(shader, info_log_length, NULL, error_message.data());
-    printf("Shader error:\n%s\n", error_message.c_str());
-  }
-}
-
-void ModelScene::check_program_status(GLuint program, GLenum status) {
-  auto result = GL_FALSE;
-  auto info_log_length = 0;
-
-  glGetProgramiv(program, status, &result);
-  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_log_length);
-  if (info_log_length > 0) {
-    auto error_message = std::string(info_log_length + 1, '\0');
-    glGetProgramInfoLog(program, info_log_length, NULL, error_message.data());
-    printf("Program error:\n%s\n", error_message.c_str());
+    sizes_.emplace_back(static_cast<GLsizei>(indices.size()));
   }
 }
