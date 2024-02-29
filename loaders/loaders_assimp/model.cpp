@@ -3,8 +3,6 @@
 #include "model_format.hpp"
 #include "model_orientation.hpp"
 
-#include <assimp/importerdesc.h>
-#include <assimp/postprocess.h>
 #include <glm/gtx/transform.hpp>
 
 #include <algorithm>
@@ -46,9 +44,12 @@ Model::Model(const std::string &filename) {
 
 std::size_t Model::size() const { return vertices_.size(); }
 
-std::tuple<const std::vector<glm::vec4> &, const std::vector<std::uint32_t> &, const glm::vec4 &>
+std::tuple<const std::vector<glm::vec3> &,
+           const std::vector<glm::vec3> &,
+           const std::vector<std::uint32_t> &,
+           const glm::vec4 &>
 Model::get(const std::size_t index) const {
-  return {vertices_[index], indices_[index], colors_[index]};
+  return {vertices_[index], normals_[index], indices_[index], colors_[index]};
 }
 
 void Model::process_node(const aiScene *const scene, const aiNode *const node, glm::mat4 transformation) {
@@ -91,17 +92,30 @@ void Model::process_mesh(const aiMesh *const mesh, const glm::mat4 &transformati
   if (!mesh->HasFaces()) { return; }
 
   const auto vertices_span = std::span(mesh->mVertices, mesh->mNumVertices);
-
-  auto vertices = std::vector<glm::vec4>{};
+  auto vertices = std::vector<glm::vec3>{};
   vertices.reserve(vertices_span.size());
-
   std::transform(vertices_span.begin(),
                  vertices_span.end(),
                  std::back_inserter(vertices),
                  [&transformation](const auto &vec) {
-                   return transformation * glm::vec4{vec.x, vec.y, vec.z, 1.0};
+                   const auto transfromed_vec = transformation * glm::vec4{vec.x, vec.y, vec.z, 1.0f};
+                   return glm::vec3(transfromed_vec);
                  });
   vertices_.emplace_back(std::move(vertices));
+
+  if (mesh->HasNormals()) {
+    const auto normals_span = std::span(mesh->mNormals, mesh->mNumVertices);
+    auto normals = std::vector<glm::vec3>{};
+    normals.reserve(normals_span.size());
+    std::transform(normals_span.begin(),
+                   normals_span.end(),
+                   std::back_inserter(normals),
+                   [&transformation](const auto &vec) {
+                     const auto transfromed_vec = transformation * glm::vec4{vec.x, vec.y, vec.z, 0.0f};
+                     return glm::normalize(glm::vec3(transfromed_vec));
+                   });
+    normals_.emplace_back(std::move(normals));
+  }
 
   auto indices = std::vector<std::uint32_t>{};
   const auto faces_span = std::span(mesh->mFaces, mesh->mNumFaces);

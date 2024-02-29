@@ -21,6 +21,7 @@ target_link_libraries(gp PRIVATE ffmpeg::avutil)
 target_link_libraries(gp PRIVATE ffmpeg::swscale)
 target_link_libraries(gp PRIVATE glad::glad)
 target_link_libraries(gp PRIVATE glfw)
+target_link_libraries(gp PRIVATE glm::glm)
 target_link_libraries(gp PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(gp PRIVATE SDL2::SDL2)
 

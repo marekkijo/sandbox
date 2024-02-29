@@ -2,6 +2,9 @@
 
 #include "model.hpp"
 
+#include <gp/gl/buffer_objects.hpp>
+#include <gp/gl/shader_program.hpp>
+#include <gp/gl/vertex_array_objects.hpp>
 #include <gp/glfw/glfw.hpp>
 #include <gp/glfw/scene_gl.hpp>
 #include <gp/misc/event_fwd.hpp>
@@ -24,7 +27,7 @@ private:
   void animate(const std::uint32_t timestamp);
   void redraw();
 
-  void configure_program();
+  void upload_data();
 
   std::shared_ptr<const Model> model_{};
 
@@ -35,16 +38,13 @@ private:
   glm::vec3 camera_rot_{};
   bool animate_{true};
 
-  std::vector<GLuint> vertices_bufs_{};
-  std::vector<GLuint> indices_bufs_{};
+  std::size_t number_of_meshes_{};
+  std::unique_ptr<gp::gl::VertexArrayObjects> vaos_{};
+  std::unique_ptr<gp::gl::BufferObjects> vertices_buffers_{};
+  std::unique_ptr<gp::gl::BufferObjects> normals_buffers_{};
+  std::unique_ptr<gp::gl::BufferObjects> indices_buffers_{};
   std::vector<glm::vec4> colors_{};
   std::vector<GLsizei> sizes_{};
-  GLuint shader_program_{};
-  GLuint color_location_{};
-  GLuint viewport_location_{};
-  GLuint camera_rot_location_{};
 
-  [[nodiscard]] GLuint load_shader_program(const std::string &program_name);
-  static void check_shader_status(GLuint shader, GLenum status);
-  static void check_program_status(GLuint program, GLenum status);
+  std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
 };

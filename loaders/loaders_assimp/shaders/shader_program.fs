@@ -1,7 +1,13 @@
+#version 330 core
+
 #ifdef GL_ES
 precision mediump float;
 #endif
 
-varying vec4 frag_color;
+in vec4 frag_color;
 
-void main() { gl_FragColor = frag_color; }
+out vec4 fragColor;
+
+void main() {
+    fragColor = frag_color;
+}
