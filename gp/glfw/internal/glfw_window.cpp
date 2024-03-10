@@ -8,7 +8,7 @@ namespace gp::glfw::internal {
 class GLFWWindow::Impl {
 public:
   Impl(std::shared_ptr<GLFWContext> ctx, const int width, const int height, const std::string &title)
-      : ctx_{ctx}
+      : ctx_{std::move(ctx)}
       , wnd_{glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr)} {
     if (!wnd_) { throw std::runtime_error{"Couldn't create GLFW window"}; }
     make_context_current();
@@ -33,28 +33,28 @@ public:
 
   void set_framebuffer_size_callback(std::function<void(const int width, const int height)> callback) {
     set_framebuffer_size_callback(loose_framebuffer_size_callback);
-    framebuffer_size_callback_ = callback;
+    framebuffer_size_callback_ = std::move(callback);
   }
 
   void set_mouse_button_callback(std::function<void(const int button, const int action, const int mods)> callback) {
     set_mouse_button_callback(loose_mouse_button_callback);
-    mouse_button_callback_ = callback;
+    mouse_button_callback_ = std::move(callback);
   }
 
   void set_cursor_pos_callback(std::function<void(const double xpos, const double ypos)> callback) {
     set_cursor_pos_callback(loose_cursor_pos_callback);
-    cursor_pos_callback_ = callback;
+    cursor_pos_callback_ = std::move(callback);
   }
 
   void set_scroll_callback(std::function<void(const double xoffset, const double yoffset)> callback) {
     set_scroll_callback(loose_scroll_callback);
-    scroll_callback_ = callback;
+    scroll_callback_ = std::move(callback);
   }
 
   void
   set_key_callback(std::function<void(const int key, const int scancode, const int action, const int mods)> callback) {
     set_key_callback(loose_key_callback);
-    key_callback_ = callback;
+    key_callback_ = std::move(callback);
   }
 
   int window_should_close() const { return glfwWindowShouldClose(wnd_); }
@@ -109,7 +109,7 @@ private:
   }
 
   const std::shared_ptr<const GLFWContext> ctx_{};
-  GLFWwindow *wnd_{nullptr};
+  GLFWwindow *wnd_{};
   std::function<void(const int width, const int height)> framebuffer_size_callback_{};
   std::function<void(const int button, const int action, const int mods)> mouse_button_callback_{};
   std::function<void(const double xpos, const double ypos)> cursor_pos_callback_{};

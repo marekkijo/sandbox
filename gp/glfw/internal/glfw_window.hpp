@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gp/glfw/internal/glfw_window_fwd.hpp>
+
 #include <gp/glfw/internal/glfw_context_fwd.hpp>
 
 #include <functional>
@@ -30,6 +32,6 @@ public:
 
 private:
   class Impl;
-  std::unique_ptr<Impl> impl_;
+  const std::unique_ptr<Impl> impl_;
 };
 } // namespace gp::glfw::internal

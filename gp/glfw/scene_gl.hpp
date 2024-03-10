@@ -24,15 +24,12 @@ public:
 
   virtual void loop(const misc::Event &event) = 0;
 
-  void set_fps(const int fps);
-
   int width() const;
   int height() const;
 
   std::shared_ptr<internal::GLFWContext> ctx();
 
 private:
-  std::uint32_t timestamp() const;
   void framebuffer_size_callback(const int width, const int height);
   void mouse_button_callback(const int button, const int action, const int mods);
   void cursor_pos_callback(const double xpos, const double ypos);
@@ -42,7 +39,6 @@ private:
   int width_{};
   int height_{};
   std::string title_{};
-  int fps_{60};
 
   std::shared_ptr<internal::GLFWContext> ctx_;
   std::unique_ptr<internal::GLFWWindow> wnd_;

@@ -75,20 +75,233 @@ public:
   };
 
   /**
-   * @brief Type alias for subtype used in KeyCode enum.
+   * @brief Type alias for subtype used in ScanCode enum.
    */
-  using KeyCodeSubtype = std::int32_t;
+  using ScanCodeSubtype = std::int32_t;
 
   /**
-   * @brief Enum representing key codes.
+   * @brief Enum representing key scan codes.
    */
-  enum class KeyCode : KeyCodeSubtype {
-    None,  /**< No key */
-    Down,  /**< Down arrow key */
-    Left,  /**< Left arrow key */
-    Right, /**< Right arrow key */
-    Up,    /**< Up arrow key */
-    Escape /**< Esc key */
+  enum class ScanCode : ScanCodeSubtype {
+    A,                                 /**< The 'A' key. Example: 'A' */
+    B,                                 /**< The 'B' key. Example: 'B' */
+    C,                                 /**< The 'C' key. Example: 'C' */
+    D,                                 /**< The 'D' key. Example: 'D' */
+    E,                                 /**< The 'E' key. Example: 'E' */
+    F,                                 /**< The 'F' key. Example: 'F' */
+    G,                                 /**< The 'G' key. Example: 'G' */
+    H,                                 /**< The 'H' key. Example: 'H' */
+    I,                                 /**< The 'I' key. Example: 'I' */
+    J,                                 /**< The 'J' key. Example: 'J' */
+    K,                                 /**< The 'K' key. Example: 'K' */
+    L,                                 /**< The 'L' key. Example: 'L' */
+    M,                                 /**< The 'M' key. Example: 'M' */
+    N,                                 /**< The 'N' key. Example: 'N' */
+    O,                                 /**< The 'O' key. Example: 'O' */
+    P,                                 /**< The 'P' key. Example: 'P' */
+    Q,                                 /**< The 'Q' key. Example: 'Q' */
+    R,                                 /**< The 'R' key. Example: 'R' */
+    S,                                 /**< The 'S' key. Example: 'S' */
+    T,                                 /**< The 'T' key. Example: 'T' */
+    U,                                 /**< The 'U' key. Example: 'U' */
+    V,                                 /**< The 'V' key. Example: 'V' */
+    W,                                 /**< The 'W' key. Example: 'W' */
+    X,                                 /**< The 'X' key. Example: 'X' */
+    Y,                                 /**< The 'Y' key. Example: 'Y' */
+    Z,                                 /**< The 'Z' key. Example: 'Z' */
+    Number0,                           /**< The '0' key. Example: '0' */
+    Number1,                           /**< The '1' key. Example: '1' */
+    Number2,                           /**< The '2' key. Example: '2' */
+    Number3,                           /**< The '3' key. Example: '3' */
+    Number4,                           /**< The '4' key. Example: '4' */
+    Number5,                           /**< The '5' key. Example: '5' */
+    Number6,                           /**< The '6' key. Example: '6' */
+    Number7,                           /**< The '7' key. Example: '7' */
+    Number8,                           /**< The '8' key. Example: '8' */
+    Number9,                           /**< The '9' key. Example: '9' */
+    F1,                                /**< The F1 key. */
+    F2,                                /**< The F2 key. */
+    F3,                                /**< The F3 key. */
+    F4,                                /**< The F4 key. */
+    F5,                                /**< The F5 key. */
+    F6,                                /**< The F6 key. */
+    F7,                                /**< The F7 key. */
+    F8,                                /**< The F8 key. */
+    F9,                                /**< The F9 key. */
+    F10,                               /**< The F10 key. */
+    F11,                               /**< The F11 key. */
+    F12,                               /**< The F12 key. */
+    F13,                               /**< The F13 key. */
+    F14,                               /**< The F14 key. */
+    F15,                               /**< The F15 key. */
+    F16,                               /**< The F16 key. */
+    F17,                               /**< The F17 key. */
+    F18,                               /**< The F18 key. */
+    F19,                               /**< The F19 key. */
+    F20,                               /**< The F20 key. */
+    F21,                               /**< The F21 key. */
+    F22,                               /**< The F22 key. */
+    F23,                               /**< The F23 key. */
+    F24,                               /**< The F24 key. */
+    ApplicationControlKeypadBack,      /**< The application control keypad back key. */
+    ApplicationControlKeypadBookmarks, /**< The application control keypad bookmarks key. */
+    ApplicationControlKeypadForward,   /**< The application control keypad forward key. */
+    ApplicationControlKeypadHome,      /**< The application control keypad home key. */
+    ApplicationControlKeypadRefresh,   /**< The application control keypad refresh key. */
+    ApplicationControlKeypadSearch,    /**< The application control keypad search key. */
+    ApplicationControlKeypadStop,      /**< The application control keypad stop key. */
+    Again,                             /**< The 'Again' key. */
+    AltErase,                          /**< The 'AltErase' key. */
+    Apostrophe,                        /**< The 'Apostrophe' key. Example: ''' */
+    Application,                       /**< The 'Application' key. */
+    AudioMute,                         /**< The 'AudioMute' key. */
+    AudioNext,                         /**< The 'AudioNext' key. */
+    AudioPlay,                         /**< The 'AudioPlay' key. */
+    AudioPrev,                         /**< The 'AudioPrev' key. */
+    AudioStop,                         /**< The 'AudioStop' key. */
+    Backslash,                         /**< The 'Backslash' key. Example: '\' */
+    Backspace,                         /**< The 'Backspace' key. */
+    BrightnessDown,                    /**< The 'BrightnessDown' key. */
+    BrightnessUp,                      /**< The 'BrightnessUp' key. */
+    Calculator,                        /**< The 'Calculator' key. */
+    Cancel,                            /**< The 'Cancel' key. */
+    CapsLock,                          /**< The 'CapsLock' key. */
+    Clear,                             /**< The 'Clear' key. */
+    ClearAgain,                        /**< The 'ClearAgain' key. */
+    Comma,                             /**< The 'Comma' key. Example: ',' */
+    Computer,                          /**< The 'Computer' key. */
+    Copy,                              /**< The 'Copy' key. */
+    CrSel,                             /**< The 'CrSel' key. */
+    CurrencySubUnit,                   /**< The currency subunit key. */
+    CurrencyUnit,                      /**< The currency unit key. */
+    Cut,                               /**< The 'Cut' key. */
+    DecimalSeparator,                  /**< The decimal separator key. */
+    Delete,                            /**< The 'Delete' key. */
+    DisplaySwitch,                     /**< The 'DisplaySwitch' key. */
+    Down,                              /**< The 'Down' key. */
+    Eject,                             /**< The 'Eject' key. */
+    End,                               /**< The 'End' key. */
+    Equals,                            /**< The 'Equals' key. Example: '=' */
+    Escape,                            /**< The 'Escape' key. */
+    Execute,                           /**< The 'Execute' key. */
+    ExSel,                             /**< The 'ExSel' key. */
+    Find,                              /**< The 'Find' key. */
+    Grave,                             /**< The 'Grave' key. Example: '`' */
+    Help,                              /**< The 'Help' key. */
+    Home,                              /**< The 'Home' key. */
+    Insert,                            /**< The 'Insert' key. */
+    KeyboardIlluminationDown,          /**< The keyboard illumination down key. */
+    KeyboardIlluminationToggle,        /**< The keyboard illumination toggle key. */
+    KeyboardIlluminationUp,            /**< The keyboard illumination up key. */
+    NumericKeypad0,                    /**< The '0' key on the numeric keypad. Example: '0' */
+    NumericKeypad1,                    /**< The '1' key on the numeric keypad. Example: '1' */
+    NumericKeypad2,                    /**< The '2' key on the numeric keypad. Example: '2' */
+    NumericKeypad3,                    /**< The '3' key on the numeric keypad. Example: '3' */
+    NumericKeypad4,                    /**< The '4' key on the numeric keypad. Example: '4' */
+    NumericKeypad5,                    /**< The '5' key on the numeric keypad. Example: '5' */
+    NumericKeypad6,                    /**< The '6' key on the numeric keypad. Example: '6' */
+    NumericKeypad7,                    /**< The '7' key on the numeric keypad. Example: '7' */
+    NumericKeypad8,                    /**< The '8' key on the numeric keypad. Example: '8' */
+    NumericKeypad9,                    /**< The '9' key on the numeric keypad. Example: '9' */
+    NumericKeypadA,                    /**< The 'A' key on the numeric keypad. Example: 'A' */
+    NumericKeypadB,                    /**< The 'B' key on the numeric keypad. Example: 'B' */
+    NumericKeypadC,                    /**< The 'C' key on the numeric keypad. Example: 'C' */
+    NumericKeypadD,                    /**< The 'D' key on the numeric keypad. Example: 'D' */
+    NumericKeypadE,                    /**< The 'E' key on the numeric keypad. Example: 'E' */
+    NumericKeypadF,                    /**< The 'F' key on the numeric keypad. Example: 'F' */
+    NumericKeypad00,                   /**< The '00' key on the numeric keypad. Example: '00' */
+    NumericKeypad000,                  /**< The '000' key on the numeric keypad. Example: '000' */
+    NumericKeypadAmpersand,            /**< The '&' key on the numeric keypad. Example: '&' */
+    NumericKeypadAt,                   /**< The '@' key on the numeric keypad. Example: '@' */
+    NumericKeypadBackspace,            /**< The 'Backspace' key on the numeric keypad. */
+    NumericKeypadBinary,               /**< The binary key on the numeric keypad. */
+    NumericKeypadClear,                /**< The 'Clear' key on the numeric keypad. */
+    NumericKeypadClearEntry,           /**< The 'ClearEntry' key on the numeric keypad. */
+    NumericKeypadColon,                /**< The ':' key on the numeric keypad. Example: ':' */
+    NumericKeypadComma,                /**< The ',' key on the numeric keypad. Example: ',' */
+    NumericKeypadDoubleAmpersand,      /**< The '&&' key on the numeric keypad. Example: '&&' */
+    NumericKeypadDoubleVerticalBar,    /**< The '||' key on the numeric keypad. Example: '||' */
+    NumericKeypadDecimal,              /**< The decimal key on the numeric keypad. */
+    NumericKeypadDivide,               /**< The divide key on the numeric keypad. */
+    NumericKeypadEnter,                /**< The 'Enter' key on the numeric keypad. */
+    NumericKeypadEquals,               /**< The '=' key on the numeric keypad. Example: '=' */
+    NumericKeypadEqualsAS400,          /**< The equals AS400 key on the numeric keypad. */
+    NumericKeypadExclam,               /**< The '!' key on the numeric keypad. Example: '!' */
+    NumericKeypadGreater,              /**< The '>' key on the numeric keypad. Example: '>' */
+    NumericKeypadHash,                 /**< The '#' key on the numeric keypad. Example: '#' */
+    NumericKeypadHexadecimal,          /**< The hexadecimal key on the numeric keypad. */
+    NumericKeypadLeftBrace,            /**< The '{' key on the numeric keypad. Example: '{' */
+    NumericKeypadLeftParenthesis,      /**< The '(' key on the numeric keypad. Example: '(' */
+    NumericKeypadLess,                 /**< The '<' key on the numeric keypad. Example: '<' */
+    NumericKeypadMemAdd,               /**< The memory add key on the numeric keypad. */
+    NumericKeypadMemClear,             /**< The memory clear key on the numeric keypad. */
+    NumericKeypadMemDivide,            /**< The memory divide key on the numeric keypad. */
+    NumericKeypadMemMultiply,          /**< The memory multiply key on the numeric keypad. */
+    NumericKeypadMemRecall,            /**< The memory recall key on the numeric keypad. */
+    NumericKeypadMemStore,             /**< The memory store key on the numeric keypad. */
+    NumericKeypadMemSubtract,          /**< The memory subtract key on the numeric keypad. */
+    NumericKeypadMinus,                /**< The '-' key on the numeric keypad. Example: '-' */
+    NumericKeypadMultiply,             /**< The multiply key on the numeric keypad. */
+    NumericKeypadOctal,                /**< The octal key on the numeric keypad. */
+    NumericKeypadPercent,              /**< The '%' key on the numeric keypad. Example: '%' */
+    NumericKeypadPeriod,               /**< The '.' key on the numeric keypad. Example: '.' */
+    NumericKeypadPlus,                 /**< The '+' key on the numeric keypad. Example: '+' */
+    NumericKeypadPlusMinus,            /**< The plus-minus key on the numeric keypad. */
+    NumericKeypadPower,                /**< The power key on the numeric keypad. */
+    NumericKeypadRightBrace,           /**< The '}' key on the numeric keypad. Example: '}' */
+    NumericKeypadRightParenthesis,     /**< The ')' key on the numeric keypad. Example: ')' */
+    NumericKeypadSpace,                /**< The space key on the numeric keypad. Example: ' ' */
+    NumericKeypadTab,                  /**< The tab key on the numeric keypad. Example: '\t' */
+    NumericKeypadVerticalBar,          /**< The '|' key on the numeric keypad. Example: '|' */
+    NumericKeypadXOR,                  /**< The XOR key on the numeric keypad. */
+    LeftAlt,                           /**< The left Alt key. */
+    LeftCtrl,                          /**< The left Ctrl key. */
+    Left,                              /**< The left arrow key. */
+    LeftBracket,                       /**< The '[' key. Example: '[' */
+    LeftGui,                           /**< The left GUI key. */
+    LeftShift,                         /**< The left Shift key. */
+    Mail,                              /**< The 'Mail' key. */
+    MediaSelect,                       /**< The 'MediaSelect' key. */
+    Menu,                              /**< The 'Menu' key. */
+    Minus,                             /**< The '-' key. Example: '-' */
+    ModeSwitch,                        /**< The 'ModeSwitch' key. */
+    Mute,                              /**< The 'Mute' key. */
+    NumLock,                           /**< The 'NumLock' key. */
+    Oper,                              /**< The 'Oper' key. */
+    Out,                               /**< The 'Out' key. */
+    PageDown,                          /**< The 'PageDown' key. */
+    PageUp,                            /**< The 'PageUp' key. */
+    Paste,                             /**< The 'Paste' key. */
+    Pause,                             /**< The 'Pause' key. */
+    Period,                            /**< The '.' key. Example: '.' */
+    Power,                             /**< The 'Power' key. */
+    PrintScreen,                       /**< The 'PrintScreen' key. */
+    Prior,                             /**< The 'Prior' key. */
+    RightAlt,                          /**< The right Alt key. */
+    RightCtrl,                         /**< The right Ctrl key. */
+    Enter,                             /**< The 'Enter' key. */
+    Return,                            /**< The 'Return' key. */
+    RightGui,                          /**< The right GUI key. */
+    Right,                             /**< The right arrow key. */
+    RightBracket,                      /**< The ']' key. Example: ']' */
+    RightShift,                        /**< The right Shift key. */
+    ScrollLock,                        /**< The 'ScrollLock' key. */
+    Select,                            /**< The 'Select' key. */
+    Semicolon,                         /**< The ';' key. Example: ';' */
+    Separator,                         /**< The 'Separator' key. */
+    Slash,                             /**< The '/' key. Example: '/' */
+    Sleep,                             /**< The 'Sleep' key. */
+    Space,                             /**< The space key. Example: ' ' */
+    Stop,                              /**< The 'Stop' key. */
+    SysReq,                            /**< The 'SysReq' key. */
+    Tab,                               /**< The 'Tab' key. Example: '\t' */
+    ThousandsSeparator,                /**< The thousands separator key. */
+    Undo,                              /**< The 'Undo' key. */
+    None,                              /**< No key. */
+    Up,                                /**< The 'Up' key. */
+    VolumeDown,                        /**< The 'VolumeDown' key. */
+    VolumeUp,                          /**< The 'VolumeUp' key. */
+    WWW                                /**< The 'WWW' key. */
   };
 
   struct InitData {
@@ -111,10 +324,10 @@ public:
   };
 
   struct MouseMoveData {
-    float x{};                                ///< X-coordinate for mouse movement (window-relative).
-    float y{};                                ///< Y-coordinate for mouse movement (window-relative).
-    float x_rel{};                            ///< Relative X movement.
-    float y_rel{};                            ///< Relative Y movement.
+    float x{};                                /**< X-coordinate for mouse movement (window-relative). */
+    float y{};                                /**< Y-coordinate for mouse movement (window-relative). */
+    float x_rel{};                            /**< Relative X movement. */
+    float y_rel{};                            /**< Relative Y movement. */
     MouseButtonMaskSubType mouse_button_mask; /**< Mouse button mask for mouse move event */
 
     /**
@@ -149,8 +362,8 @@ public:
   };
 
   struct KeyData {
-    Action action; /**< Pressed/released action */
-    KeyCode code;  /**< Key code */
+    Action action;      /**< Pressed/released action */
+    ScanCode scan_code; /**< Key scan code */
   };
 
   struct DragDropData {
