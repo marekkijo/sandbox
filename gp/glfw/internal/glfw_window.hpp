@@ -29,6 +29,7 @@ public:
   int window_should_close() const;
   void swap_buffers() const;
   int get_mouse_button(int button) const;
+  void request_close() const;
 
 private:
   class Impl;

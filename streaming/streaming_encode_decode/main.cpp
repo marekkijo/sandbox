@@ -1,5 +1,5 @@
-#include "decode.hpp"
-#include "encode.hpp"
+#include "decode_scene.hpp"
+#include "encode_scene.hpp"
 
 #include <gp/ffmpeg/misc.hpp>
 
@@ -21,7 +21,7 @@ ProgramSetup process_args(const int argc, const char **const argv) {
   boost::program_options::options_description desc("Options");
   desc.add_options()("help", "This help message");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(512), "Width of the frame buffer");
-  desc.add_options()("height", boost::program_options::value<int>()->default_value(384), "Height of the frame buffer");
+  desc.add_options()("height", boost::program_options::value<int>()->default_value(512), "Height of the frame buffer");
   desc.add_options()("fps",
                      boost::program_options::value<std::uint16_t>()->default_value(30u),
                      "Number of frames per second");
@@ -59,8 +59,14 @@ int main(int argc, const char **argv) {
                                                             program_setup.codec_id,
                                                             avcodec_get_name(program_setup.codec_id)};
 
-  streaming::encode(video_stream_info, program_setup.length_s);
-  streaming::decode(video_stream_info);
+  {
+    auto encode_scene = std::make_unique<streaming::EncodeScene>(video_stream_info, program_setup.length_s);
+    encode_scene->exec();
+  }
+  {
+    auto decode_scene = std::make_unique<streaming::DecodeScene>(video_stream_info);
+    decode_scene->exec();
+  }
 
   return 0;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raw_map.hpp"
+#include "wolf_common/raw_map.hpp"
 
 #include <cstdint>
 #include <fstream>
@@ -20,7 +20,7 @@ public:
   RawMapFromWolf(const std::string &maphead_filename, const std::string &gamemaps_filename);
 
   [[nodiscard]] std::size_t maps_size();
-  [[nodiscard]] std::unique_ptr<RawMap> create_map(const std::size_t map_index);
+  [[nodiscard]] RawMap create_map(const std::size_t map_index);
 
 private:
   std::ifstream gamemaps_file_{};

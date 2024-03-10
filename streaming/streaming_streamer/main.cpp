@@ -1,18 +1,16 @@
-#include "renderer.hpp"
+#include "encode_scene.hpp"
 #include "streamer.hpp"
 
-#include "streaming_common/encoder.hpp"
+#include "streaming_common/video_stream_info.hpp"
 
 #include <gp/ffmpeg/misc.hpp>
+#include <gp/misc/event.hpp>
 
 #include <boost/program_options.hpp>
 
-#include <chrono>
+#include <cstdint>
 #include <iostream>
-#include <mutex>
-#include <thread>
-
-using namespace std::literals::chrono_literals;
+#include <string>
 
 struct ProgramSetup {
   bool exit{};
@@ -25,18 +23,6 @@ struct ProgramSetup {
 
   AVCodecID codec_id{AV_CODEC_ID_NONE};
 };
-
-AVCodecID codec_name_to_id(const std::string &codec_name) {
-  auto normalized_codec_name = codec_name;
-  std::transform(normalized_codec_name.begin(),
-                 normalized_codec_name.end(),
-                 normalized_codec_name.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-
-  auto codec_descriptor = avcodec_descriptor_get_by_name(normalized_codec_name.c_str());
-  if (!codec_descriptor) { return AV_CODEC_ID_NONE; }
-  return codec_descriptor->id;
-}
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
   boost::program_options::options_description desc("Options");
@@ -67,48 +53,23 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["width"].as<int>(),
           vm["height"].as<int>(),
           vm["fps"].as<std::uint16_t>(),
-          codec_name_to_id(vm["codec"].as<std::string>())};
-}
-
-auto should_exit = std::atomic_bool{false};
-auto mutex = std::mutex{};
-
-void wait_for_exit() {
-  printf("Press 'enter' to exit\n");
-  std::cin.ignore();
-  printf("exiting...\n");
-  {
-    auto unique_lock = std::unique_lock{mutex};
-    should_exit = true;
-  }
+          gp::ffmpeg::codec_name_to_id(vm["codec"].as<std::string>())};
 }
 
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
   if (program_setup.exit) { return 1; }
 
-  try {
-    const auto video_stream_info = streaming::VideoStreamInfo{program_setup.width,
-                                                              program_setup.height,
-                                                              program_setup.fps,
-                                                              program_setup.codec_id,
-                                                              avcodec_get_name(program_setup.codec_id)};
-    auto encoder = std::make_shared<streaming::Encoder>();
-    encoder->open_stream(video_stream_info);
+  const auto video_stream_info = streaming::VideoStreamInfo{program_setup.width,
+                                                            program_setup.height,
+                                                            program_setup.fps,
+                                                            program_setup.codec_id,
+                                                            avcodec_get_name(program_setup.codec_id)};
 
-    auto renderer =
-        std::make_shared<streaming::Renderer>(program_setup.width, program_setup.height, program_setup.fps, encoder);
-    streaming::Streamer streamer(program_setup.ip, program_setup.port, encoder, renderer);
+  auto encode_scene = std::make_unique<streaming::EncodeScene>(video_stream_info);
+  auto streamer = std::make_unique<streaming::Streamer>(program_setup.ip, program_setup.port, encode_scene->encoder());
 
-    std::thread wait_thread(wait_for_exit);
-    while (true) {
-      std::this_thread::sleep_for(1000ms);
-      auto unique_lock = std::unique_lock{mutex};
-      if (should_exit) { break; }
-    }
-    wait_thread.join();
-  } catch (const std::exception &e) {
-    printf("Error: %s\n", e.what());
-    return -1;
-  }
+  streamer->set_event_callback([&encode_scene](const gp::misc::Event &event) { encode_scene->handle_event(event); });
+
+  return encode_scene->exec();
 }

@@ -53,7 +53,7 @@ public:
    * @param data A pointer to the data.
    * @param usage The usage pattern of the data.
    */
-  void setData(const GLsizeiptr size, const void *data, const GLenum usage) const;
+  void set_data(const GLsizeiptr size, const void *data, const GLenum usage) const;
 
   /**
    * @brief Updates a subset of the buffer object's data.
@@ -61,7 +61,7 @@ public:
    * @param size The size of the data in bytes.
    * @param data A pointer to the data.
    */
-  void setSubData(const GLintptr offset, const GLsizeiptr size, const void *data) const;
+  void set_sub_data(const GLintptr offset, const GLsizeiptr size, const void *data) const;
 
   /**
    * @brief Retrieves a subset of the buffer object's data.
@@ -69,7 +69,7 @@ public:
    * @param size The size of the data to retrieve in bytes.
    * @param data A pointer to the memory where the retrieved data will be stored.
    */
-  void getSubData(const GLintptr offset, const GLsizeiptr size, void *data) const;
+  void get_sub_data(const GLintptr offset, const GLsizeiptr size, void *data) const;
 
   /**
    * @brief Maps the buffer object's data store into the client's address space.
@@ -85,14 +85,14 @@ public:
    * @param access The access policy for the mapped range.
    * @return A pointer to the mapped data.
    */
-  void *mapRange(const GLintptr offset, const GLsizeiptr length, const GLbitfield access) const;
+  void *map_range(const GLintptr offset, const GLsizeiptr length, const GLbitfield access) const;
 
   /**
    * @brief Flushes a mapped range of the buffer object's data store.
    * @param offset The offset in bytes from the start of the mapped range.
    * @param length The length of the mapped range in bytes.
    */
-  void flushMappedRange(const GLintptr offset, const GLsizeiptr length) const;
+  void flush_mapped_range(const GLintptr offset, const GLsizeiptr length) const;
 
   /**
    * @brief Unmaps the buffer object's data store.
@@ -104,14 +104,14 @@ public:
    * @param value The parameter to retrieve.
    * @param data A pointer to the memory where the retrieved parameter value will be stored.
    */
-  void getParameter(const GLenum value, GLint *data) const;
+  void get_parameter(const GLenum value, GLint *data) const;
 
   /**
    * @brief Retrieves a parameter of the buffer object.
    * @param value The parameter to retrieve.
    * @param data A pointer to the memory where the retrieved parameter value will be stored.
    */
-  void getParameter(const GLenum value, GLint64 *data) const;
+  void get_parameter(const GLenum value, GLint64 *data) const;
 
 private:
   std::vector<GLuint> ids_{};

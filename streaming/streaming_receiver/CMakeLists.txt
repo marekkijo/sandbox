@@ -4,16 +4,21 @@ add_executable(streaming_receiver ${SRC_FILES})
 
 target_link_libraries(streaming_receiver gp)
 target_link_libraries(streaming_receiver streaming_common)
-target_link_libraries(streaming_receiver SDL2::SDL2)
-target_link_libraries(streaming_receiver SDL2::SDL2main)
 target_link_libraries(streaming_receiver Boost::program_options)
-target_link_libraries(streaming_receiver openssl::openssl)
 target_link_libraries(streaming_receiver LibDataChannel::LibDataChannel)
 target_link_libraries(streaming_receiver nlohmann_json::nlohmann_json)
+target_link_libraries(streaming_receiver glm::glm)
+target_link_libraries(streaming_receiver glad::glad)
+target_link_libraries(streaming_receiver glfw)
 
 add_custom_command(TARGET streaming_receiver PRE_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
   ${LIBDATACHANNEL_DLL_BIN} $<TARGET_FILE_DIR:streaming_receiver>
+)
+
+add_custom_command(TARGET streaming_receiver PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+  ${CMAKE_CURRENT_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:streaming_receiver>/shaders
 )
 
 set_target_properties(streaming_receiver PROPERTIES

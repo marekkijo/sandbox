@@ -1,25 +1,14 @@
-#include "wolf_renderer_multithread.hpp"
+#include "multi_thread_wolf_scene.hpp"
 
-#include "wolf_common/map_renderer.hpp"
-#include "wolf_common/player_state.hpp"
 #include "wolf_common/raw_map.hpp"
 #include "wolf_common/raw_map_from_ascii.hpp"
 #include "wolf_common/raw_map_from_wolf.hpp"
-#include "wolf_common/vector_map.hpp"
 
-#include <gp/sdl/animation.hpp>
-#include <gp/sdl/system.hpp>
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_timer.h>
-#include <SDL2/SDL_video.h>
 #include <boost/program_options.hpp>
 
-#include <cstdint>
 #include <iostream>
 #include <memory>
+#include <string>
 
 struct ProgramSetup {
   bool exit{};
@@ -29,6 +18,7 @@ struct ProgramSetup {
   std::string gamemaps{};
   int width{};
   int height{};
+  std::uint32_t fov{};
   std::uint32_t rays{};
   std::uint32_t threads{};
 };
@@ -47,6 +37,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
                      "Wolf GAMEMAPS filename");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(1520), "Width of the window");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(760), "Height of the window");
+  desc.add_options()("fov",
+                     boost::program_options::value<std::uint32_t>()->default_value(60u),
+                     "Field of view in degrees");
   desc.add_options()("rays", boost::program_options::value<std::uint32_t>()->default_value(152u), "Number of rays");
   desc.add_options()("threads",
                      boost::program_options::value<std::uint32_t>()->default_value(32u),
@@ -67,86 +60,27 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["gamemaps"].as<std::string>(),
           vm["width"].as<int>(),
           vm["height"].as<int>(),
+          vm["fov"].as<std::uint32_t>(),
           vm["rays"].as<std::uint32_t>(),
           vm["threads"].as<std::uint32_t>()};
+}
+
+std::unique_ptr<gp::sdl::Scene2D> create_scene(const ProgramSetup &program_setup) {
+  auto raw_map_from_wolf = wolf::RawMapFromWolf{program_setup.maphead, program_setup.gamemaps};
+  const auto raw_map = raw_map_from_wolf.create_map(0u);
+
+  auto scene = std::make_unique<wolf::MultiThreadWolfScene>(raw_map,
+                                                            program_setup.fov,
+                                                            program_setup.rays,
+                                                            program_setup.threads);
+  scene->init(program_setup.width, program_setup.height, "Wolf: Multithread");
+  return scene;
 }
 
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
   if (program_setup.exit) { return 1; }
 
-  const auto wnd_title = "Wolf: Multithread";
-
-  auto sdl_sys = gp::sdl::System{SDL_INIT_EVERYTHING,
-                                 wnd_title,
-                                 SDL_WINDOWPOS_CENTERED,
-                                 SDL_WINDOWPOS_CENTERED,
-                                 program_setup.width,
-                                 program_setup.height,
-                                 SDL_WINDOW_RESIZABLE,
-                                 -1,
-                                 SDL_RENDERER_SOFTWARE};
-
-  auto raw_map_from_wolf = wolf::RawMapFromWolf{program_setup.maphead, program_setup.gamemaps};
-  const auto raw_map = std::shared_ptr(std::move(raw_map_from_wolf.create_map(0u)));
-
-  // auto       raw_map_from_ascii = wolf::RawMapFromAscii{program_setup.asciimap};
-  // const auto raw_map            = std::shared_ptr(std::move(raw_map_from_ascii.create_map()));
-
-  const auto vector_map = std::make_shared<wolf::VectorMap>(std::const_pointer_cast<const wolf::RawMap>(raw_map));
-  const auto player_state =
-      std::make_shared<wolf::PlayerState>(std::const_pointer_cast<const wolf::RawMap>(raw_map), 90.0f, 3.0f, 2.0f);
-
-  auto map_renderer = wolf::MapRenderer{sdl_sys,
-                                        std::const_pointer_cast<const wolf::VectorMap>(vector_map),
-                                        std::const_pointer_cast<const wolf::PlayerState>(player_state),
-                                        false};
-
-  auto wolf_renderer = wolf::WolfRendererMultithread{sdl_sys,
-                                                     std::const_pointer_cast<const wolf::VectorMap>(vector_map),
-                                                     std::const_pointer_cast<const wolf::PlayerState>(player_state),
-                                                     program_setup.rays,
-                                                     program_setup.threads};
-
-  auto last_timestamp_ms = SDL_GetTicks();
-  auto animation = gp::sdl::Animation(30u);
-  auto quit = false;
-
-  while (!quit) {
-    SDL_Event event;
-    while (!quit && SDL_PollEvent(&event)) {
-      switch (event.type) {
-      case SDL_QUIT:
-        quit = true;
-        break;
-      case SDL_WINDOWEVENT:
-        switch (event.window.event) {
-        case SDL_WINDOWEVENT_SIZE_CHANGED:
-          wolf_renderer.Renderer::resize();
-          map_renderer.Renderer::resize();
-          break;
-        default:
-          break;
-        }
-        break;
-      case SDL_USEREVENT:
-        SDL_PumpEvents();
-        {
-          const auto time_elapsed_ms = event.user.timestamp - last_timestamp_ms;
-          player_state->animate(time_elapsed_ms);
-          last_timestamp_ms = event.user.timestamp;
-        }
-        SDL_SetRenderDrawColor(sdl_sys.r(), 0, 0, 0, 255);
-        SDL_RenderClear(sdl_sys.r());
-        wolf_renderer.redraw();
-        map_renderer.redraw();
-        SDL_RenderPresent(sdl_sys.r());
-        break;
-      default:
-        break;
-      }
-    }
-  }
-
-  return 0;
+  const auto scene = create_scene(program_setup);
+  return scene->exec();
 }

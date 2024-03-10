@@ -1,5 +1,5 @@
 #pragma once
 
 namespace gp::misc {
-struct Event;
+class Event;
 } // namespace gp::misc

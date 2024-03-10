@@ -35,7 +35,7 @@ RawMapFromWolf::RawMapFromWolf(const std::string &maphead_filename, const std::s
 
 std::size_t RawMapFromWolf::maps_size() { return header_offsets_.size(); }
 
-std::unique_ptr<RawMap> RawMapFromWolf::create_map(const std::size_t map_index) {
+RawMap RawMapFromWolf::create_map(const std::size_t map_index) {
 #pragma pack(push, 1)
 
   struct {
@@ -63,7 +63,7 @@ std::unique_ptr<RawMap> RawMapFromWolf::create_map(const std::size_t map_index) 
   decarmacize_plane(compressed_planes[1], blocks, 1u);
   decarmacize_plane(compressed_planes[2], blocks, 2u);
 
-  return std::make_unique<RawMap>(map_type.width, map_type.height, std::move(blocks));
+  return {map_type.width, map_type.height, std::move(blocks)};
 }
 
 void RawMapFromWolf::decarmacize_plane(const std::vector<std::uint16_t> &plane_data,

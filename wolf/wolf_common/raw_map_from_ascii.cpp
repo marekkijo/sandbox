@@ -1,7 +1,7 @@
 #include "raw_map_from_ascii.hpp"
 
-#include "raw_map.hpp"
-#include "wolf_map_info.hpp"
+#include "wolf_common/raw_map.hpp"
+#include "wolf_common/wolf_map_info.hpp"
 
 #include <stdexcept>
 
