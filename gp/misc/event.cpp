@@ -198,7 +198,7 @@ void Event::assign_all(const Event &other) {
     break;
   case Type::Key:
     key_.action = other.key_.action;
-    key_.code = other.key_.code;
+    key_.scan_code = other.key_.scan_code;
     break;
   case Type::DragDrop:
     break;

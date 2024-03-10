@@ -41,11 +41,11 @@ private:
   std::shared_ptr<std::vector<std::byte>> video_frame_{};
   std::vector<std::uint8_t> rgb_frame_{};
 
-  const AVCodec *codec_{nullptr};
-  AVCodecContext *context_{nullptr};
-  AVPacket *packet_{nullptr};
-  AVFrame *frame_{nullptr};
+  const AVCodec *codec_{};
+  AVCodecContext *context_{};
+  AVPacket *packet_{};
+  AVFrame *frame_{};
 
-  SwsContext *sws_context_{nullptr};
+  SwsContext *sws_context_{};
 };
 } // namespace streaming

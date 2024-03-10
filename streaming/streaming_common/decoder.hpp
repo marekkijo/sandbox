@@ -76,11 +76,11 @@ private:
 
   std::shared_ptr<std::vector<std::uint8_t>> rgb_frame_{};
 
-  AVPacket *packet_{nullptr};
-  const AVCodec *codec_{nullptr};
-  AVCodecParserContext *parser_{nullptr};
-  AVCodecContext *context_{nullptr};
-  AVFrame *frame_{nullptr};
+  AVPacket *packet_{};
+  const AVCodec *codec_{};
+  AVCodecParserContext *parser_{};
+  AVCodecContext *context_{};
+  AVFrame *frame_{};
 
   std::vector<std::uint8_t> buffer_{};
   /**
@@ -92,7 +92,7 @@ private:
    */
   bool signaled_eof_{false};
 
-  SwsContext *sws_context_{nullptr};
+  SwsContext *sws_context_{};
 
   /**
    * incoming_data() is expected to be called in parallel - its critical section must be secured with this mutex.

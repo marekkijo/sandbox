@@ -20,7 +20,6 @@ bool on_segment(float p_x, float p_y, float q_x, float q_y, float r_x, float r_y
 }
 } // namespace
 
-/// source: https://stackoverflow.com/a/32334103/1113279
 bool nearly_equal(float a, float b, float epsilon, float abs_th) {
   if (std::numeric_limits<float>::epsilon() > epsilon || epsilon >= 1.0f) {
     throw std::invalid_argument("the specified epsilon is invalid");
@@ -33,7 +32,6 @@ bool nearly_equal(float a, float b, float epsilon, float abs_th) {
   return diff < std::max(abs_th, epsilon * norm);
 }
 
-/// source: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 bool do_intersect(float a_x, float a_y, float b_x, float b_y, float c_x, float c_y, float d_x, float d_y) {
   auto o1 = orientation(a_x, a_y, b_x, b_y, c_x, c_y);
   auto o2 = orientation(a_x, a_y, b_x, b_y, d_x, d_y);
@@ -48,7 +46,6 @@ bool do_intersect(float a_x, float a_y, float b_x, float b_y, float c_x, float c
   return false;
 }
 
-/// source: https://www.geeksforgeeks.org/program-for-point-of-intersection-of-two-lines/?ref=gcse
 std::tuple<bool, float, float>
 intersection_point(float a_x, float a_y, float b_x, float b_y, float c_x, float c_y, float d_x, float d_y) {
   auto a1 = b_y - a_y;

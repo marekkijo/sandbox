@@ -26,7 +26,7 @@ protected:
   virtual void resize(const int width, const int height) = 0;
 
 private:
-  SDL_Window *window_{nullptr};
-  SDL_Renderer *renderer_{nullptr};
+  SDL_Window *window_{};
+  SDL_Renderer *renderer_{};
 };
 } // namespace wolf
