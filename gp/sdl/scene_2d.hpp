@@ -1,8 +1,12 @@
 #pragma once
 
+#include <gp/sdl/scene_2d_fwd.hpp>
+
 #include <gp/misc/event_fwd.hpp>
+#include <gp/misc/keyboard_state.hpp>
 #include <gp/sdl/internal/sdl_context_fwd.hpp>
 #include <gp/sdl/internal/sdl_window_fwd.hpp>
+#include <gp/sdl/renderer.hpp>
 
 #include <memory>
 #include <string>
@@ -26,7 +30,10 @@ public:
   int width() const;
   int height() const;
 
-  std::shared_ptr<internal::SDLContext> ctx();
+  std::uint32_t timestamp() const;
+  std::shared_ptr<const Renderer> renderer() const;
+  const Renderer &r() const;
+  std::shared_ptr<misc::KeyboardState> keyboard_state() const;
 
 private:
   void window_event_callback(const misc::Event &event);

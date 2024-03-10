@@ -16,32 +16,32 @@ GLuint ShaderProgram::id() const { return id_; }
 
 void ShaderProgram::use() const { glUseProgram(id()); }
 
-void ShaderProgram::attachShader(const GLuint shader) const { glAttachShader(id(), shader); }
+void ShaderProgram::attach_shader(const GLuint shader) const { glAttachShader(id(), shader); }
 
-void ShaderProgram::detachShader(const GLuint shader) const { glDetachShader(id(), shader); }
+void ShaderProgram::detach_shader(const GLuint shader) const { glDetachShader(id(), shader); }
 
 void ShaderProgram::link() const {
   glLinkProgram(id());
   check_link_status();
 }
 
-void ShaderProgram::setUniform(const std::string &name, const GLint value) {
+void ShaderProgram::set_uniform(const std::string &name, const GLint value) {
   glUniform1i(uniform_location(name), value);
 }
 
-void ShaderProgram::setUniform(const std::string &name, const GLfloat value) {
+void ShaderProgram::set_uniform(const std::string &name, const GLfloat value) {
   glUniform1f(uniform_location(name), value);
 }
 
-void ShaderProgram::setUniform(const std::string &name, const glm::vec3 &value) {
+void ShaderProgram::set_uniform(const std::string &name, const glm::vec3 &value) {
   glUniform3fv(uniform_location(name), 1, glm::value_ptr(value));
 }
 
-void ShaderProgram::setUniform(const std::string &name, const glm::vec4 &value) {
+void ShaderProgram::set_uniform(const std::string &name, const glm::vec4 &value) {
   glUniform4fv(uniform_location(name), 1, glm::value_ptr(value));
 }
 
-void ShaderProgram::setUniform(const std::string &name, const glm::mat4 &value) {
+void ShaderProgram::set_uniform(const std::string &name, const glm::mat4 &value) {
   glUniformMatrix4fv(uniform_location(name), 1, GL_FALSE, glm::value_ptr(value));
 }
 

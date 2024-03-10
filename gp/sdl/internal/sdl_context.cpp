@@ -27,12 +27,30 @@ void SDLContext::withdraw_window_event_callback(const std::uint32_t wnd_id) { wi
 std::uint32_t SDLContext::timestamp() const { return SDL_GetTicks(); }
 
 int SDLContext::exec() const {
-  int close_flag = 0;
+  {
+    misc::Event event(misc::Event::Type::Init, timestamp());
+    for (const auto &[wnd_id, callback] : window_event_callbacks_) {
+      const auto wnd = SDL_GetWindowFromID(wnd_id);
+      SDL_GetWindowSize(wnd, &event.init().width, &event.init().height);
+      callback(event);
+    }
+  }
+
+  bool quit_flag = false;
+  int return_code = 0;
   SDL_Event sdl_event;
-  while (SDL_PollEvent(&sdl_event)) {
+
+  while (!quit_flag) {
+    if (!SDL_PollEvent(&sdl_event)) {
+      const misc::Event redraw_event(misc::Event::Type::Redraw, timestamp());
+      forward_event_to_all_windows(redraw_event);
+      continue;
+    }
+
     switch (sdl_event.type) {
     case SDL_QUIT:
-      close_flag = 1;
+      quit_flag = true;
+      return_code = 1;
       break;
     case SDL_WINDOWEVENT: {
       const auto wnd_id = sdl_event.window.windowID;
@@ -134,12 +152,9 @@ int SDLContext::exec() const {
     default:
       break;
     }
-
-    const misc::Event redraw_event(misc::Event::Type::Redraw, timestamp());
-    forward_event_to_all_windows(redraw_event);
   }
 
-  return close_flag;
+  return return_code;
 }
 
 void SDLContext::forward_event_to_window(const std::uint32_t wnd_id, const misc::Event &event) const {

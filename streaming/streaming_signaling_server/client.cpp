@@ -1,6 +1,6 @@
 #include "client.hpp"
 
-#include "streaming_common/common.hpp"
+#include "streaming_common/constants.hpp"
 
 #include <gp/utils/utils.hpp>
 

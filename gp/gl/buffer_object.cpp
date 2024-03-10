@@ -19,35 +19,35 @@ void BufferObject::bind() const { glBindBuffer(target(), id()); }
 
 void BufferObject::unbind() const { glBindBuffer(target(), 0); }
 
-void BufferObject::setData(const GLsizeiptr size, const void *data, const GLenum usage) const {
+void BufferObject::set_data(const GLsizeiptr size, const void *data, const GLenum usage) const {
   glBufferData(target(), size, data, usage);
 }
 
-void BufferObject::setSubData(const GLintptr offset, const GLsizeiptr size, const void *data) const {
+void BufferObject::set_sub_data(const GLintptr offset, const GLsizeiptr size, const void *data) const {
   glBufferSubData(target(), offset, size, data);
 }
 
-void BufferObject::getSubData(const GLintptr offset, const GLsizeiptr size, void *data) const {
+void BufferObject::get_sub_data(const GLintptr offset, const GLsizeiptr size, void *data) const {
   glGetBufferSubData(target(), offset, size, data);
 }
 
 void *BufferObject::map(const GLenum access) const { return glMapBuffer(target(), access); }
 
-void *BufferObject::mapRange(const GLintptr offset, const GLsizeiptr length, const GLbitfield access) const {
+void *BufferObject::map_range(const GLintptr offset, const GLsizeiptr length, const GLbitfield access) const {
   return glMapBufferRange(target(), offset, length, access);
 }
 
-void BufferObject::flushMappedRange(const GLintptr offset, const GLsizeiptr length) const {
+void BufferObject::flush_mapped_range(const GLintptr offset, const GLsizeiptr length) const {
   glFlushMappedBufferRange(target(), offset, length);
 }
 
 void BufferObject::unmap() const { glUnmapBuffer(target()); }
 
-void BufferObject::getParameter(const GLenum value, GLint *data) const {
+void BufferObject::get_parameter(const GLenum value, GLint *data) const {
   glGetBufferParameteriv(target(), value, data);
 }
 
-void BufferObject::getParameter(const GLenum value, GLint64 *data) const {
+void BufferObject::get_parameter(const GLenum value, GLint64 *data) const {
   glGetBufferParameteri64v(target(), value, data);
 }
 } // namespace gp::gl

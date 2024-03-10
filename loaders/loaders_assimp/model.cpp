@@ -32,7 +32,8 @@ glm::mat4 to_glm(const aiMatrix4x4 &mat) {
 
 Model::Model(const std::string &filename) {
   auto importer = Assimp::Importer();
-  const auto scene = importer.ReadFile(filename, aiPostProcessSteps::aiProcess_Triangulate);
+  const auto scene =
+      importer.ReadFile(filename, aiPostProcessSteps::aiProcess_Triangulate | aiPostProcessSteps::aiProcess_GenNormals);
   if (!scene) { return; }
 
   const auto model_format = get_model_format(importer);
@@ -111,7 +112,7 @@ void Model::process_mesh(const aiMesh *const mesh, const glm::mat4 &transformati
                    normals_span.end(),
                    std::back_inserter(normals),
                    [&transformation](const auto &vec) {
-                     const auto transfromed_vec = transformation * glm::vec4{vec.x, vec.y, vec.z, 0.0f};
+                     const auto transfromed_vec = glm::mat3(transformation) * glm::vec3{vec.x, vec.y, vec.z};
                      return glm::normalize(glm::vec3(transfromed_vec));
                    });
     normals_.emplace_back(std::move(normals));

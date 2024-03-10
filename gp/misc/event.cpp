@@ -191,6 +191,7 @@ void Event::assign_all(const Event &other) {
     mouse_move_.y = other.mouse_move_.y;
     mouse_move_.x_rel = other.mouse_move_.x_rel;
     mouse_move_.y_rel = other.mouse_move_.y_rel;
+    mouse_move_.mouse_button_mask = other.mouse_move_.mouse_button_mask;
     break;
   case Type::MouseScroll:
     mouse_scroll_.vertical = other.mouse_scroll_.vertical;

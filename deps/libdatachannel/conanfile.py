@@ -6,7 +6,7 @@ from conan.tools.files import patch
 
 class libdatachannelRecipe(ConanFile):
     name = "libdatachannel"
-    version = "0.20.1"
+    version = "0.20.2"
     package_type = "library"
 
     license = "Mozilla Public License Version 2.0"

@@ -16,6 +16,7 @@ void ModelScene::loop(const gp::misc::Event &event) {
     initialize(event.init().width, event.init().height);
     break;
   case gp::misc::Event::Type::Quit:
+    finalize();
     break;
   case gp::misc::Event::Type::Resize:
     resize(event.resize().width, event.resize().height);
@@ -23,6 +24,7 @@ void ModelScene::loop(const gp::misc::Event &event) {
   case gp::misc::Event::Type::Redraw:
     animate(event.timestamp());
     redraw();
+    swap_buffers();
     break;
   case gp::misc::Event::Type::MouseButton:
     animate_ = false;
@@ -72,6 +74,16 @@ void ModelScene::initialize(const int width, const int height) {
   shader_program_ = gp::gl::create_shader_program("shaders/shader_program");
 }
 
+void ModelScene::finalize() {
+  shader_program_.reset();
+  sizes_.clear();
+  colors_.clear();
+  indices_buffers_.reset();
+  normals_buffers_.reset();
+  vertices_buffers_.reset();
+  vaos_.reset();
+}
+
 void ModelScene::resize(const int width, const int height) {
   glViewport(0, 0, width, height);
   projection_ = glm::perspective(glm::radians(60.0f), static_cast<float>(width) / height, 1.1f, 819200.0f);
@@ -97,15 +109,15 @@ void ModelScene::redraw() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   shader_program_->use();
-  shader_program_->setUniform("camera_rot", camera_rot_mat);
+  shader_program_->set_uniform("camera_rot", camera_rot_mat);
 
   const auto view = glm::lookAt(camera_pos_, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   const auto viewport_mat = projection_ * view;
-  shader_program_->setUniform("viewport", viewport_mat);
+  shader_program_->set_uniform("viewport", viewport_mat);
 
   for (std::size_t i = 0; i < number_of_meshes_; i++) {
     vaos_->bind(i);
-    shader_program_->setUniform("color", colors_[i]);
+    shader_program_->set_uniform("color", colors_[i]);
 
     glDrawElements(GL_TRIANGLES, sizes_[i], GL_UNSIGNED_INT, 0);
   }
@@ -129,17 +141,17 @@ void ModelScene::upload_data() {
     vaos_->bind(i);
 
     vertices_buffers_->bind(i);
-    vertices_buffers_->setData(vertices.size() * sizeof(vertices[0]), glm::value_ptr(vertices[0]), GL_STATIC_DRAW);
+    vertices_buffers_->set_data(vertices.size() * sizeof(vertices[0]), glm::value_ptr(vertices[0]), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(0);
 
     normals_buffers_->bind(i);
-    normals_buffers_->setData(normals.size() * sizeof(normals[0]), glm::value_ptr(normals[0]), GL_STATIC_DRAW);
+    normals_buffers_->set_data(normals.size() * sizeof(normals[0]), glm::value_ptr(normals[0]), GL_STATIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(1);
 
     indices_buffers_->bind(i);
-    indices_buffers_->setData(indices.size() * sizeof(indices[0]), indices.data(), GL_STATIC_DRAW);
+    indices_buffers_->set_data(indices.size() * sizeof(indices[0]), indices.data(), GL_STATIC_DRAW);
 
     colors_.emplace_back(color);
     sizes_.emplace_back(static_cast<GLsizei>(indices.size()));

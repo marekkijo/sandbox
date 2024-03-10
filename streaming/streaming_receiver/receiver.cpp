@@ -1,29 +1,42 @@
 #include "receiver.hpp"
 
+#include "streaming_common/constants.hpp"
+
 #include <gp/json/misc.hpp>
 #include <gp/utils/utils.hpp>
 
-#include <SDL2/SDL_events.h>
-
 namespace streaming {
-Receiver::Receiver(const std::string &server_ip,
-                   const std::uint16_t server_port,
-                   std::shared_ptr<Decoder> &decoder,
-                   std::shared_ptr<Player> &player)
+Receiver::Receiver(const std::string &server_ip, const std::uint16_t server_port)
     : receiver_id_{gp::utils::generate_random_string(16u)}
-    , id_{std::string{RECEIVER_ID} + ":" + receiver_id_}
-    , decoder_{decoder} {
+    , id_{std::string{RECEIVER_ID} + ":" + receiver_id_} {
   configuration_.maxMessageSize = MAX_MESSAGE_SIZE;
 
   web_socket_ = std::make_shared<rtc::WebSocket>();
   init_web_socket(web_socket_);
-  const auto url = std::string{"ws://"} + server_ip + ":" + std::to_string(server_port) + "/" + id_;
-  printf("Connection url: %s\n", url.c_str());
-  web_socket_->open(url);
+  connection_url_ = std::string{"ws://"} + server_ip + ":" + std::to_string(server_port) + "/" + id_;
+  printf("Connection url: %s\n", connection_url_.c_str());
+}
 
-  auto event_function = std::function<void(const gp::misc::Event &event)>{
-      std::bind(&Receiver::event_callback, this, std::placeholders::_1)};
-  player->set_event_callback(event_function);
+void Receiver::connect() { web_socket_->open(connection_url_); }
+
+void Receiver::handle_event(const gp::misc::Event &event) {
+  if (peer_ && peer_->data_channel && peer_->data_channel->isOpen()) {
+    const auto json_event = gp::json::from_event(event);
+    const auto json = nlohmann::json{
+        {"event", json_event}
+    };
+    peer_->data_channel->send(json.dump());
+  }
+}
+
+void Receiver::set_video_stream_info_callback(
+    std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback) {
+  video_stream_info_callback_ = std::move(video_stream_info_callback);
+}
+
+void Receiver::set_incoming_video_stream_data_callback(
+    std::function<void(const std::byte *data, const std::size_t size)> incoming_video_stream_data_callback) {
+  incoming_video_stream_data_callback_ = std::move(incoming_video_stream_data_callback);
 }
 
 void Receiver::init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket) {
@@ -164,7 +177,11 @@ void Receiver::on_data_channel_closed() { printf("Data channel closed\n"); }
 void Receiver::on_data_channel_error(std::string error) { printf("Data channel error: %s\n", error.c_str()); }
 
 void Receiver::on_data_channel_binary_message(rtc::binary message) {
-  if (!decoder_->incoming_data(message.data(), message.size())) { printf("Data upload failed\n"); }
+  if (incoming_video_stream_data_callback_) {
+    incoming_video_stream_data_callback_(message.data(), message.size());
+  } else {
+    printf("Incoming video stream data callback not set\n");
+  }
 }
 
 void Receiver::on_data_channel_string_message(std::string /* message */) {
@@ -228,15 +245,12 @@ void Receiver::parse_video_stream_infos(const nlohmann::json &json_video_stream_
     streamer_infos_.back().video_stream_info.codec_id = it->at("codec_id");
     streamer_infos_.back().video_stream_info.codec_name = it->at("codec_name");
 
-    decoder_->set_video_stream_info(streamer_infos_.back().video_stream_info);
+    if (video_stream_info_callback_) {
+      video_stream_info_callback_(streamer_infos_.back().video_stream_info);
+    } else {
+      throw std::runtime_error("Video stream info callback not set");
+    }
     command_request_video_stream(streamer_infos_.back().streamer_id);
-  }
-}
-
-void Receiver::event_callback(const gp::misc::Event &event) {
-  if (peer_ && peer_->data_channel && peer_->data_channel->isOpen()) {
-    const auto json_event = gp::json::from_event(event);
-    peer_->data_channel->send(json_event.dump());
   }
 }
 } // namespace streaming
