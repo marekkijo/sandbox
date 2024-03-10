@@ -4,66 +4,8 @@
 #include <numbers>
 
 namespace wolf {
-VectorMap::VectorMap(const std::shared_ptr<const RawMap> raw_map)
-    : raw_map_{raw_map} {
-  generate_vector_map();
-  diagonal_length_ = std::sqrtf(width() * width() + height() * height());
-}
-
-const std::vector<std::pair<glm::vec2, glm::vec2>> &VectorMap::vectors() const { return vectors_; }
-
-const std::vector<glm::uvec3> &VectorMap::colors() const { return colors_; }
-
-glm::uvec3 VectorMap::color(const std::size_t index, const float shadow_factor) const {
-  return {std::round(colors()[index].r * shadow_factor),
-          std::round(colors()[index].g * shadow_factor),
-          std::round(colors()[index].b * shadow_factor)};
-}
-
-float VectorMap::width() const { return raw_map_->width(); }
-
-float VectorMap::height() const { return raw_map_->height(); }
-
-float VectorMap::diagonal_length() const { return diagonal_length_; }
-
-void VectorMap::generate_vector_map() {
-  constexpr auto orientation_shadow_factor{0.625f};
-
-  for (auto h = std::size_t{0u}; h < raw_map_->height(); h++) {
-    for (auto w = std::size_t{0u}; w < raw_map_->width(); w++) {
-      if (raw_map_->is_wall(w, h)) {
-        const auto _wall_color = wall_color(raw_map_->block(w, h).wall);
-
-        if (!raw_map_->is_wall_on_n(w, h)) {
-          vectors_.emplace_back(glm::vec2{static_cast<float>(w), static_cast<float>(h)},
-                                glm::vec2{static_cast<float>(w + 1), static_cast<float>(h)});
-          colors_.push_back(_wall_color);
-        }
-        if (!raw_map_->is_wall_on_s(w, h)) {
-          vectors_.emplace_back(glm::vec2{static_cast<float>(w + 1), static_cast<float>(h + 1)},
-                                glm::vec2{static_cast<float>(w), static_cast<float>(h + 1)});
-          colors_.push_back(_wall_color);
-        }
-        if (!raw_map_->is_wall_on_w(w, h)) {
-          vectors_.emplace_back(glm::vec2{static_cast<float>(w), static_cast<float>(h + 1)},
-                                glm::vec2{static_cast<float>(w), static_cast<float>(h)});
-          colors_.push_back(glm::uvec3{std::round(_wall_color.r * orientation_shadow_factor),
-                                       std::round(_wall_color.g * orientation_shadow_factor),
-                                       std::round(_wall_color.b * orientation_shadow_factor)});
-        }
-        if (!raw_map_->is_wall_on_e(w, h)) {
-          vectors_.emplace_back(glm::vec2{static_cast<float>(w + 1), static_cast<float>(h)},
-                                glm::vec2{static_cast<float>(w + 1), static_cast<float>(h + 1)});
-          colors_.push_back(glm::uvec3{std::round(_wall_color.r * orientation_shadow_factor),
-                                       std::round(_wall_color.g * orientation_shadow_factor),
-                                       std::round(_wall_color.b * orientation_shadow_factor)});
-        }
-      }
-    }
-  }
-}
-
-glm::uvec3 VectorMap::wall_color(const Map::Walls wall) {
+namespace {
+glm::uvec3 wall_color(const Map::Walls wall) {
   switch (wall) {
   case Map::Walls::grey_brick_1:
   case Map::Walls::grey_brick_2:
@@ -142,6 +84,67 @@ glm::uvec3 VectorMap::wall_color(const Map::Walls wall) {
 
   default:
     return {255, 255, 255};
+  }
+}
+} // namespace
+
+VectorMap::VectorMap(const RawMap &raw_map)
+    : width_{static_cast<float>(raw_map.width())}
+    , height_{static_cast<float>(raw_map.height())}
+    , diagonal_length_{std::sqrtf(width() * width() + height() * height())} {
+  generate_vector_map(raw_map);
+}
+
+const std::vector<std::pair<glm::vec2, glm::vec2>> &VectorMap::vectors() const { return vectors_; }
+
+const std::vector<glm::uvec3> &VectorMap::colors() const { return colors_; }
+
+glm::uvec3 VectorMap::color(const std::size_t index, const float shadow_factor) const {
+  return {std::round(colors()[index].r * shadow_factor),
+          std::round(colors()[index].g * shadow_factor),
+          std::round(colors()[index].b * shadow_factor)};
+}
+
+float VectorMap::width() const { return width_; }
+
+float VectorMap::height() const { return height_; }
+
+float VectorMap::diagonal_length() const { return diagonal_length_; }
+
+void VectorMap::generate_vector_map(const RawMap &raw_map) {
+  constexpr auto orientation_shadow_factor{0.625f};
+
+  for (auto h = std::size_t{0u}; h < raw_map.height(); h++) {
+    for (auto w = std::size_t{0u}; w < raw_map.width(); w++) {
+      if (raw_map.is_wall(w, h)) {
+        const auto _wall_color = wall_color(raw_map.block(w, h).wall);
+
+        if (!raw_map.is_wall_on_n(w, h)) {
+          vectors_.emplace_back(glm::vec2{static_cast<float>(w), static_cast<float>(h)},
+                                glm::vec2{static_cast<float>(w + 1), static_cast<float>(h)});
+          colors_.push_back(_wall_color);
+        }
+        if (!raw_map.is_wall_on_s(w, h)) {
+          vectors_.emplace_back(glm::vec2{static_cast<float>(w + 1), static_cast<float>(h + 1)},
+                                glm::vec2{static_cast<float>(w), static_cast<float>(h + 1)});
+          colors_.push_back(_wall_color);
+        }
+        if (!raw_map.is_wall_on_w(w, h)) {
+          vectors_.emplace_back(glm::vec2{static_cast<float>(w), static_cast<float>(h + 1)},
+                                glm::vec2{static_cast<float>(w), static_cast<float>(h)});
+          colors_.push_back(glm::uvec3{std::round(_wall_color.r * orientation_shadow_factor),
+                                       std::round(_wall_color.g * orientation_shadow_factor),
+                                       std::round(_wall_color.b * orientation_shadow_factor)});
+        }
+        if (!raw_map.is_wall_on_e(w, h)) {
+          vectors_.emplace_back(glm::vec2{static_cast<float>(w + 1), static_cast<float>(h)},
+                                glm::vec2{static_cast<float>(w + 1), static_cast<float>(h + 1)});
+          colors_.push_back(glm::uvec3{std::round(_wall_color.r * orientation_shadow_factor),
+                                       std::round(_wall_color.g * orientation_shadow_factor),
+                                       std::round(_wall_color.b * orientation_shadow_factor)});
+        }
+      }
+    }
   }
 }
 } // namespace wolf

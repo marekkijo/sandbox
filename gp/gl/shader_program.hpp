@@ -41,13 +41,13 @@ public:
    * @brief Attach a shader to the shader program.
    * @param shader The ID of the shader to attach.
    */
-  void attachShader(const GLuint shader) const;
+  void attach_shader(const GLuint shader) const;
 
   /**
    * @brief Detach a shader from the shader program.
    * @param shader The ID of the shader to detach.
    */
-  void detachShader(const GLuint shader) const;
+  void detach_shader(const GLuint shader) const;
 
   /**
    * @brief Link the shader program.
@@ -59,35 +59,35 @@ public:
    * @param name The name of the uniform variable.
    * @param value The value to set.
    */
-  void setUniform(const std::string &name, const GLint value);
+  void set_uniform(const std::string &name, const GLint value);
 
   /**
    * @brief Set a floating-point uniform value in the shader program.
    * @param name The name of the uniform variable.
    * @param value The value to set.
    */
-  void setUniform(const std::string &name, const GLfloat value);
+  void set_uniform(const std::string &name, const GLfloat value);
 
   /**
    * @brief Set a vector uniform value in the shader program.
    * @param name The name of the uniform variable.
    * @param value The value to set.
    */
-  void setUniform(const std::string &name, const glm::vec3 &value);
+  void set_uniform(const std::string &name, const glm::vec3 &value);
 
   /**
    * @brief Set a vector uniform value in the shader program.
    * @param name The name of the uniform variable.
    * @param value The value to set.
    */
-  void setUniform(const std::string &name, const glm::vec4 &value);
+  void set_uniform(const std::string &name, const glm::vec4 &value);
 
   /**
    * @brief Set a matrix uniform value in the shader program.
    * @param name The name of the uniform variable.
    * @param value The value to set.
    */
-  void setUniform(const std::string &name, const glm::mat4 &value);
+  void set_uniform(const std::string &name, const glm::mat4 &value);
 
 private:
   /**

@@ -1,18 +1,14 @@
 #include "streamer.hpp"
 
+#include "streaming_common/encoder.hpp"
+
 #include <gp/json/misc.hpp>
 #include <gp/utils/utils.hpp>
 
-#include <SDL2/SDL_events.h>
-
 namespace streaming {
-Streamer::Streamer(const std::string &server_ip,
-                   const std::uint16_t server_port,
-                   std::shared_ptr<Encoder> &encoder,
-                   std::shared_ptr<Renderer> &renderer)
+Streamer::Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> encoder)
     : id_{std::string{STREAMER_ID} + ":" + gp::utils::generate_random_string(16u)}
-    , video_stream_info_{encoder->get_video_stream_info()}
-    , renderer_{renderer} {
+    , video_stream_info_{encoder->video_stream_info()} {
   configuration_.iceServers.emplace_back("stun.l.google.com", 19302);
   configuration_.disableAutoNegotiation = true;
   configuration_.maxMessageSize = MAX_MESSAGE_SIZE;
@@ -23,13 +19,13 @@ Streamer::Streamer(const std::string &server_ip,
   printf("Connection url: %s\n", url.c_str());
   web_socket_->open(url);
 
-  auto video_stream_function = std::function<void(const std::byte *data, const std::size_t size, const bool eof)>{
-      std::bind(&Streamer::video_stream_callback,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                std::placeholders::_3)};
-  encoder->set_video_stream_callback(video_stream_function);
+  encoder->set_video_stream_callback([this](const std::byte *data, const std::size_t size, const bool eof) {
+    video_stream_callback(data, size, eof);
+  });
+}
+
+void Streamer::set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback) {
+  event_callback_ = std::move(event_callback);
 }
 
 void Streamer::init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket) {
@@ -94,10 +90,7 @@ void Streamer::on_web_socket_string_message(std::string message) {
   printf("Unknown message: %s\n", message.c_str());
 }
 
-void Streamer::on_data_channel_open() {
-  printf("Data channel opened\n");
-  renderer_->start_render_thread();
-}
+void Streamer::on_data_channel_open() { printf("Data channel opened\n"); }
 
 void Streamer::on_data_channel_closed() { printf("Data channel closed\n"); }
 
@@ -218,6 +211,6 @@ void Streamer::video_stream_callback(const std::byte *data, const std::size_t si
 
 void Streamer::parse_event(const nlohmann::json &json_event) {
   const auto event = gp::json::to_event(json_event);
-  renderer_->process_event(event);
+  if (event_callback_) { event_callback_(event); }
 }
 } // namespace streaming

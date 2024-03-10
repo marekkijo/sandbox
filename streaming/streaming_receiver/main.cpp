@@ -1,16 +1,11 @@
-#include "player.hpp"
+#include "decode_scene.hpp"
 #include "receiver.hpp"
-
-#include "streaming_common/decoder.hpp"
 
 #include <boost/program_options.hpp>
 
-#include <chrono>
+#include <cstdint>
 #include <iostream>
-#include <mutex>
-#include <thread>
-
-using namespace std::literals::chrono_literals;
+#include <string>
 
 struct ProgramSetup {
   bool exit{};
@@ -37,36 +32,21 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   return {false, vm["ip"].as<std::string>(), vm["port"].as<std::uint16_t>()};
 }
 
-auto should_exit = std::atomic_bool{false};
-auto mutex = std::mutex{};
-
-void wait_for_exit() {
-  printf("Press 'enter' to exit\n");
-  std::cin.ignore();
-  printf("exiting...\n");
-  {
-    auto unique_lock = std::unique_lock{mutex};
-    should_exit = true;
-  }
-}
-
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
   if (program_setup.exit) { return 1; }
 
-  try {
-    auto decoder = std::make_shared<streaming::Decoder>();
-    auto player = std::make_shared<streaming::Player>(decoder);
-    streaming::Receiver receiver(program_setup.ip, program_setup.port, decoder, player);
-    std::thread wait_thread(wait_for_exit);
-    while (true) {
-      std::this_thread::sleep_for(1000ms);
-      auto unique_lock = std::unique_lock{mutex};
-      if (should_exit) { break; }
-    }
-    wait_thread.join();
-  } catch (const std::exception &e) {
-    printf("Error: %s\n", e.what());
-    return -1;
-  }
+  auto decode_scene = std::make_unique<streaming::DecodeScene>();
+  auto receiver = std::make_unique<streaming::Receiver>(program_setup.ip, program_setup.port);
+
+  receiver->set_video_stream_info_callback(
+      [&decode_scene](const streaming::VideoStreamInfo &video_stream_info) { decode_scene->init(video_stream_info); });
+  receiver->set_incoming_video_stream_data_callback(
+      [&decode_scene](const std::byte *data, const std::size_t size) { decode_scene->consume_data(data, size); });
+  decode_scene->set_event_callback([&receiver](const gp::misc::Event &event) { receiver->handle_event(event); });
+
+  receiver->connect();
+
+  const auto async_init = true;
+  return decode_scene->exec(async_init);
 }

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "common.hpp"
+#include "streaming_common/decoder_fwd.hpp"
+
+#include "streaming_common/frame_data.hpp"
+#include "streaming_common/video_stream_info.hpp"
 
 #include <gp/ffmpeg/ffmpeg.hpp>
 
@@ -39,16 +42,17 @@ public:
   };
 
   Decoder() = default;
+
+  ~Decoder();
+
   Decoder(const Decoder &) = delete;
   Decoder &operator=(const Decoder &) = delete;
   Decoder(Decoder &&other) noexcept = delete;
   Decoder &operator=(Decoder &&other) noexcept = delete;
 
-  ~Decoder();
+  void init(const VideoStreamInfo &video_stream_info);
 
-  std::shared_ptr<std::vector<std::uint8_t>> &rgb_frame();
-  void set_video_stream_info_callback(
-      std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback);
+  std::shared_ptr<FrameData> rgb_frame();
   /**
    * Prepares another frame available through @ref rgb_frame().
    */
@@ -60,29 +64,32 @@ public:
    *      true:   data successfully uploaded
    *      false:  data not uploaded - in EOF state, data must be temporarily stored elsewhere
    */
-  [[nodiscard]] bool incoming_data(const std::byte *data, const std::size_t size);
+  bool incoming_data(const std::byte *data, const std::size_t size, const bool async = false);
   void signal_eof();
-  void set_video_stream_info(const VideoStreamInfo &video_stream_info);
 
 private:
   [[nodiscard]] bool upload();
   void reduce_buffer(int n);
   void destroy();
   void yuv_to_rgb();
+  void fill_async_buffer(const std::byte *data, const std::size_t size);
+  void consume_async_buffer();
 
   static constexpr std::array<std::uint8_t, AV_INPUT_BUFFER_PADDING_SIZE> NULL_PADDING{};
 
-  std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback_{};
+  std::shared_ptr<FrameData> rgb_frame_{};
 
-  std::shared_ptr<std::vector<std::uint8_t>> rgb_frame_{};
-
-  AVPacket *packet_{};
   const AVCodec *codec_{};
-  AVCodecParserContext *parser_{};
   AVCodecContext *context_{};
+  AVCodecParserContext *parser_{};
+  AVPacket *packet_{};
   AVFrame *frame_{};
 
   std::vector<std::uint8_t> buffer_{};
+
+  std::vector<std::uint8_t> async_buffer_{};
+  std::mutex async_buffer_mutex_{};
+
   /**
    * Packet was sent by avcodec_send_packet - expected to receive frames first.
    */
@@ -90,13 +97,8 @@ private:
   /**
    * EOF signaled from the outside - no more data accepted.
    */
-  bool signaled_eof_{false};
+  std::atomic_bool signaled_eof_{};
 
   SwsContext *sws_context_{};
-
-  /**
-   * incoming_data() is expected to be called in parallel - its critical section must be secured with this mutex.
-   */
-  std::mutex mutex_{};
 };
 } // namespace streaming

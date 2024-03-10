@@ -23,6 +23,7 @@ public:
 
 private:
   void initialize(const int width, const int height);
+  void finalize();
   void resize(const int width, const int height);
   void animate(const std::uint32_t timestamp);
   void redraw();

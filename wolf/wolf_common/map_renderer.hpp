@@ -1,10 +1,9 @@
 #pragma once
 
-#include "player_state.hpp"
-#include "renderer.hpp"
-#include "vector_map.hpp"
+#include "wolf_common/player_state.hpp"
+#include "wolf_common/vector_map.hpp"
 
-#include <gp/sdl/system.hpp>
+#include <gp/sdl/renderer.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -12,35 +11,38 @@
 #include <memory>
 
 namespace wolf {
-class MapRenderer final : public Renderer {
+class MapRenderer {
 public:
+  MapRenderer(const std::shared_ptr<const VectorMap> vector_map,
+              const std::shared_ptr<const PlayerState> player_state,
+              const std::uint32_t fov_in_degrees,
+              const bool player_oriented = false);
+
   MapRenderer(const MapRenderer &) = default;
   MapRenderer &operator=(const MapRenderer &) = default;
   MapRenderer(MapRenderer &&) noexcept = default;
   MapRenderer &operator=(MapRenderer &&) noexcept = default;
-  ~MapRenderer() final = default;
+  ~MapRenderer() = default;
 
-  MapRenderer(gp::sdl::System &sdl_sys,
-              const std::shared_ptr<const VectorMap> vector_map,
-              const std::shared_ptr<const PlayerState> player_state,
-              const bool player_oriented = false);
-
-  void redraw() final;
-
-protected:
-  void resize(const int width, const int height) final;
+  void set_renderer(std::shared_ptr<const gp::sdl::Renderer> renderer);
+  void resize(const int width, const int height);
+  void redraw();
 
 private:
-  const std::shared_ptr<const VectorMap> vector_map_{};
-  const std::shared_ptr<const PlayerState> player_state_{};
-  const bool player_oriented_{};
-
-  float scale_{};
-  glm::vec3 screen_center_translation_{};
-
+  const gp::sdl::Renderer &r() const;
   void redraw_player_oriented() const;
   void redraw_map_oriented() const;
   void draw_map(const glm::mat4 &mat) const;
   void draw_player(const glm::mat4 &mat) const;
+
+  const std::shared_ptr<const VectorMap> vector_map_{};
+  const std::shared_ptr<const PlayerState> player_state_{};
+  const float fov_in_rad_{};
+  const bool player_oriented_{};
+
+  std::shared_ptr<const gp::sdl::Renderer> r_{};
+
+  float scale_{};
+  glm::vec3 screen_center_translation_{};
 };
 } // namespace wolf

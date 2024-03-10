@@ -16,10 +16,8 @@ void Scene2D::init(const int width, const int height, const std::string &title) 
 
   wnd_->set_window_event_callback([this](const misc::Event &event) { window_event_callback(event); });
 
-  misc::Event event(misc::Event::Type::Init, ctx_->timestamp());
-  event.init().width = width;
-  event.init().height = height;
-  loop(event);
+  width_ = width;
+  height_ = height;
 }
 
 Scene2D::~Scene2D() = default;
@@ -30,7 +28,21 @@ int Scene2D::width() const { return width_; }
 
 int Scene2D::height() const { return height_; }
 
-std::shared_ptr<internal::SDLContext> Scene2D::ctx() { return ctx_; }
+std::uint32_t Scene2D::timestamp() const { return ctx_->timestamp(); }
 
-void Scene2D::window_event_callback(const misc::Event &event) { loop(event); }
+std::shared_ptr<const Renderer> Scene2D::renderer() const { return wnd_->renderer(); }
+
+const Renderer &Scene2D::r() const { return wnd_->r(); }
+
+std::shared_ptr<misc::KeyboardState> Scene2D::keyboard_state() const { return wnd_->keyboard_state(); }
+
+void Scene2D::window_event_callback(const misc::Event &event) {
+  loop(event);
+  if (event.type() == misc::Event::Type::Resize) {
+    width_ = event.resize().width;
+    height_ = event.resize().height;
+  } else if (event.type() == misc::Event::Type::Quit) {
+    wnd_.reset();
+  }
+}
 } // namespace gp::sdl

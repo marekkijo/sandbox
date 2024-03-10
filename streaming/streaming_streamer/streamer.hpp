@@ -1,13 +1,15 @@
 #pragma once
 
-#include "renderer.hpp"
+#include "streaming_common/constants.hpp"
+#include "streaming_common/encoder_fwd.hpp"
+#include "streaming_common/video_stream_info.hpp"
 
-#include "streaming_common/common.hpp"
-#include "streaming_common/encoder.hpp"
+#include <gp/misc/event.hpp>
 
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>
 
+#include <functional>
 #include <memory>
 #include <unordered_set>
 
@@ -19,10 +21,9 @@ public:
   Streamer(Streamer &&other) noexcept = delete;
   Streamer &operator=(Streamer &&other) noexcept = delete;
 
-  Streamer(const std::string &server_ip,
-           const std::uint16_t server_port,
-           std::shared_ptr<Encoder> &encoder,
-           std::shared_ptr<Renderer> &renderer);
+  Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> encoder);
+
+  void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
 
 private:
   struct Peer {
@@ -59,6 +60,6 @@ private:
   rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
   std::shared_ptr<Peer> peer_{};
-  std::shared_ptr<Renderer> renderer_{};
+  std::function<void(const gp::misc::Event &event)> event_callback_{};
 };
 } // namespace streaming

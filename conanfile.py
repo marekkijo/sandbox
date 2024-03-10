@@ -13,7 +13,7 @@ class SandboxRecipe(ConanFile):
         self.requires("glad/0.1.36")
         self.requires("glfw/3.3.8")
         self.requires("glm/0.9.9.8")
-        self.requires("libdatachannel/0.20.1")
+        self.requires("libdatachannel/0.20.2")
         self.requires("nlohmann_json/3.11.3")
         self.requires("sdl/2.28.5")
 

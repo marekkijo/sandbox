@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gp/misc/event_fwd.hpp>
+
 #include <cstdint>
 #include <stdexcept>
 
@@ -301,7 +303,8 @@ public:
     Up,                                /**< The 'Up' key. */
     VolumeDown,                        /**< The 'VolumeDown' key. */
     VolumeUp,                          /**< The 'VolumeUp' key. */
-    WWW                                /**< The 'WWW' key. */
+    WWW,                               /**< The 'WWW' key. */
+    EnumCount                          /**< The number of key scan codes. */
   };
 
   struct InitData {

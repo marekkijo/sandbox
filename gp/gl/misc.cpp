@@ -14,11 +14,11 @@ std::unique_ptr<ShaderProgram> create_shader_program(const std::string &program_
   const auto fragment_shader = std::make_unique<Shader>(GL_FRAGMENT_SHADER, fragment_shader_code);
 
   auto shader_program = std::make_unique<ShaderProgram>();
-  shader_program->attachShader(vertex_shader->id());
-  shader_program->attachShader(fragment_shader->id());
+  shader_program->attach_shader(vertex_shader->id());
+  shader_program->attach_shader(fragment_shader->id());
   shader_program->link();
-  shader_program->detachShader(vertex_shader->id());
-  shader_program->detachShader(fragment_shader->id());
+  shader_program->detach_shader(vertex_shader->id());
+  shader_program->detach_shader(fragment_shader->id());
 
   return shader_program;
 }

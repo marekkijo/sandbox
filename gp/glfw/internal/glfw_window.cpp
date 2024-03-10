@@ -63,6 +63,8 @@ public:
 
   int get_mouse_button(int button) const { return glfwGetMouseButton(wnd_, button); }
 
+  void request_close() const { glfwSetWindowShouldClose(wnd_, GLFW_TRUE); }
+
 private:
   void set_window_user_pointer(void *ptr) const { glfwSetWindowUserPointer(wnd_, ptr); }
 
@@ -151,4 +153,6 @@ int GLFWWindow::window_should_close() const { return impl_->window_should_close(
 void GLFWWindow::swap_buffers() const { impl_->swap_buffers(); }
 
 int GLFWWindow::get_mouse_button(int button) const { return impl_->get_mouse_button(button); }
+
+void GLFWWindow::request_close() const { impl_->request_close(); }
 } // namespace gp::glfw::internal
