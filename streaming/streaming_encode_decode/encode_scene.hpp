@@ -23,10 +23,10 @@ public:
   EncodeScene(const VideoStreamInfo &video_stream_info, const int length_s);
   ~EncodeScene() final;
 
-  void loop(const gp::misc::Event &event) final;
-
 private:
   void init(const int width, const int height, const std::string &title);
+
+  void loop(const gp::misc::Event &event) final;
 
   void initialize();
   void finalize();

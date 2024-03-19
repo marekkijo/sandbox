@@ -25,6 +25,7 @@ public:
   void init(const int width, const int height, const std::string &title);
   int exec();
 
+protected:
   virtual void loop(const misc::Event &event) = 0;
 
   int width() const;

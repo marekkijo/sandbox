@@ -25,11 +25,12 @@ public:
   ~EncodeScene() final;
 
   std::shared_ptr<Encoder> encoder() const;
-  void loop(const gp::misc::Event &event) final;
   void handle_event(const gp::misc::Event &event);
 
 private:
   void init(const int width, const int height, const std::string &title);
+
+  void loop(const gp::misc::Event &event) final;
 
   void initialize();
   void finalize();
