@@ -29,6 +29,7 @@ public:
 
 private:
   void init(const int width, const int height, const std::string &title);
+
   void loop(const gp::misc::Event &event) final;
 
   void initialize();

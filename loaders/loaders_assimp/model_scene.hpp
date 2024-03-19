@@ -19,9 +19,9 @@ public:
   explicit ModelScene(std::shared_ptr<const Model> model);
   ~ModelScene() final = default;
 
+private:
   void loop(const gp::misc::Event &event) final;
 
-private:
   void initialize(const int width, const int height);
   void finalize();
   void resize(const int width, const int height);
