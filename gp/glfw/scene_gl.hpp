@@ -43,6 +43,7 @@ public:
    */
   int exec(const bool async_init = false);
 
+protected:
   virtual void loop(const misc::Event &event) = 0;
 
   int width() const;
