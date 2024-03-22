@@ -71,7 +71,9 @@ std::unique_ptr<gp::sdl::Scene2D> create_scene(const ProgramSetup &program_setup
 
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
-  if (program_setup.exit) { return 1; }
+  if (program_setup.exit) {
+    return 1;
+  }
 
   const auto scene = create_scene(program_setup);
   return scene->exec();

@@ -47,13 +47,17 @@ void DecodeScene::loop(const gp::misc::Event &event) {
     break;
   case gp::misc::Event::Type::Redraw:
     decode();
-    if (redraw()) { swap_buffers(); }
+    if (redraw()) {
+      swap_buffers();
+    }
     break;
   case gp::misc::Event::Type::MouseButton:
   case gp::misc::Event::Type::MouseMove:
   case gp::misc::Event::Type::MouseScroll:
   case gp::misc::Event::Type::Key:
-    if (event_callback_) { event_callback_(event); }
+    if (event_callback_) {
+      event_callback_(event);
+    }
     break;
   default:
     break;
@@ -78,7 +82,9 @@ void DecodeScene::finalize() {
 void DecodeScene::decode() {
   constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
 
-  if (frame_ready_) { return; }
+  if (frame_ready_) {
+    return;
+  }
 
   const auto status = decoder_->decode();
   switch (status.code) {
@@ -112,7 +118,9 @@ void DecodeScene::decode() {
 }
 
 bool DecodeScene::redraw() {
-  if (!frame_ready_) { return false; }
+  if (!frame_ready_) {
+    return false;
+  }
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glActiveTexture(GL_TEXTURE0);

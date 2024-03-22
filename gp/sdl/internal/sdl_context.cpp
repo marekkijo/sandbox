@@ -8,8 +8,12 @@
 
 namespace gp::sdl::internal {
 SDLContext::SDLContext() {
-  if (context_created_) { throw std::runtime_error{"SDL context already created"}; }
-  if (SDL_Init(SDL_INIT_EVERYTHING) != 0) { throw std::runtime_error{std::string{"SDL_Init error:"} + SDL_GetError()}; }
+  if (context_created_) {
+    throw std::runtime_error{"SDL context already created"};
+  }
+  if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+    throw std::runtime_error{std::string{"SDL_Init error:"} + SDL_GetError()};
+  }
   context_created_ = true;
 }
 
@@ -159,11 +163,15 @@ int SDLContext::exec() const {
 
 void SDLContext::forward_event_to_window(const std::uint32_t wnd_id, const misc::Event &event) const {
   const auto it = window_event_callbacks_.find(wnd_id);
-  if (it != window_event_callbacks_.end()) { it->second(event); }
+  if (it != window_event_callbacks_.end()) {
+    it->second(event);
+  }
 }
 
 void SDLContext::forward_event_to_all_windows(const misc::Event &event) const {
-  for (const auto &[wnd_id, callback] : window_event_callbacks_) { callback(event); }
+  for (const auto &[wnd_id, callback] : window_event_callbacks_) {
+    callback(event);
+  }
 }
 
 bool SDLContext::context_created_{false};

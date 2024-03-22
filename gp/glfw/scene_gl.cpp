@@ -23,7 +23,9 @@ void SceneGL::init(const int width, const int height, const std::string &title, 
     return;
   }
 
-  if (wnd_) { return; }
+  if (wnd_) {
+    return;
+  }
 
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

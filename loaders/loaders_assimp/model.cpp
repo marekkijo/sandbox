@@ -34,7 +34,9 @@ Model::Model(const std::string &filename) {
   auto importer = Assimp::Importer();
   const auto scene =
       importer.ReadFile(filename, aiPostProcessSteps::aiProcess_Triangulate | aiPostProcessSteps::aiProcess_GenNormals);
-  if (!scene) { return; }
+  if (!scene) {
+    return;
+  }
 
   const auto model_format = get_model_format(importer);
   const auto orientation = get_orientation(model_format, scene->mMetaData);
@@ -82,7 +84,9 @@ void Model::process_node(const aiScene *const scene, const aiNode *const node, g
       }
     }
 
-    if (!color_applied) { colors_.emplace_back(0.75f, 0.75f, 0.75f, 1.0f); }
+    if (!color_applied) {
+      colors_.emplace_back(0.75f, 0.75f, 0.75f, 1.0f);
+    }
   }
   for (const auto child : std::span(node->mChildren, node->mNumChildren)) {
     process_node(scene, child, transformation);
@@ -90,7 +94,9 @@ void Model::process_node(const aiScene *const scene, const aiNode *const node, g
 }
 
 void Model::process_mesh(const aiMesh *const mesh, const glm::mat4 &transformation) {
-  if (!mesh->HasFaces()) { return; }
+  if (!mesh->HasFaces()) {
+    return;
+  }
 
   const auto vertices_span = std::span(mesh->mVertices, mesh->mNumVertices);
   auto vertices = std::vector<glm::vec3>{};
@@ -121,7 +127,9 @@ void Model::process_mesh(const aiMesh *const mesh, const glm::mat4 &transformati
   auto indices = std::vector<std::uint32_t>{};
   const auto faces_span = std::span(mesh->mFaces, mesh->mNumFaces);
   for (const auto &face : faces_span) {
-    if (face.mNumIndices != 3u) { continue; }
+    if (face.mNumIndices != 3u) {
+      continue;
+    }
     indices.insert(indices.end(), face.mIndices, face.mIndices + face.mNumIndices);
   }
   indices_.emplace_back(std::move(indices));

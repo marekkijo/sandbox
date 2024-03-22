@@ -6,8 +6,12 @@
 
 namespace gp::glfw::internal {
 GLFWContext::GLFWContext() {
-  if (context_created_) { throw std::runtime_error("GLFW context already created"); }
-  if (glfwInit() == GLFW_FALSE) { throw std::runtime_error("GLFW initialization failed"); }
+  if (context_created_) {
+    throw std::runtime_error("GLFW context already created");
+  }
+  if (glfwInit() == GLFW_FALSE) {
+    throw std::runtime_error("GLFW initialization failed");
+  }
   context_created_ = true;
 }
 

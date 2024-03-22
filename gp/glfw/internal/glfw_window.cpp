@@ -10,7 +10,9 @@ public:
   Impl(std::shared_ptr<GLFWContext> ctx, const int width, const int height, const std::string &title)
       : ctx_{std::move(ctx)}
       , wnd_{glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr)} {
-    if (!wnd_) { throw std::runtime_error{"Couldn't create GLFW window"}; }
+    if (!wnd_) {
+      throw std::runtime_error{"Couldn't create GLFW window"};
+    }
     make_context_current();
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
       throw std::runtime_error{"Couldn't initialize GLAD"};
@@ -86,28 +88,38 @@ private:
 
   static void loose_framebuffer_size_callback(GLFWwindow *wnd_, const int width, const int height) {
     const auto *wnd = reinterpret_cast<Impl *>(glfwGetWindowUserPointer(wnd_));
-    if (wnd->framebuffer_size_callback_) { wnd->framebuffer_size_callback_(width, height); }
+    if (wnd->framebuffer_size_callback_) {
+      wnd->framebuffer_size_callback_(width, height);
+    }
   }
 
   static void loose_mouse_button_callback(GLFWwindow *wnd_, const int button, const int action, const int mods) {
     const auto *wnd = reinterpret_cast<Impl *>(glfwGetWindowUserPointer(wnd_));
-    if (wnd->mouse_button_callback_) { wnd->mouse_button_callback_(button, action, mods); }
+    if (wnd->mouse_button_callback_) {
+      wnd->mouse_button_callback_(button, action, mods);
+    }
   }
 
   static void loose_cursor_pos_callback(GLFWwindow *wnd_, const double xpos, const double ypos) {
     const auto *wnd = reinterpret_cast<Impl *>(glfwGetWindowUserPointer(wnd_));
-    if (wnd->cursor_pos_callback_) { wnd->cursor_pos_callback_(xpos, ypos); }
+    if (wnd->cursor_pos_callback_) {
+      wnd->cursor_pos_callback_(xpos, ypos);
+    }
   }
 
   static void loose_scroll_callback(GLFWwindow *wnd_, const double xoffset, const double yoffset) {
     const auto *wnd = reinterpret_cast<Impl *>(glfwGetWindowUserPointer(wnd_));
-    if (wnd->scroll_callback_) { wnd->scroll_callback_(xoffset, yoffset); }
+    if (wnd->scroll_callback_) {
+      wnd->scroll_callback_(xoffset, yoffset);
+    }
   }
 
   static void
   loose_key_callback(GLFWwindow *wnd_, const int key, const int scancode, const int action, const int mods) {
     const auto *wnd = reinterpret_cast<Impl *>(glfwGetWindowUserPointer(wnd_));
-    if (wnd->key_callback_) { wnd->key_callback_(key, scancode, action, mods); }
+    if (wnd->key_callback_) {
+      wnd->key_callback_(key, scancode, action, mods);
+    }
   }
 
   const std::shared_ptr<const GLFWContext> ctx_{};

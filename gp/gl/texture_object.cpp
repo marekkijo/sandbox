@@ -6,7 +6,9 @@ namespace gp::gl {
 TextureObject::TextureObject(const GLenum target)
     : target_(target) {
   glGenTextures(1, &id_);
-  if (id() == 0) { throw std::runtime_error("Failed to generate texture object"); }
+  if (id() == 0) {
+    throw std::runtime_error("Failed to generate texture object");
+  }
 }
 
 TextureObject::~TextureObject() { glDeleteTextures(1, &id_); }

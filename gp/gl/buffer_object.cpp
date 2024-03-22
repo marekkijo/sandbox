@@ -6,7 +6,9 @@ namespace gp::gl {
 BufferObject::BufferObject(const GLenum target)
     : target_(target) {
   glGenBuffers(1, &id_);
-  if (id() == 0) { throw std::runtime_error("Failed to generate buffer object"); }
+  if (id() == 0) {
+    throw std::runtime_error("Failed to generate buffer object");
+  }
 }
 
 BufferObject::~BufferObject() { glDeleteBuffers(1, &id_); }

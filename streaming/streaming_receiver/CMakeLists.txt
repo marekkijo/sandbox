@@ -11,19 +11,23 @@ target_link_libraries(streaming_receiver glm::glm)
 target_link_libraries(streaming_receiver glad::glad)
 target_link_libraries(streaming_receiver glfw)
 
-add_custom_command(TARGET streaming_receiver PRE_BUILD
+add_custom_command(
+  TARGET streaming_receiver
+  PRE_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-  ${LIBDATACHANNEL_DLL_BIN} $<TARGET_FILE_DIR:streaming_receiver>
-)
+          ${LIBDATACHANNEL_DLL_BIN} $<TARGET_FILE_DIR:streaming_receiver>)
 
-add_custom_command(TARGET streaming_receiver PRE_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-  ${CMAKE_CURRENT_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:streaming_receiver>/shaders
-)
+add_custom_command(
+  TARGET streaming_receiver
+  PRE_BUILD
+  COMMAND
+    ${CMAKE_COMMAND} -E copy_directory_if_different
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders
+    $<TARGET_FILE_DIR:streaming_receiver>/shaders)
 
-set_target_properties(streaming_receiver PROPERTIES
-  FOLDER ${SOLUTION_FOLDER}
-  VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:streaming_receiver>
-)
+set_target_properties(
+  streaming_receiver
+  PROPERTIES FOLDER ${SOLUTION_FOLDER} VS_DEBUGGER_WORKING_DIRECTORY
+                                       $<TARGET_FILE_DIR:streaming_receiver>)
 
 source_group(${SOURCE_GROUP_LABEL} FILES ${SRC_FILES})

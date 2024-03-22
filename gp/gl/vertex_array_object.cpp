@@ -5,7 +5,9 @@
 namespace gp::gl {
 VertexArrayObject::VertexArrayObject() {
   glGenVertexArrays(1, &id_);
-  if (id() == 0) { throw std::runtime_error("Failed to generate vertex array object"); }
+  if (id() == 0) {
+    throw std::runtime_error("Failed to generate vertex array object");
+  }
 }
 
 VertexArrayObject::~VertexArrayObject() { glDeleteVertexArrays(1, &id_); }

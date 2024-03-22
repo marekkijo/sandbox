@@ -44,82 +44,114 @@ Event::Type Event::type() const { return type_; }
 std::uint32_t Event::timestamp() const { return timestamp_; }
 
 Event::InitData &Event::init() {
-  if (type() != Type::Init) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Init) {
+    throw std::runtime_error("Wrong data access");
+  }
   return init_;
 }
 
 const Event::InitData &Event::init() const {
-  if (type() != Type::Init) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Init) {
+    throw std::runtime_error("Wrong data access");
+  }
   return init_;
 }
 
 Event::QuitData &Event::quit() {
-  if (type() != Type::Quit) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Quit) {
+    throw std::runtime_error("Wrong data access");
+  }
   return quit_;
 }
 
 const Event::QuitData &Event::quit() const {
-  if (type() != Type::Quit) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Quit) {
+    throw std::runtime_error("Wrong data access");
+  }
   return quit_;
 }
 
 Event::ResizeData &Event::resize() {
-  if (type() != Type::Resize) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Resize) {
+    throw std::runtime_error("Wrong data access");
+  }
   return resize_;
 }
 
 const Event::ResizeData &Event::resize() const {
-  if (type() != Type::Resize) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Resize) {
+    throw std::runtime_error("Wrong data access");
+  }
   return resize_;
 }
 
 Event::MouseButtonData &Event::mouse_button() {
-  if (type() != Type::MouseButton) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::MouseButton) {
+    throw std::runtime_error("Wrong data access");
+  }
   return mouse_button_;
 }
 
 const Event::MouseButtonData &Event::mouse_button() const {
-  if (type() != Type::MouseButton) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::MouseButton) {
+    throw std::runtime_error("Wrong data access");
+  }
   return mouse_button_;
 }
 
 Event::MouseMoveData &Event::mouse_move() {
-  if (type() != Type::MouseMove) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::MouseMove) {
+    throw std::runtime_error("Wrong data access");
+  }
   return mouse_move_;
 }
 
 const Event::MouseMoveData &Event::mouse_move() const {
-  if (type() != Type::MouseMove) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::MouseMove) {
+    throw std::runtime_error("Wrong data access");
+  }
   return mouse_move_;
 }
 
 Event::MouseScrollData &Event::mouse_scroll() {
-  if (type() != Type::MouseScroll) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::MouseScroll) {
+    throw std::runtime_error("Wrong data access");
+  }
   return mouse_scroll_;
 }
 
 const Event::MouseScrollData &Event::mouse_scroll() const {
-  if (type() != Type::MouseScroll) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::MouseScroll) {
+    throw std::runtime_error("Wrong data access");
+  }
   return mouse_scroll_;
 }
 
 Event::KeyData &Event::key() {
-  if (type() != Type::Key) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Key) {
+    throw std::runtime_error("Wrong data access");
+  }
   return key_;
 }
 
 const Event::KeyData &Event::key() const {
-  if (type() != Type::Key) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::Key) {
+    throw std::runtime_error("Wrong data access");
+  }
   return key_;
 }
 
 Event::DragDropData &Event::drag_drop() {
-  if (type() != Type::DragDrop) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::DragDrop) {
+    throw std::runtime_error("Wrong data access");
+  }
   return drag_drop_;
 }
 
 const Event::DragDropData &Event::drag_drop() const {
-  if (type() != Type::DragDrop) { throw std::runtime_error("Wrong data access"); }
+  if (type() != Type::DragDrop) {
+    throw std::runtime_error("Wrong data access");
+  }
   return drag_drop_;
 }
 

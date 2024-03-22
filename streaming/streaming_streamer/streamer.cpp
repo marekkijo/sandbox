@@ -78,7 +78,9 @@ void Streamer::on_web_socket_string_message(std::string message) {
       return;
     }
   } else if (json.contains("request_video_stream")) {
-    if (peer_) { return; }
+    if (peer_) {
+      return;
+    }
 
     std::string streamer = json.at("request_video_stream").at("streamer");
     std::string receiver = json.at("request_video_stream").at("receiver");
@@ -183,7 +185,9 @@ std::shared_ptr<Streamer::Peer> Streamer::create_peer(const std::string &id) {
 }
 
 void Streamer::send_video_stream_info() {
-  if (!connection_open_) { return; }
+  if (!connection_open_) {
+    return;
+  }
 
   const auto video_stream_info_json = nlohmann::json{
       {     "width",      video_stream_info_.width},
@@ -211,6 +215,8 @@ void Streamer::video_stream_callback(const std::byte *data, const std::size_t si
 
 void Streamer::parse_event(const nlohmann::json &json_event) {
   const auto event = gp::json::to_event(json_event);
-  if (event_callback_) { event_callback_(event); }
+  if (event_callback_) {
+    event_callback_(event);
+  }
 }
 } // namespace streaming

@@ -5,7 +5,9 @@
 namespace gp::gl {
 Shader::Shader(const GLenum type) {
   id_ = glCreateShader(type);
-  if (id() == 0) { throw std::runtime_error("Failed to create shader"); }
+  if (id() == 0) {
+    throw std::runtime_error("Failed to create shader");
+  }
 }
 
 Shader::Shader(const GLenum type, const std::string &code, const bool do_not_compile)
@@ -20,7 +22,9 @@ GLuint Shader::id() const { return id_; }
 void Shader::source(const std::string &code, const bool do_not_compile) const {
   const char *c_code = code.c_str();
   glShaderSource(id(), 1, &c_code, nullptr);
-  if (!do_not_compile) { compile(); }
+  if (!do_not_compile) {
+    compile();
+  }
 }
 
 void Shader::compile() const {

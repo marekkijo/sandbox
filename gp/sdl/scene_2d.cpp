@@ -11,7 +11,9 @@ Scene2D::Scene2D(std::shared_ptr<internal::SDLContext> ctx)
     : ctx_{ctx ? ctx : std::make_shared<internal::SDLContext>()} {}
 
 void Scene2D::init(const int width, const int height, const std::string &title) {
-  if (wnd_) { return; }
+  if (wnd_) {
+    return;
+  }
   wnd_ = std::make_unique<internal::SDLWindow>(ctx_, width, height, title);
 
   wnd_->set_window_event_callback([this](const misc::Event &event) { window_event_callback(event); });

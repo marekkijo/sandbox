@@ -18,7 +18,9 @@ misc::Event::Type from_string(const std::string &type_string) {
       {   "DragDrop",    misc::Event::Type::DragDrop}
   };
   const auto it = type_map.find(type_string);
-  if (it != type_map.end()) { return it->second; }
+  if (it != type_map.end()) {
+    return it->second;
+  }
   return misc::Event::Type::None;
 }
 
@@ -244,7 +246,9 @@ misc::Event::ScanCode to_scan_code(const std::string &scan_code_string) {
       {                              "WWW",                               misc::Event::ScanCode::WWW}
   };
   const auto it = scan_code_map.find(scan_code_string);
-  if (it != scan_code_map.end()) { return it->second; }
+  if (it != scan_code_map.end()) {
+    return it->second;
+  }
   return misc::Event::ScanCode::None;
 }
 
@@ -471,7 +475,9 @@ const std::string &from_scan_code(const misc::Event::ScanCode scan_code) {
   };
   static const auto none_string = std::string{"None"};
   const auto it = scan_code_map.find(scan_code);
-  if (it != scan_code_map.end()) { return it->second; }
+  if (it != scan_code_map.end()) {
+    return it->second;
+  }
   return none_string;
 }
 } // namespace
