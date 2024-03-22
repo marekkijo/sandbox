@@ -5,8 +5,14 @@ project(sandbox CXX)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 find_package(assimp REQUIRED)
-find_package(Boost COMPONENTS program_options REQUIRED)
-find_package(ffmpeg COMPONENTS avcodec avformat avutil swscale REQUIRED)
+find_package(
+  Boost
+  COMPONENTS program_options
+  REQUIRED)
+find_package(
+  ffmpeg
+  COMPONENTS avcodec avformat avutil swscale
+  REQUIRED)
 find_package(glad REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)

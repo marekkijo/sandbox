@@ -37,9 +37,15 @@ const glm::vec2 &PlayerState::dir() const { return dir_; }
 float PlayerState::deduce_orientation(const RawMap &raw_map) const {
   const auto [w, h] = raw_map.player_pos();
   const auto pos_type = raw_map.block(w, h).object;
-  if (pos_type == Map::Objects::start_position_n) { return std::numbers::pi * 1.5f; }
-  if (pos_type == Map::Objects::start_position_s) { return std::numbers::pi / 2.0f; }
-  if (pos_type == Map::Objects::start_position_w) { return std::numbers::pi; }
+  if (pos_type == Map::Objects::start_position_n) {
+    return std::numbers::pi * 1.5f;
+  }
+  if (pos_type == Map::Objects::start_position_s) {
+    return std::numbers::pi / 2.0f;
+  }
+  if (pos_type == Map::Objects::start_position_w) {
+    return std::numbers::pi;
+  }
   return 0.0f;
 }
 

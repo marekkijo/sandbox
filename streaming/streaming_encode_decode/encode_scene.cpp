@@ -108,7 +108,9 @@ void EncodeScene::init_streaming() {
   encoder_->set_video_stream_callback(
       [&output_file = *output_file_](const std::byte *data, const std::size_t size, const bool eof) {
         output_file.write(reinterpret_cast<const char *>(data), static_cast<std::streamsize>(size));
-        if (eof) { printf("Encoding: end of stream\n"); }
+        if (eof) {
+          printf("Encoding: end of stream\n");
+        }
       });
 
   video_frame_ = encoder_->video_frame();
@@ -145,13 +147,13 @@ void EncodeScene::init_scene() {
     0u, 3u, 2u,
     4u, 3u, 0u,
     5u, 3u, 4u,
-    4u, 6u, 5u, 
+    4u, 6u, 5u,
     4u, 7u, 6u,
-    0u, 7u, 4u, 
-    1u, 7u, 0u, 
-    6u, 7u, 1u, 
-    1u, 2u, 6u, 
-    6u, 2u, 3u, 
+    0u, 7u, 4u,
+    1u, 7u, 0u,
+    6u, 7u, 1u,
+    1u, 2u, 6u,
+    6u, 2u, 3u,
     3u, 5u, 6u);
   // clang-format on
 

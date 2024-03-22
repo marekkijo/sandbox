@@ -25,7 +25,9 @@ bool nearly_equal(float a, float b, float epsilon, float abs_th) {
     throw std::invalid_argument("the specified epsilon is invalid");
   }
 
-  if (a == b) { return true; }
+  if (a == b) {
+    return true;
+  }
 
   auto diff = std::abs(a - b);
   auto norm = std::min((std::abs(a) + std::abs(b)), std::numeric_limits<float>::max());
@@ -38,11 +40,21 @@ bool do_intersect(float a_x, float a_y, float b_x, float b_y, float c_x, float c
   auto o3 = orientation(c_x, c_y, d_x, d_y, a_x, a_y);
   auto o4 = orientation(c_x, c_y, d_x, d_y, b_x, b_y);
 
-  if (!nearly_equal(o1, o2) && !nearly_equal(o3, o4)) { return true; }
-  if (nearly_equal(o1, 0.0f) && on_segment(a_x, a_y, c_x, c_y, b_x, b_y)) { return true; }
-  if (nearly_equal(o2, 0.0f) && on_segment(a_x, a_y, d_x, d_y, b_x, b_y)) { return true; }
-  if (nearly_equal(o3, 0.0f) && on_segment(c_x, c_y, a_x, a_y, d_x, d_y)) { return true; }
-  if (nearly_equal(o4, 0.0f) && on_segment(c_x, c_y, b_x, b_y, d_x, d_y)) { return true; }
+  if (!nearly_equal(o1, o2) && !nearly_equal(o3, o4)) {
+    return true;
+  }
+  if (nearly_equal(o1, 0.0f) && on_segment(a_x, a_y, c_x, c_y, b_x, b_y)) {
+    return true;
+  }
+  if (nearly_equal(o2, 0.0f) && on_segment(a_x, a_y, d_x, d_y, b_x, b_y)) {
+    return true;
+  }
+  if (nearly_equal(o3, 0.0f) && on_segment(c_x, c_y, a_x, a_y, d_x, d_y)) {
+    return true;
+  }
+  if (nearly_equal(o4, 0.0f) && on_segment(c_x, c_y, b_x, b_y, d_x, d_y)) {
+    return true;
+  }
   return false;
 }
 

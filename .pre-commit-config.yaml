@@ -1,0 +1,29 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: check-added-large-files # prevents giant files from being committed.
+    -   id: check-case-conflict # checks for files that would conflict in case-insensitive filesystems.
+    -   id: check-json # checks json files for parseable syntax.
+    -   id: pretty-format-json # sets a standard for formatting json files.
+    -   id: check-merge-conflict # checks for files that contain merge conflict strings.
+    -   id: double-quote-string-fixer # replaces double quoted strings with single quoted strings.
+    -   id: end-of-file-fixer # ensures that a file is either empty, or ends with one newline.
+    -   id: mixed-line-ending # replaces or checks mixed line ending.
+    -   id: trailing-whitespace # trims trailing whitespace.
+-   repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.1
+    hooks:
+    -   id: clang-format # Format files with ClangFormat.
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+    -   id: forbid-tabs # Forbid files containing tabs to be committed
+    -   id: remove-tabs # Replace tabs by whitespaces before committing
+        args: [--whitespaces-count, '2']  # defaults to: 4
+-   repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+    -   id: cmake-format # cmake-format can format your listfiles nicely so that they don't look like crap

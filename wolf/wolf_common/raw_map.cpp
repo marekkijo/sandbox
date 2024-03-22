@@ -5,16 +5,28 @@
 
 namespace wolf {
 std::uint16_t RawMap::BlockType::operator[](const std::size_t index) const {
-  if (index == 0u) { return static_cast<std::underlying_type<Map::Walls>::type>(wall); }
-  if (index == 1u) { return static_cast<std::underlying_type<Map::Objects>::type>(object); }
-  if (index == 2u) { return static_cast<std::underlying_type<Map::Extra>::type>(extra); }
+  if (index == 0u) {
+    return static_cast<std::underlying_type<Map::Walls>::type>(wall);
+  }
+  if (index == 1u) {
+    return static_cast<std::underlying_type<Map::Objects>::type>(object);
+  }
+  if (index == 2u) {
+    return static_cast<std::underlying_type<Map::Extra>::type>(extra);
+  }
   return 0u;
 }
 
 std::uint16_t &RawMap::BlockType::operator[](const std::size_t index) {
-  if (index == 0u) { return reinterpret_cast<std::underlying_type<Map::Walls>::type &>(wall); }
-  if (index == 1u) { return reinterpret_cast<std::underlying_type<Map::Objects>::type &>(object); }
-  if (index == 2u) { return reinterpret_cast<std::underlying_type<Map::Extra>::type &>(extra); }
+  if (index == 0u) {
+    return reinterpret_cast<std::underlying_type<Map::Walls>::type &>(wall);
+  }
+  if (index == 1u) {
+    return reinterpret_cast<std::underlying_type<Map::Objects>::type &>(object);
+  }
+  if (index == 2u) {
+    return reinterpret_cast<std::underlying_type<Map::Extra>::type &>(extra);
+  }
   static auto dump = std::uint16_t{};
   return dump;
 }

@@ -47,7 +47,9 @@ void wait_for_exit() {
 
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
-  if (program_setup.exit) { return 1; }
+  if (program_setup.exit) {
+    return 1;
+  }
 
   try {
     streaming::Server server(program_setup.port);
@@ -55,7 +57,9 @@ int main(int argc, char *argv[]) {
     while (true) {
       std::this_thread::sleep_for(1000ms);
       auto unique_lock = std::unique_lock{mutex};
-      if (should_exit) { break; }
+      if (should_exit) {
+        break;
+      }
     }
     wait_thread.join();
   } catch (const std::exception &e) {

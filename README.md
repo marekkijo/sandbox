@@ -29,3 +29,7 @@ os=Windows
   - `.\build\generators\conanbuild.bat`
   - `cmake . -B build -DCMAKE_TOOLCHAIN_FILE="build\generators\conan_toolchain.cmake"`
   - `.\build\sandbox.sln`
+
+## Contributing
+
+Follow the instructions at `https://pre-commit.com/` to install `pre-commit`.

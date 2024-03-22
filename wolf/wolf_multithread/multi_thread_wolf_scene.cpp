@@ -46,7 +46,9 @@ public:
     do {
       state_.cv.wait(lk, [&]() { return state_.do_work.at(id_); });
       state_.do_work.at(id_) = false;
-      if (state_.join) { break; }
+      if (state_.join) {
+        break;
+      }
       lk.unlock();
 
       for (auto r_it = ray_first_; r_it < ray_one_past_last_; r_it++) {
@@ -67,7 +69,9 @@ public:
           }
           const auto [crossed, cross_x, cross_y] =
               gp::math::intersection_point(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y);
-          if (!crossed) { continue; }
+          if (!crossed) {
+            continue;
+          }
 
           const auto curr_dist =
               std::sqrtf((cross_x - pos.x) * (cross_x - pos.x) + (cross_y - pos.y) * (cross_y - pos.y));
@@ -83,7 +87,9 @@ public:
         if (v_index != std::numeric_limits<std::size_t>::max()) {
           cam_dist = (cam_2.x - cam_1.x) * (cam_1.y - min_y) - (cam_1.x - min_x) * (cam_2.y - cam_1.y);
           cam_dist /= std::sqrtf((cam_2.x - cam_1.x) * (cam_2.x - cam_1.x) + (cam_2.y - cam_1.y) * (cam_2.y - cam_1.y));
-          if (cam_dist < 0.0f) { cam_dist = 0.0f; }
+          if (cam_dist < 0.0f) {
+            cam_dist = 0.0f;
+          }
         }
 
         walls.at(r_it).rect.h = 1.0f / cam_dist * state_.scene.height_;
@@ -136,7 +142,9 @@ MultiThreadWolfScene::~MultiThreadWolfScene() {
   state_->join = true;
   std::fill(state_->do_work.begin(), state_->do_work.end(), true);
   state_->cv.notify_all();
-  for (auto t_it = std::size_t{0u}; t_it < threads_.size(); t_it++) { threads_.at(t_it).join(); }
+  for (auto t_it = std::size_t{0u}; t_it < threads_.size(); t_it++) {
+    threads_.at(t_it).join();
+  }
 }
 
 void MultiThreadWolfScene::prepare_walls() {

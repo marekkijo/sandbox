@@ -9,10 +9,14 @@ Client::Info::Info(std::string path) { parse(path); }
 
 void Client::Info::parse(std::string path) {
   auto path_parts = gp::utils::split_by(path, "/");
-  if (path_parts.size() < 2) { return; }
+  if (path_parts.size() < 2) {
+    return;
+  }
 
   auto label_parts = gp::utils::split_by(path_parts[1], ":");
-  if (label_parts.size() < 2) { return; }
+  if (label_parts.size() < 2) {
+    return;
+  }
 
   id_ = label_parts[1];
   if (label_parts[0] == STREAMER_ID) {

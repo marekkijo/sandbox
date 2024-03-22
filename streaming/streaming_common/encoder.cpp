@@ -78,7 +78,9 @@ Encoder::Encoder(const VideoStreamInfo &video_stream_info)
 }
 
 Encoder::~Encoder() {
-  if (context_) { encode_frame(nullptr); }
+  if (context_) {
+    encode_frame(nullptr);
+  }
 
   destroy();
 }
@@ -99,7 +101,9 @@ void Encoder::set_video_stream_callback(
 }
 
 void Encoder::encode() {
-  if (av_frame_make_writable(frame_) < 0) { throw std::runtime_error{"av_frame_make_writable failed"}; }
+  if (av_frame_make_writable(frame_) < 0) {
+    throw std::runtime_error{"av_frame_make_writable failed"};
+  }
 
   flip_frame();
   rgb_to_yuv();
@@ -111,7 +115,9 @@ void Encoder::encode() {
 
 void Encoder::encode_frame(AVFrame *frame) {
   auto result = avcodec_send_frame(context_, frame);
-  if (result < 0) { throw std::runtime_error{"avcodec_send_frame failed"}; }
+  if (result < 0) {
+    throw std::runtime_error{"avcodec_send_frame failed"};
+  }
 
   while (result == 0) {
     result = avcodec_receive_packet(context_, packet_);

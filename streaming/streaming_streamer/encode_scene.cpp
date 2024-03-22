@@ -105,11 +105,15 @@ void EncodeScene::process_event_queue() {
     const auto lock_guard = std::lock_guard(event_queue_mutex_);
     event_queue.swap(event_queue_);
   }
-  for (const auto &event : event_queue) { loop(event); }
+  for (const auto &event : event_queue) {
+    loop(event);
+  }
 }
 
 void EncodeScene::animate(const std::uint32_t time_elapsed_ms) {
-  if (!animate_) { return; }
+  if (!animate_) {
+    return;
+  }
 
   const auto speed_factor = 0.05f;
   camera_rot_.x += time_elapsed_ms * speed_factor;
@@ -167,13 +171,13 @@ void EncodeScene::init_scene() {
     0u, 3u, 2u,
     4u, 3u, 0u,
     5u, 3u, 4u,
-    4u, 6u, 5u, 
+    4u, 6u, 5u,
     4u, 7u, 6u,
-    0u, 7u, 4u, 
-    1u, 7u, 0u, 
-    6u, 7u, 1u, 
-    1u, 2u, 6u, 
-    6u, 2u, 3u, 
+    0u, 7u, 4u,
+    1u, 7u, 0u,
+    6u, 7u, 1u,
+    1u, 2u, 6u,
+    6u, 2u, 3u,
     3u, 5u, 6u);
   // clang-format on
 

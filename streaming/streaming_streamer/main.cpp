@@ -58,7 +58,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
 
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
-  if (program_setup.exit) { return 1; }
+  if (program_setup.exit) {
+    return 1;
+  }
 
   const auto video_stream_info = streaming::VideoStreamInfo{program_setup.width,
                                                             program_setup.height,

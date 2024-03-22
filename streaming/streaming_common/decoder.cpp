@@ -7,7 +7,9 @@
 
 namespace streaming {
 void Decoder::init(const VideoStreamInfo &video_stream_info) {
-  if (rgb_frame_) { throw std::runtime_error{"Decoder is already initialized"}; }
+  if (rgb_frame_) {
+    throw std::runtime_error{"Decoder is already initialized"};
+  }
 
   rgb_frame_ = std::make_shared<FrameData>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM);
   codec_ = avcodec_find_decoder(video_stream_info.codec_id);
@@ -56,15 +58,21 @@ void Decoder::init(const VideoStreamInfo &video_stream_info) {
 Decoder::~Decoder() { destroy(); }
 
 std::shared_ptr<FrameData> Decoder::rgb_frame() {
-  if (!rgb_frame_) { throw std::runtime_error{"Decoder is not initialized"}; }
+  if (!rgb_frame_) {
+    throw std::runtime_error{"Decoder is not initialized"};
+  }
 
   return rgb_frame_;
 }
 
 Decoder::Status Decoder::decode() {
-  if (!rgb_frame_) { throw std::runtime_error{"Decoder is not initialized"}; }
+  if (!rgb_frame_) {
+    throw std::runtime_error{"Decoder is not initialized"};
+  }
 
-  if (!context_) { return {Status::Code::EOS}; }
+  if (!context_) {
+    return {Status::Code::EOS};
+  }
 
   if (packet_sent_) {
     auto result = avcodec_receive_frame(context_, frame_);
@@ -77,7 +85,9 @@ Decoder::Status Decoder::decode() {
       destroy();
       return {Status::Code::EOS};
     }
-    if (result < 0) { return {Status::Code::ERROR}; }
+    if (result < 0) {
+      return {Status::Code::ERROR};
+    }
 
     yuv_to_rgb();
     return {Status::Code::OK, context_->frame_number};
@@ -91,9 +101,13 @@ Decoder::Status Decoder::decode() {
 }
 
 bool Decoder::incoming_data(const std::byte *data, const std::size_t size, const bool async) {
-  if (!async && !rgb_frame_) { throw std::runtime_error{"Decoder is already initialized"}; }
+  if (!async && !rgb_frame_) {
+    throw std::runtime_error{"Decoder is already initialized"};
+  }
 
-  if (signaled_eof_) { return false; }
+  if (signaled_eof_) {
+    return false;
+  }
 
   if (async) {
     fill_async_buffer(data, size);
@@ -187,7 +201,9 @@ bool Decoder::upload() {
 }
 
 void Decoder::reduce_buffer(int n) {
-  if (buffer_.empty()) { return; }
+  if (buffer_.empty()) {
+    return;
+  }
 
   if (static_cast<std::size_t>(n) == (buffer_.size() - NULL_PADDING.size())) {
     buffer_.clear();
@@ -250,7 +266,9 @@ void Decoder::fill_async_buffer(const std::byte *data, const std::size_t size) {
 void Decoder::consume_async_buffer() {
   const auto lock = std::lock_guard{async_buffer_mutex_};
 
-  if (async_buffer_.empty()) { return; }
+  if (async_buffer_.empty()) {
+    return;
+  }
 
   const auto size = async_buffer_.size();
   const auto data = async_buffer_.data();

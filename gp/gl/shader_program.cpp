@@ -7,7 +7,9 @@
 namespace gp::gl {
 ShaderProgram::ShaderProgram() {
   id_ = glCreateProgram();
-  if (id() == 0) { throw std::runtime_error("Failed to create shader program"); }
+  if (id() == 0) {
+    throw std::runtime_error("Failed to create shader program");
+  }
 }
 
 ShaderProgram::~ShaderProgram() { glDeleteProgram(id()); }
@@ -65,7 +67,9 @@ GLint ShaderProgram::uniform_location(const std::string &name) {
 void ShaderProgram::check_uniform_location(const std::string &name) {
   if (uniform_locations_.count(name) == 0) {
     uniform_locations_[name] = glGetUniformLocation(id(), name.c_str());
-    if (uniform_locations_[name] == -1) { throw std::runtime_error("Uniform " + name + " not found"); }
+    if (uniform_locations_[name] == -1) {
+      throw std::runtime_error("Uniform " + name + " not found");
+    }
   }
 }
 } // namespace gp::gl

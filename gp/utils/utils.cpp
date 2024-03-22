@@ -26,7 +26,9 @@ std::string generate_random_string(const std::size_t length) {
   std::mt19937 generator(random_device());
   std::uniform_int_distribution<> distribution(0, 61);
 
-  for (std::size_t i = 0; i < length; i++) { result.push_back(chars[distribution(generator)]); }
+  for (std::size_t i = 0; i < length; i++) {
+    result.push_back(chars[distribution(generator)]);
+  }
 
   return result;
 }

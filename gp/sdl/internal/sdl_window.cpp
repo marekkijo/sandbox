@@ -16,7 +16,9 @@ SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx, const int width, const int
                             width,
                             height,
                             SDL_WINDOW_SHOWN)} {
-  if (!wnd()) { throw std::runtime_error{std::string{"SDL_CreateWindow error:"} + SDL_GetError()}; }
+  if (!wnd()) {
+    throw std::runtime_error{std::string{"SDL_CreateWindow error:"} + SDL_GetError()};
+  }
 
   auto r = std::make_unique<SDLRenderer>(*this);
   r_ = std::make_shared<Renderer>(std::move(r));
@@ -40,8 +42,12 @@ std::shared_ptr<misc::KeyboardState> SDLWindow::keyboard_state() const { return 
 void SDLWindow::set_window_event_callback(SDLWindowEventCallback callback) {
   const auto wnd_id = SDL_GetWindowID(wnd());
   ctx_->set_window_event_callback(wnd_id, [this](const misc::Event &event) {
-    if (event.type() == misc::Event::Type::Key) { keyboard_state_->process_key_event(event.key()); }
-    if (window_event_callback_) { window_event_callback_(event); }
+    if (event.type() == misc::Event::Type::Key) {
+      keyboard_state_->process_key_event(event.key());
+    }
+    if (window_event_callback_) {
+      window_event_callback_(event);
+    }
   });
 
   window_event_callback_ = std::move(callback);

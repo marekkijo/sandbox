@@ -37,7 +37,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
 
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
-  if (program_setup.exit) { return 1; }
+  if (program_setup.exit) {
+    return 1;
+  }
 
   auto model = std::make_shared<const Model>(program_setup.filename);
   auto model_scene = std::make_unique<ModelScene>(model);

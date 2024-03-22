@@ -34,7 +34,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
 
 int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
-  if (program_setup.exit) { return 1; }
+  if (program_setup.exit) {
+    return 1;
+  }
 
   auto decode_scene = std::make_unique<streaming::DecodeScene>();
   auto receiver = std::make_unique<streaming::Receiver>(program_setup.ip, program_setup.port);

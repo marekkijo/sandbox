@@ -13,7 +13,9 @@ AVCodecID codec_name_to_id(const std::string &codec_name) {
   });
 
   const auto *codec_descriptor = avcodec_descriptor_get_by_name(normalized_codec_name.c_str());
-  if (codec_descriptor == nullptr) { return AV_CODEC_ID_NONE; }
+  if (codec_descriptor == nullptr) {
+    return AV_CODEC_ID_NONE;
+  }
   return codec_descriptor->id;
 }
 } // namespace gp::ffmpeg

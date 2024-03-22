@@ -68,7 +68,9 @@ void DecodeScene::finalize() {
 void DecodeScene::decode() {
   constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
 
-  if (frame_ready_) { return; }
+  if (frame_ready_) {
+    return;
+  }
 
   const auto status = decoder_->decode();
   switch (status.code) {
@@ -104,7 +106,9 @@ void DecodeScene::decode() {
 }
 
 bool DecodeScene::redraw() {
-  if (!frame_ready_) { return false; }
+  if (!frame_ready_) {
+    return false;
+  }
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glActiveTexture(GL_TEXTURE0);
@@ -165,7 +169,9 @@ void DecodeScene::init_scene() {
 void DecodeScene::read_some() {
   constexpr std::size_t buffer_size_1_kB = 1024u;
 
-  if (input_file_->eof()) { return; }
+  if (input_file_->eof()) {
+    return;
+  }
 
   static std::array<std::byte, buffer_size_1_kB> buffer{};
   input_file_->read(reinterpret_cast<char *>(buffer.data()), buffer.size());
@@ -173,6 +179,8 @@ void DecodeScene::read_some() {
   const auto size = static_cast<std::size_t>(input_file_->gcount());
   decoder_->incoming_data(buffer.data(), size);
 
-  if (input_file_->eof()) { decoder_->signal_eof(); }
+  if (input_file_->eof()) {
+    decoder_->signal_eof();
+  }
 }
 } // namespace streaming

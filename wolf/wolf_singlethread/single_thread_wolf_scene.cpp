@@ -45,7 +45,9 @@ void SingleThreadWolfScene::prepare_walls() {
       }
       const auto [crossed, cross_x, cross_y] =
           gp::math::intersection_point(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y);
-      if (!crossed) { continue; }
+      if (!crossed) {
+        continue;
+      }
 
       const auto curr_dist = std::sqrtf((cross_x - pos.x) * (cross_x - pos.x) + (cross_y - pos.y) * (cross_y - pos.y));
       if (curr_dist < min_dist) {
@@ -60,7 +62,9 @@ void SingleThreadWolfScene::prepare_walls() {
     if (v_index != std::numeric_limits<std::size_t>::max()) {
       cam_dist = (cam_x2 - cam_x1) * (cam_y1 - min_y) - (cam_x1 - min_x) * (cam_y2 - cam_y1);
       cam_dist /= std::sqrtf((cam_x2 - cam_x1) * (cam_x2 - cam_x1) + (cam_y2 - cam_y1) * (cam_y2 - cam_y1));
-      if (cam_dist < 0.0f) { cam_dist = 0.0f; }
+      if (cam_dist < 0.0f) {
+        cam_dist = 0.0f;
+      }
     }
 
     walls_[r_it].rect.h = static_cast<int>(1.0f / cam_dist * height_);

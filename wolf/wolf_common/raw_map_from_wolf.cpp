@@ -29,7 +29,9 @@ RawMapFromWolf::RawMapFromWolf(const std::string &maphead_filename, const std::s
 
   rlew_tag_ = map_file_type.RLEWtag;
   for (const auto &v : map_file_type.headeroffsets) {
-    if (v > 0) { header_offsets_.push_back(v); }
+    if (v > 0) {
+      header_offsets_.push_back(v);
+    }
   }
 }
 
@@ -101,7 +103,9 @@ void RawMapFromWolf::decarmacize_plane(const std::vector<std::uint16_t> &plane_d
         std::uint16_t offset;
         memcpy(&offset, in_ptr, 2);
         in_ptr += 2;
-        for (auto c = std::size_t{0u}; c < count; c++) { extended_plane[e_it + c] = extended_plane[offset + c]; }
+        for (auto c = std::size_t{0u}; c < count; c++) {
+          extended_plane[e_it + c] = extended_plane[offset + c];
+        }
         e_it += count - 1u;
       }
     } else {
@@ -118,12 +122,16 @@ void RawMapFromWolf::expand_plane(const std::vector<std::uint16_t> &plane_data,
   for (auto b_it = std::size_t{0u}, p_it = std::size_t{1u}; b_it < blocks.size(); b_it++) {
     blocks[b_it][plane] = plane_data.at(p_it++);
 
-    if (blocks[b_it][plane] != rlew_tag_) { continue; }
+    if (blocks[b_it][plane] != rlew_tag_) {
+      continue;
+    }
 
     const auto count = plane_data.at(p_it++);
     const auto value = plane_data.at(p_it++);
     if (count != 0) {
-      for (auto c = std::size_t{0u}; c < count; c++) { blocks[b_it + c][plane] = value; }
+      for (auto c = std::size_t{0u}; c < count; c++) {
+        blocks[b_it + c][plane] = value;
+      }
     }
     b_it += count - 1u;
   }

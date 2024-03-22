@@ -8,7 +8,9 @@
 namespace wolf {
 RawMapFromAscii::RawMapFromAscii(const std::string &asciimap_filename)
     : asciimap_file_{asciimap_filename} {
-  if (!asciimap_file_.is_open()) { throw std::runtime_error{"cannot open given map file"}; }
+  if (!asciimap_file_.is_open()) {
+    throw std::runtime_error{"cannot open given map file"};
+  }
 }
 
 std::unique_ptr<RawMap> RawMapFromAscii::create_map() {
