@@ -7,7 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 ModelScene::ModelScene(std::shared_ptr<const Model> model)
-    : model_{model} {}
+    : model_{std::move(model)} {}
 
 void ModelScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -63,7 +63,6 @@ void ModelScene::initialize(const int width, const int height) {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glReadBuffer(GL_BACK);
 
   camera_pos_ = glm::vec3{0.0f, 1.0f, 6.0f};
   camera_rot_ = glm::vec3{0.0f, 0.0f, 0.0f};
