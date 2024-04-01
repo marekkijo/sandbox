@@ -112,9 +112,7 @@ const std::vector<std::array<glm::u8vec4, 4096>> &VswapFile::walls() const noexc
 
 const std::vector<std::array<glm::u8vec4, 4096>> &VswapFile::sprites() const noexcept { return sprites_; }
 
-const std::vector<std::array<bool, 4096>> &VswapFile::sprites_opaque() const noexcept {
-  return sprites_opaque_;
-}
+const std::vector<std::array<bool, 4096>> &VswapFile::sprites_opaque() const noexcept { return sprites_opaque_; }
 
 void VswapFile::decode_walls(std::ifstream &vswap_file, const std::vector<std::uint32_t> &chunk_offsets) {
   constexpr auto wall_width = 64;
