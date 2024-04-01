@@ -2,7 +2,9 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 add_executable(wolf_singlethread ${SRC_FILES})
 
+target_link_libraries(wolf_singlethread gp)
 target_link_libraries(wolf_singlethread wolf_common)
+target_link_libraries(wolf_singlethread SDL2::SDL2)
 target_link_libraries(wolf_singlethread SDL2::SDL2main)
 target_link_libraries(wolf_singlethread Boost::program_options)
 
