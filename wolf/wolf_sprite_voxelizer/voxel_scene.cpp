@@ -70,6 +70,9 @@ void VoxelScene::initialize(const int width, const int height) {
   camera_pos_ = glm::vec3{0.0f, 15.0f, 90.0f};
   camera_rot_ = glm::vec3{0.0f, 0.0f, 0.0f};
 
+  camera_pos_ = glm::vec3{0.0f, 1.0f, 6.0f};
+  camera_rot_ = glm::vec3{0.0f, 0.0f, 0.0f};
+
   resize(width, height);
 
   shader_program_ = gp::gl::create_shader_program("shaders/shader_program");
