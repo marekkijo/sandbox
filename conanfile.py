@@ -15,7 +15,8 @@ class SandboxRecipe(ConanFile):
         self.requires('glm/0.9.9.8')
         self.requires('libdatachannel/0.20.2')
         self.requires('nlohmann_json/3.11.3')
-        self.requires('sdl/2.28.5')
+        self.requires('sdl/2.28.3')
+        self.requires('sdl_ttf/2.22.0')
         self.requires('cgltf/1.13')
 
     def configure(self):
