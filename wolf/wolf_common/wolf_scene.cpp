@@ -5,7 +5,6 @@
 #include <cmath>
 
 namespace wolf {
-
 WolfScene::WolfScene(const RawMap &raw_map, const std::uint32_t fov_in_degrees, const std::uint32_t number_of_rays)
     : vector_map_{std::make_shared<VectorMap>(raw_map)}
     , player_state_{std::make_shared<PlayerState>(raw_map)}
