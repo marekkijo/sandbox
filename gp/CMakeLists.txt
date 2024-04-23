@@ -26,5 +26,6 @@ target_link_libraries(gp PRIVATE glfw)
 target_link_libraries(gp PRIVATE glm::glm)
 target_link_libraries(gp PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(gp PRIVATE SDL2::SDL2)
+target_link_libraries(gp PRIVATE SDL2_ttf::SDL2_ttf-static)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})
