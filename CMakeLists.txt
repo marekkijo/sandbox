@@ -26,6 +26,7 @@ set(SOURCE_GROUP_LABEL src)
 
 add_subdirectory(ai)
 add_subdirectory(gp)
+add_subdirectory(gp_examples)
 add_subdirectory(loaders)
 add_subdirectory(streaming)
 add_subdirectory(wolf)
