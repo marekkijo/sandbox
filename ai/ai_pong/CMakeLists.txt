@@ -2,6 +2,8 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 add_executable(ai_pong ${SRC_FILES})
 
+target_compile_features(ai_pong PRIVATE cxx_std_23)
+
 target_link_libraries(ai_pong gp)
 target_link_libraries(ai_pong ai_common)
 target_link_libraries(ai_pong SDL2::SDL2)

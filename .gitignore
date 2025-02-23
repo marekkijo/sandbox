@@ -1,8 +1,8 @@
-# Build folder
-[Bb]uild/
+# Build directories
+[Bb]uild*/
 
-# VSCode
-.vscode/
+# vcpkg directories
+vcpkg_installed/
 
-# Conan
+# User-specific files
 CMakeUserPresets.json

@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "ninja",
+      "displayName": "Default Config",
+      "description": "Default build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/ninja",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "vs2022",
+      "displayName": "Visual Studio 17 2022 Config",
+      "description": "Build using Visual Studio 17 2022 generator",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/vs2022",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "default",
+      "inherits": "ninja"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ninja",
+      "configurePreset": "ninja"
+    },
+    {
+      "name": "vs2022",
+      "configurePreset": "vs2022"
+    },
+    {
+      "name": "default",
+      "configurePreset": "default"
+    }
+  ]
+}

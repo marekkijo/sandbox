@@ -2,6 +2,8 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 add_executable(wolf_multithread ${SRC_FILES})
 
+target_compile_features(wolf_multithread PRIVATE cxx_std_23)
+
 target_link_libraries(wolf_multithread gp)
 target_link_libraries(wolf_multithread wolf_common)
 target_link_libraries(wolf_multithread SDL2::SDL2)

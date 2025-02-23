@@ -1,6 +1,10 @@
 #include "model.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
+
+#define CGLTF_IMPLEMENTATION
+#include <cgltf.h>
 
 #include <algorithm>
 #include <iterator>

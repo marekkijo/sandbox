@@ -2,6 +2,8 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 add_executable(wolf_sprite_voxelizer ${SRC_FILES})
 
+target_compile_features(wolf_sprite_voxelizer PRIVATE cxx_std_23)
+
 target_link_libraries(wolf_sprite_voxelizer gp)
 target_link_libraries(wolf_sprite_voxelizer wolf_common)
 target_link_libraries(wolf_sprite_voxelizer Boost::program_options)
