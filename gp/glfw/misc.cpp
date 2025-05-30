@@ -3,6 +3,7 @@
 #include <gp/glfw/glfw.hpp>
 
 #include <stdexcept>
+#include <cstdio>
 
 namespace gp::glfw {
 void gl_debug(const char *file, const int line) {

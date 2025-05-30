@@ -7,6 +7,7 @@
 
 #include <gp/ffmpeg/ffmpeg.hpp>
 
+#include <atomic>
 #include <array>
 #include <cstddef>
 #include <cstdint>

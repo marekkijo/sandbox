@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  auto vswap_file = std::make_shared<const wolf::VswapFile>("data\\VSWAP.WL6");
+  auto vswap_file = std::make_shared<const wolf::VswapFile>("data/VSWAP.WL6");
   auto vswap_file_viewer_scene = std::make_unique<VswapFileViewerScene>(vswap_file);
   vswap_file_viewer_scene->init(program_setup.width, program_setup.height, "wolf_vswap_file_viewer");
   return vswap_file_viewer_scene->exec();

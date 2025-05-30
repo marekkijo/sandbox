@@ -22,6 +22,14 @@
       }
     },
     {
+      "name": "xcode",
+      "generator": "Xcode",
+      "binaryDir": "${sourceDir}/build/xcode",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
       "name": "default",
       "inherits": "ninja"
     }
@@ -38,6 +46,10 @@
     {
       "name": "default",
       "configurePreset": "default"
+    },
+    {
+      "name": "xcode",
+      "configurePreset": "xcode"
     }
   ]
 }

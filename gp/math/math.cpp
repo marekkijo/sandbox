@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <numbers>
+#include <algorithm>
 #include <stdexcept>
 
 namespace gp::math {
