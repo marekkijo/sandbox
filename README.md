@@ -64,4 +64,22 @@ Replace `<your-preset>` with the appropriate preset defined in `CMakePresets.jso
 
 ## Contributing
 
-Follow the instructions at `https://pre-commit.com/` to install `pre-commit`.
+Follow the instructions below to install it manually:
+
+For MacOS users:
+
+```bash
+brew install pre-commit
+```
+
+For Windows (python) users:
+
+```bash
+pip install pre-commit
+```
+
+Then, run the following command to install the pre-commit hooks:
+
+```bash
+pre-commit install
+```
