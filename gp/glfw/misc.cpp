@@ -2,6 +2,7 @@
 
 #include <gp/glfw/glfw.hpp>
 
+#include <cstdio>
 #include <stdexcept>
 
 namespace gp::glfw {

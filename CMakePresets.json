@@ -1,0 +1,55 @@
+{
+  "buildPresets": [
+    {
+      "configurePreset": "ninja",
+      "name": "ninja"
+    },
+    {
+      "configurePreset": "vs2022",
+      "name": "vs2022"
+    },
+    {
+      "configurePreset": "default",
+      "name": "default"
+    },
+    {
+      "configurePreset": "xcode",
+      "name": "xcode"
+    }
+  ],
+  "configurePresets": [
+    {
+      "binaryDir": "${sourceDir}/build/ninja",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      },
+      "description": "Default build using Ninja generator",
+      "displayName": "Default Config",
+      "generator": "Ninja",
+      "name": "ninja"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/vs2022",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      },
+      "description": "Build using Visual Studio 17 2022 generator",
+      "displayName": "Visual Studio 17 2022 Config",
+      "generator": "Visual Studio 17 2022",
+      "name": "vs2022"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/xcode",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      },
+      "generator": "Xcode",
+      "name": "xcode"
+    },
+    {
+      "inherits": "ninja",
+      "name": "default"
+    }
+  ],
+  "version": 2
+}

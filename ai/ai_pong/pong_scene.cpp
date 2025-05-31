@@ -1,5 +1,6 @@
 #include "pong_scene.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
 #include <algorithm>

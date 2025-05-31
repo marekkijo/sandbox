@@ -1,4 +1,3 @@
----
 Language: Cpp
 BasedOnStyle: LLVM
 AlignArrayOfStructures: Right
@@ -25,4 +24,3 @@ QualifierAlignment: Left
 SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 0
 SpaceAfterTemplateKeyword: false
-...

@@ -8,6 +8,7 @@
 #include <gp/ffmpeg/ffmpeg.hpp>
 
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <functional>

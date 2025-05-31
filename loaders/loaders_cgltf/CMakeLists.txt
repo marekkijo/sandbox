@@ -2,12 +2,14 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 add_executable(loaders_cgltf ${SRC_FILES})
 
-target_link_libraries(loaders_cgltf gp)
-target_link_libraries(loaders_cgltf Boost::program_options)
-target_link_libraries(loaders_cgltf glad::glad)
-target_link_libraries(loaders_cgltf glfw)
-target_link_libraries(loaders_cgltf glm::glm)
-target_link_libraries(loaders_cgltf cgltf::cgltf)
+target_compile_features(loaders_cgltf PRIVATE cxx_std_23)
+
+target_link_libraries(loaders_cgltf PRIVATE gp)
+target_link_libraries(loaders_cgltf PRIVATE Boost::program_options)
+target_link_libraries(loaders_cgltf PRIVATE glad::glad)
+target_link_libraries(loaders_cgltf PRIVATE glfw)
+target_link_libraries(loaders_cgltf PRIVATE glm::glm)
+target_include_directories(loaders_cgltf PRIVATE ${CGLTF_INCLUDE_DIRS})
 
 add_custom_command(
   TARGET loaders_cgltf

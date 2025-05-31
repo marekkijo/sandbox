@@ -2,6 +2,8 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 add_executable(streaming_encode_decode ${SRC_FILES})
 
+target_compile_features(streaming_encode_decode PRIVATE cxx_std_23)
+
 target_link_libraries(streaming_encode_decode gp)
 target_link_libraries(streaming_encode_decode streaming_common)
 target_link_libraries(streaming_encode_decode Boost::program_options)

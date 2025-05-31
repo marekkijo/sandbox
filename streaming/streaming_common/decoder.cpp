@@ -90,7 +90,7 @@ Decoder::Status Decoder::decode() {
     }
 
     yuv_to_rgb();
-    return {Status::Code::OK, context_->frame_number};
+    return {Status::Code::OK, static_cast<int>(context_->frame_num)};
   } else {
     if (upload()) {
       return {Status::Code::RETRY};

@@ -1,0 +1,15 @@
+{
+  "dependencies": [
+    "assimp",
+    "boost-program-options",
+    "ffmpeg",
+    "glad",
+    "glfw3",
+    "glm",
+    "libdatachannel",
+    "nlohmann-json",
+    "sdl2",
+    "sdl2-ttf",
+    "cgltf"
+  ]
+}

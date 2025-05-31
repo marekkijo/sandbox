@@ -2,6 +2,8 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 add_executable(loaders_assimp ${SRC_FILES})
 
+target_compile_features(loaders_assimp PRIVATE cxx_std_23)
+
 target_link_libraries(loaders_assimp gp)
 target_link_libraries(loaders_assimp Boost::program_options)
 target_link_libraries(loaders_assimp glad::glad)

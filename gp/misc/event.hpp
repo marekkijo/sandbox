@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <stdexcept>
+#include <string>
 
 namespace gp::misc {
 /**
