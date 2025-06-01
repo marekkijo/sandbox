@@ -3,10 +3,10 @@
 #include <cgltf.h>
 #include <glm/glm.hpp>
 
+#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <set>
 
 class Model {
 public:

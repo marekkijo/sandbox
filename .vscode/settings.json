@@ -1,0 +1,10 @@
+{
+  "clangd.arguments": [
+    "--clang-tidy"
+  ],
+  "files.associations": {
+    "functional": "cpp",
+    "ios": "cpp",
+    "string": "cpp"
+  }
+}

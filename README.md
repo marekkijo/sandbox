@@ -64,4 +64,40 @@ Replace `<your-preset>` with the appropriate preset defined in `CMakePresets.jso
 
 ## Contributing
 
-Follow the instructions at `https://pre-commit.com/` to install `pre-commit`.
+Follow the instructions below to install pre-commit hooks and enable Clang-Tidy for code quality checks:
+
+### Install Pre-commit Hooks
+
+For MacOS users:
+
+```bash
+brew install pre-commit
+```
+
+For Windows (python) users:
+
+```bash
+pip install pre-commit
+```
+
+Then, run the following command to install the pre-commit hooks:
+
+```bash
+pre-commit install
+```
+
+### Enable Clang-Tidy
+
+Install LLVM and Clang-Tidy. Follow the instructions below to install them:
+
+For MacOS users:
+
+```bash
+brew install llvm
+```
+
+For Windows users, download the LLVM installer from [LLVM's official website](https://releases.llvm.org/download.html).
+
+Make sure to add the LLVM and Clang-Tidy binaries to your `PATH` environment variable.
+
+Install Clangd VSCode extension.

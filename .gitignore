@@ -10,5 +10,8 @@ CMakeUserPresets.json
 # OS-specific files
 .DS_Store
 
-# VS Code workspace files
-.vscode/
+# Cache files
+.cache/
+
+# Compile commands
+compile_commands.json
