@@ -19,9 +19,9 @@ public:
               const bool player_oriented = false);
 
   MapRenderer(const MapRenderer &) = default;
-  MapRenderer &operator=(const MapRenderer &) = default;
+  MapRenderer &operator=(const MapRenderer &) = delete;
   MapRenderer(MapRenderer &&) noexcept = default;
-  MapRenderer &operator=(MapRenderer &&) noexcept = default;
+  MapRenderer &operator=(MapRenderer &&) noexcept = delete;
   ~MapRenderer() = default;
 
   void set_renderer(std::shared_ptr<const gp::sdl::Renderer> renderer);

@@ -22,9 +22,9 @@ public:
   };
 
   RawMap(const RawMap &) = default;
-  RawMap &operator=(const RawMap &) = default;
+  RawMap &operator=(const RawMap &) = delete;
   RawMap(RawMap &&) noexcept = default;
-  RawMap &operator=(RawMap &&) noexcept = default;
+  RawMap &operator=(RawMap &&) noexcept = delete;
   ~RawMap() = default;
 
   RawMap(const std::size_t width, const std::size_t height, std::vector<BlockType> &&blocks);
