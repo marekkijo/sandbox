@@ -1,8 +1,8 @@
 #pragma once
 
-#include "assimp.hpp"
 #include "model_format.hpp"
 
+#include <assimp/metadata.h>
 #include <glm/glm.hpp>
 
 enum class Axis {

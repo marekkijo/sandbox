@@ -11,7 +11,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 namespace streaming {

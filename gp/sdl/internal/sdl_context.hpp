@@ -2,7 +2,6 @@
 
 #include <gp/sdl/internal/sdl_context_fwd.hpp>
 
-#include <functional>
 #include <unordered_map>
 
 namespace gp::sdl::internal {

@@ -1,12 +1,10 @@
 #pragma once
 
 #include "wolf_common/raw_map.hpp"
-#include "wolf_common/wolf_map_info.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-#include <cstdint>
 #include <utility>
 #include <vector>
 

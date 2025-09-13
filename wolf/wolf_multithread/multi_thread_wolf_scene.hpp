@@ -3,7 +3,6 @@
 #include "wolf_common/wolf_scene.hpp"
 
 #include <cstdint>
-#include <mutex>
 #include <thread>
 #include <vector>
 

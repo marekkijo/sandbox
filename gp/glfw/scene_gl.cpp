@@ -6,8 +6,6 @@
 #include <gp/glfw/internal/misc.hpp>
 #include <gp/misc/event.hpp>
 
-#include <stdexcept>
-
 namespace gp::glfw {
 SceneGL::SceneGL(std::shared_ptr<internal::GLFWContext> ctx)
     : ctx_{ctx ? ctx : std::make_shared<internal::GLFWContext>()} {}
@@ -33,6 +31,8 @@ void SceneGL::init(const int width, const int height, const std::string &title, 
   // Latest supported OpenGL version on MacOS is 4.1
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+
+  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 #else
   // Latest supported OpenGL version on Linux and Windows is 4.6
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

@@ -2,7 +2,6 @@
 
 #include "client.hpp"
 
-#include "streaming_common/constants.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
 #include <nlohmann/json.hpp>

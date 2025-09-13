@@ -2,7 +2,6 @@
 
 #include <boost/program_options.hpp>
 
-#include <chrono>
 #include <iostream>
 #include <mutex>
 #include <thread>

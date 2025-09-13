@@ -1,5 +1,6 @@
 #include "streamer.hpp"
 
+#include "streaming_common/constants.hpp"
 #include "streaming_common/encoder.hpp"
 
 #include <gp/json/misc.hpp>

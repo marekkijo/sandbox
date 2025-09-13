@@ -259,9 +259,10 @@ void SpriteVoxelizer::build_voxel(const int x, const int y, const int z, const g
 
   const auto voxel_start_index = static_cast<std::uint32_t>(vertex_data_.size());
 
-  const auto float_pos_x = static_cast<GLfloat>(x - SPRITE_WIDTH / 2);
-  const auto float_pos_y = -static_cast<GLfloat>(y - SPRITE_WIDTH / 2);
-  const auto float_pos_z = static_cast<GLfloat>(z - SPRITE_WIDTH / 2);
+  constexpr auto half_width = SPRITE_WIDTH / 2;
+  const auto float_pos_x = static_cast<GLfloat>(x - half_width);
+  const auto float_pos_y = -static_cast<GLfloat>(y - half_width);
+  const auto float_pos_z = static_cast<GLfloat>(z - half_width);
 
   std::transform(
       vertices.begin(),

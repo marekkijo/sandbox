@@ -3,7 +3,6 @@
 #include <gp/misc/event.hpp>
 
 #include <array>
-#include <cstdint>
 
 namespace gp::misc {
 class KeyboardState {

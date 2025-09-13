@@ -5,6 +5,10 @@
       "name": "ninja"
     },
     {
+      "configurePreset": "ninja_debug",
+      "name": "ninja_debug"
+    },
+    {
       "configurePreset": "vs2022",
       "name": "vs2022"
     },
@@ -25,12 +29,27 @@
     {
       "binaryDir": "${sourceDir}/build/ninja",
       "cacheVariables": {
+        "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       },
       "description": "Default build using Ninja generator",
       "displayName": "Default Config",
       "generator": "Ninja",
       "name": "ninja"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/ninja_debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      },
+      "description": "Debug build using Ninja generator",
+      "displayName": "Debug Config",
+      "generator": "Ninja",
+      "name": "ninja_debug"
     },
     {
       "binaryDir": "${sourceDir}/build/vs2022",
@@ -55,7 +74,11 @@
     {
       "binaryDir": "${sourceDir}/build/emscripten",
       "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "EMSCRIPTEN": true,
+        "EMSCRIPTEN_COMPILE_OPTIONS": "-pthread",
+        "EMSCRIPTEN_LINK_OPTIONS": "-O3;-pthread",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
         "VCPKG_MANIFEST_DIR": "wasm32-emscripten",
         "VCPKG_OVERLAY_TRIPLETS": "wasm32-emscripten",

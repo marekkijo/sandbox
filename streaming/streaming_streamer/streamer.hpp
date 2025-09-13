@@ -1,6 +1,5 @@
 #pragma once
 
-#include "streaming_common/constants.hpp"
 #include "streaming_common/encoder_fwd.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
@@ -11,7 +10,6 @@
 
 #include <functional>
 #include <memory>
-#include <unordered_set>
 
 namespace streaming {
 class Streamer {

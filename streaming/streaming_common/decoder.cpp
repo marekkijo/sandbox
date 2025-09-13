@@ -2,7 +2,6 @@
 
 #include "streaming_common/constants.hpp"
 
-#include <chrono>
 #include <stdexcept>
 
 namespace streaming {

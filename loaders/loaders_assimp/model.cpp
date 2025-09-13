@@ -3,6 +3,8 @@
 #include "model_format.hpp"
 #include "model_orientation.hpp"
 
+#include <assimp/postprocess.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
