@@ -3,8 +3,6 @@
 #include <gp/gl/shader.hpp>
 #include <gp/utils/utils.hpp>
 
-#include <stdexcept>
-
 namespace gp::gl {
 std::unique_ptr<ShaderProgram> create_shader_program(const std::string &program_name) {
   const auto vertex_shader_code = gp::utils::load_txt_file(program_name + ".vs");

@@ -1,7 +1,5 @@
 #include "single_thread_wolf_scene.hpp"
 
-#include "wolf_common/raw_map.hpp"
-#include "wolf_common/raw_map_from_ascii.hpp"
 #include "wolf_common/raw_map_from_wolf.hpp"
 
 #include <boost/program_options.hpp>

@@ -1,7 +1,6 @@
 #include "vector_map.hpp"
 
 #include <cmath>
-#include <numbers>
 
 namespace wolf {
 namespace {

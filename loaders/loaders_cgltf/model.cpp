@@ -6,8 +6,6 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
-#include <algorithm>
-#include <iterator>
 #include <span>
 #include <stdexcept>
 

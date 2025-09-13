@@ -1,7 +1,6 @@
 #pragma once
 
-#include "assimp.hpp"
-#include "model_format.hpp"
+#include <assimp/scene.h>
 
 #include <glm/glm.hpp>
 
