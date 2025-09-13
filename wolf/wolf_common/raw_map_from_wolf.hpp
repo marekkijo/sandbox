@@ -11,8 +11,8 @@
 namespace wolf {
 class RawMapFromWolf {
 public:
-  RawMapFromWolf(const RawMapFromWolf &) = default;
-  RawMapFromWolf &operator=(const RawMapFromWolf &) = default;
+  RawMapFromWolf(const RawMapFromWolf &) = delete;
+  RawMapFromWolf &operator=(const RawMapFromWolf &) = delete;
   RawMapFromWolf(RawMapFromWolf &&) noexcept = default;
   RawMapFromWolf &operator=(RawMapFromWolf &&) noexcept = default;
   ~RawMapFromWolf() = default;

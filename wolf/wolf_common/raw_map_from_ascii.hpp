@@ -9,8 +9,8 @@ class RawMap;
 
 class RawMapFromAscii {
 public:
-  RawMapFromAscii(const RawMapFromAscii &) = default;
-  RawMapFromAscii &operator=(const RawMapFromAscii &) = default;
+  RawMapFromAscii(const RawMapFromAscii &) = delete;
+  RawMapFromAscii &operator=(const RawMapFromAscii &) = delete;
   RawMapFromAscii(RawMapFromAscii &&) noexcept = default;
   RawMapFromAscii &operator=(RawMapFromAscii &&) noexcept = default;
   ~RawMapFromAscii() = default;

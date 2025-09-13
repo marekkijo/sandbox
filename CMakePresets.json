@@ -15,6 +15,10 @@
     {
       "configurePreset": "xcode",
       "name": "xcode"
+    },
+    {
+      "configurePreset": "emscripten",
+      "name": "emscripten"
     }
   ],
   "configurePresets": [
@@ -43,8 +47,24 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       },
+      "description": "Build using Xcode generator",
+      "displayName": "Xcode Config",
       "generator": "Xcode",
       "name": "xcode"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/emscripten",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "VCPKG_MANIFEST_DIR": "wasm32-emscripten",
+        "VCPKG_OVERLAY_TRIPLETS": "wasm32-emscripten",
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten-pthread"
+      },
+      "description": "Build using Emscripten",
+      "displayName": "Emscripten Config",
+      "generator": "Ninja",
+      "name": "emscripten"
     },
     {
       "inherits": "ninja",

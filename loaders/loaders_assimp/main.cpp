@@ -18,7 +18,7 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   boost::program_options::options_description desc("Options");
   desc.add_options()("help", "This help message");
   desc.add_options()("filename",
-                     boost::program_options::value<std::string>()->default_value("data\\model.glb"),
+                     boost::program_options::value<std::string>()->default_value("data/model.glb"),
                      "Model file name");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(1024), "Width of the frame buffer");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(768), "Height of the frame buffer");

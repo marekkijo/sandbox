@@ -16,9 +16,9 @@ public:
   explicit VectorMap(const RawMap &raw_map);
 
   VectorMap(const VectorMap &) = default;
-  VectorMap &operator=(const VectorMap &) = default;
+  VectorMap &operator=(const VectorMap &) = delete;
   VectorMap(VectorMap &&) noexcept = default;
-  VectorMap &operator=(VectorMap &&) noexcept = default;
+  VectorMap &operator=(VectorMap &&) noexcept = delete;
   ~VectorMap() = default;
 
   [[nodiscard]] const std::vector<std::pair<glm::vec2, glm::vec2>> &vectors() const;

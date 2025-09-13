@@ -2,11 +2,19 @@
 
 #include <gp/sdl/internal/sdl_renderer.hpp>
 
-#include <SDL_ttf.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <stdexcept>
 
 namespace gp::sdl {
+namespace {
+#ifdef __EMSCRIPTEN__
+constexpr std::string_view resource_path = "/data";
+#else
+constexpr std::string_view resource_path = "data";
+#endif
+} // namespace
+
 Renderer::Renderer(std::unique_ptr<internal::SDLRenderer> r)
     : r_(std::move(r)) {}
 
@@ -47,7 +55,7 @@ void Renderer::draw_text(const std::string &text, const int x, const int y) cons
     throw std::runtime_error("Couldn't initialize TTF: " + std::string(SDL_GetError()));
   }
 
-  const auto font = TTF_OpenFont("data/Consolas.ttf", 24);
+  const auto font = TTF_OpenFont((std::string(resource_path) + "/Consolas.ttf").c_str(), 24);
   if (!font) {
     throw std::runtime_error("Could not load font: " + std::string(TTF_GetError()));
   }

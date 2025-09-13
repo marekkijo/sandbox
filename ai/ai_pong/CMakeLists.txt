@@ -6,16 +6,25 @@ target_compile_features(ai_pong PRIVATE cxx_std_23)
 
 target_link_libraries(ai_pong gp)
 target_link_libraries(ai_pong ai_common)
+target_link_libraries(ai_pong Boost::program_options)
 target_link_libraries(ai_pong SDL2::SDL2)
 target_link_libraries(ai_pong SDL2::SDL2main)
-target_link_libraries(ai_pong Boost::program_options)
 target_link_libraries(ai_pong glm::glm)
 
-add_custom_command(
-  TARGET ai_pong
-  PRE_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-          ${CMAKE_CURRENT_SOURCE_DIR}/data $<TARGET_FILE_DIR:ai_pong>/data)
+if(DEFINED EMSCRIPTEN)
+  target_compile_options(ai_pong PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
+  target_link_options(ai_pong PRIVATE ${EMSCRIPTEN_LINK_OPTIONS}
+                      "-sPTHREAD_POOL_SIZE=8")
+
+  target_link_options(ai_pong PRIVATE --preload-file
+                      "${CMAKE_CURRENT_SOURCE_DIR}/data@/data")
+else()
+  add_custom_command(
+    TARGET ai_pong
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+            ${CMAKE_CURRENT_SOURCE_DIR}/data $<TARGET_FILE_DIR:ai_pong>/data)
+endif()
 
 set_target_properties(
   ai_pong PROPERTIES FOLDER ${SOLUTION_FOLDER} VS_DEBUGGER_WORKING_DIRECTORY
