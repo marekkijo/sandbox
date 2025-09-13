@@ -3,11 +3,7 @@
     "assimp",
     "boost-program-options",
     "cgltf",
-    "ffmpeg",
-    "glad",
-    "glfw3",
     "glm",
-    "libdatachannel",
     "nlohmann-json",
     "sdl2",
     "sdl2-ttf"

@@ -7,6 +7,12 @@
 #include <iostream>
 #include <memory>
 
+#ifdef __EMSCRIPTEN__
+constexpr std::string_view resource_path = "/data";
+#else
+constexpr std::string_view resource_path = "data";
+#endif
+
 struct ProgramSetup {
   bool exit{};
 
@@ -38,7 +44,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  auto vswap_file = std::make_shared<const wolf::VswapFile>("data/VSWAP.WL6");
+  auto vswap_file = std::make_shared<const wolf::VswapFile>(std::string(resource_path) + "/VSWAP.WL6");
   auto vswap_file_viewer_scene = std::make_unique<VswapFileViewerScene>(vswap_file);
   vswap_file_viewer_scene->init(program_setup.width, program_setup.height, "wolf_vswap_file_viewer");
   return vswap_file_viewer_scene->exec();

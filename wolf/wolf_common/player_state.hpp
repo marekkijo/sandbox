@@ -14,9 +14,9 @@ public:
   explicit PlayerState(const RawMap &raw_map, const float move_speed = 1.0f, const float rot_speed = 1.0f);
 
   PlayerState(const PlayerState &) = default;
-  PlayerState &operator=(const PlayerState &) = default;
+  PlayerState &operator=(const PlayerState &) = delete;
   PlayerState(PlayerState &&) noexcept = default;
-  PlayerState &operator=(PlayerState &&) noexcept = default;
+  PlayerState &operator=(PlayerState &&) noexcept = delete;
   ~PlayerState() = default;
 
   void set_keyboard_state(std::shared_ptr<gp::misc::KeyboardState> keyboard_state);
