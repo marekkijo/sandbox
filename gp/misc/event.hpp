@@ -3,7 +3,6 @@
 #include <gp/misc/event_fwd.hpp>
 
 #include <cstdint>
-#include <stdexcept>
 #include <string>
 
 namespace gp::misc {

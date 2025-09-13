@@ -12,7 +12,6 @@
 
 #include <glm/glm.hpp>
 
-#include <cstdint>
 #include <memory>
 
 class VswapFileViewerScene : public gp::glfw::SceneGL {

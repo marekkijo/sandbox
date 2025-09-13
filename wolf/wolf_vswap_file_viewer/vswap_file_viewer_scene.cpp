@@ -110,7 +110,7 @@ void VswapFileViewerScene::upload_wall() {
     index = wall_index_ = 0;
   }
 
-  printf("Wall index: %d\n", index);
+  printf("Wall index: %zu\n", index);
   const auto &data = vswap_file_->walls()[index];
   frame_texture_->bind();
   frame_texture_->set_image(0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, glm::value_ptr(data[0]));
@@ -123,7 +123,7 @@ void VswapFileViewerScene::upload_sprite() {
     index = sprite_index_ = 0;
   }
 
-  printf("Sprite index: %d\n", index);
+  printf("Sprite index: %zu\n", index);
   const auto &data = vswap_file_->sprites()[index];
   frame_texture_->bind();
   frame_texture_->set_image(0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, glm::value_ptr(data[0]));

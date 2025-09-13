@@ -9,7 +9,6 @@
 
 #include <functional>
 #include <memory>
-#include <vector>
 
 namespace streaming {
 class Encoder {

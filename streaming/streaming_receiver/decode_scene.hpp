@@ -11,7 +11,6 @@
 #include <gp/glfw/scene_gl.hpp>
 #include <gp/misc/event.hpp>
 
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>

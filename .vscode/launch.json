@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "MIMode": "lldb",
+      "args": [],
+      "cwd": "${workspaceFolder}/build/ninja_debug/loaders/loaders_assimp",
+      "environment": [],
+      "externalConsole": false,
+      "name": "loaders_assimp",
+      "preLaunchTask": "build-ninja_debug",
+      "program": "${workspaceFolder}/build/ninja_debug/loaders/loaders_assimp/loaders_assimp",
+      "request": "launch",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "ignoreFailures": true,
+          "text": "-enable-pretty-printing"
+        }
+      ],
+      "stopAtEntry": false,
+      "type": "cppdbg"
+    }
+  ],
+  "version": "0.2.0"
+}

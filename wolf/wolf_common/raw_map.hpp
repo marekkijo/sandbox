@@ -2,7 +2,6 @@
 
 #include "wolf_common/wolf_map_info.hpp"
 
-#include <array>
 #include <cstdint>
 #include <limits>
 #include <tuple>

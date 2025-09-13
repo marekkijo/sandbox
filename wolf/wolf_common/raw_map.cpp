@@ -112,7 +112,7 @@ void RawMap::process_start_position() {
   for (auto h = std::size_t{0u}; h < height(); h++) {
     for (auto w = std::size_t{0u}; w < width(); w++) {
       const auto object = block(w, h).object;
-      switch (block(w, h).object) {
+      switch (object) {
       case Map::Objects::start_position_n:
       case Map::Objects::start_position_s:
       case Map::Objects::start_position_w:
