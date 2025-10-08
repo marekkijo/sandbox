@@ -5,7 +5,6 @@
     "cgltf",
     "ffmpeg",
     "glad",
-    "glfw3",
     "glm",
     "libdatachannel",
     "nlohmann-json",

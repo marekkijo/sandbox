@@ -7,7 +7,6 @@ target_compile_features(loaders_assimp PRIVATE cxx_std_23)
 target_link_libraries(loaders_assimp gp)
 target_link_libraries(loaders_assimp Boost::program_options)
 target_link_libraries(loaders_assimp glad::glad)
-target_link_libraries(loaders_assimp glfw)
 target_link_libraries(loaders_assimp glm::glm)
 target_link_libraries(loaders_assimp assimp::assimp)
 

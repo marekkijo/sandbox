@@ -8,20 +8,28 @@
 #include <stdexcept>
 
 namespace gp::sdl::internal {
-SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx, const int width, const int height, const std::string &title)
+SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx,
+                     const int width,
+                     const int height,
+                     const std::string &title,
+                     const bool gl_support)
     : ctx_{std::move(ctx)}
     , wnd_{SDL_CreateWindow(title.c_str(),
                             SDL_WINDOWPOS_CENTERED,
                             SDL_WINDOWPOS_CENTERED,
                             width,
                             height,
-                            SDL_WINDOW_SHOWN)} {
+                            SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | (gl_support ? SDL_WINDOW_OPENGL : 0))} {
   if (!wnd()) {
     throw std::runtime_error{std::string{"SDL_CreateWindow error:"} + SDL_GetError()};
   }
 
-  auto r = std::make_unique<SDLRenderer>(*this);
-  r_ = std::make_shared<Renderer>(std::move(r));
+  // TODO: Not very elegant, renderer should be created outside when needed.
+  if (!gl_support) {
+    // Create renderer only if OpenGL is not used.
+    auto r = std::make_unique<SDLRenderer>(*this);
+    r_ = std::make_shared<Renderer>(std::move(r));
+  }
 }
 
 SDLWindow::~SDLWindow() {

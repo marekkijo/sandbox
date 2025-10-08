@@ -20,8 +20,14 @@ Shader::~Shader() { glDeleteShader(id()); }
 GLuint Shader::id() const { return id_; }
 
 void Shader::source(const std::string &code, const bool do_not_compile) const {
-  const char *c_code = code.c_str();
-  glShaderSource(id(), 1, &c_code, nullptr);
+#if __EMSCRIPTEN__
+  constexpr auto version_directive = "#version 300 es\n";
+#else
+  constexpr auto version_directive = "#version 330 core\n";
+#endif
+  auto full_code = std::string{version_directive} + code;
+  auto code_ptr = full_code.c_str();
+  glShaderSource(id(), 1, &code_ptr, nullptr);
   if (!do_not_compile) {
     compile();
   }
