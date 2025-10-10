@@ -1,6 +1,5 @@
 #include "scene_3d.hpp"
 
-#include <cstdio>
 #include <gp/gl/gl.hpp>
 #include <gp/misc/event.hpp>
 #include <gp/sdl/internal/sdl_context.hpp>
@@ -64,9 +63,8 @@ void Scene3D::set_gl_hints() {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-#ifndef NDEBUG
-  // SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-  printf("OpenGL debug context enabled\n");
+#if !defined(NDEBUG) && !defined(__EMSCRIPTEN__)
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 }
 

@@ -24,7 +24,7 @@ SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx,
     throw std::runtime_error{std::string{"SDL_CreateWindow error:"} + SDL_GetError()};
   }
 
-  // TODO: Not very elegant, renderer should be created outside when needed.
+  // TODO(#48): Not very elegant, renderer should be created outside SDLWindow when needed.
   if (!gl_support) {
     // Create renderer only if OpenGL is not used.
     auto r = std::make_unique<SDLRenderer>(*this);
