@@ -6,6 +6,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#ifdef __EMSCRIPTEN__
+constexpr std::string_view shaders_path = "/shaders";
+#else
+constexpr std::string_view shaders_path = "shaders";
+#endif
+
 VoxelScene::VoxelScene(std::shared_ptr<SpriteVoxelizer> sprite_voxelizer)
     : sprite_voxelizer_(std::move(sprite_voxelizer)) {}
 
@@ -72,7 +78,8 @@ void VoxelScene::initialize(const int width, const int height) {
 
   resize(width, height);
 
-  shader_program_ = gp::gl::create_shader_program("shaders/shader_program");
+  auto full_shader_path = std::string(shaders_path) + "/shader_program";
+  shader_program_ = gp::gl::create_shader_program(full_shader_path);
 }
 
 void VoxelScene::finalize() {

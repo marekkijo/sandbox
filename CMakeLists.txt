@@ -28,16 +28,20 @@ if(NOT DEFINED EMSCRIPTEN)
     COMPONENTS avcodec avformat avutil swscale
     REQUIRED)
   find_package(glad CONFIG REQUIRED)
-  find_package(glfw3 CONFIG REQUIRED)
   find_package(libdatachannel CONFIG REQUIRED)
 endif()
 
 set(SOURCE_GROUP_LABEL src)
 
-if(NOT DEFINED EMSCRIPTEN)
-  add_subdirectory(streaming)
-  add_subdirectory(loaders)
-endif()
+# TODO(#49): Make "streaming" subproject buildable
+# TODO(#49): if(NOT DEFINED EMSCRIPTEN)
+# TODO(#49):   add_subdirectory(streaming)
+# TODO(#49): endif()
+
+# TODO(#50): Make "loaders" subproject buildable
+# TODO(#50): if(NOT DEFINED EMSCRIPTEN)
+# TODO(#50):   add_subdirectory(loaders)
+# TODO(#50): endif()
 
 add_subdirectory(ai)
 add_subdirectory(gp)

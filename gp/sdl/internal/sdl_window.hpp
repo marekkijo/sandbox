@@ -13,7 +13,11 @@
 namespace gp::sdl::internal {
 class SDLWindow {
 public:
-  SDLWindow(std::shared_ptr<SDLContext> ctx, const int width, const int height, const std::string &title);
+  SDLWindow(std::shared_ptr<SDLContext> ctx,
+            const int width,
+            const int height,
+            const std::string &title,
+            const bool gl_support = false);
   ~SDLWindow();
 
   SDLWindow(SDLWindow &&) = delete;
