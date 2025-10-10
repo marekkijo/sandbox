@@ -62,11 +62,19 @@ void TextureObjects::set_parameter(const GLenum pname, const GLint *params) cons
 }
 
 void TextureObjects::set_parameter_I(const GLenum pname, const GLint *params) const {
+#ifndef __EMSCRIPTEN__
   glTexParameterIiv(target(), pname, params);
+#else
+  throw std::runtime_error("glTexParameterIiv is not available in Emscripten");
+#endif
 }
 
 void TextureObjects::set_parameter_I(const GLenum pname, const GLuint *params) const {
+#ifndef __EMSCRIPTEN__
   glTexParameterIuiv(target(), pname, params);
+#else
+  throw std::runtime_error("glTexParameterIuiv is not available in Emscripten");
+#endif
 }
 
 void TextureObjects::get_parameter(const GLenum pname, GLfloat *params) const {
@@ -78,10 +86,18 @@ void TextureObjects::get_parameter(const GLenum pname, GLint *params) const {
 }
 
 void TextureObjects::get_parameter_I(const GLenum pname, GLint *params) const {
+#ifndef __EMSCRIPTEN__
   glGetTexParameterIiv(target(), pname, params);
+#else
+  throw std::runtime_error("glGetTexParameterIiv is not available in Emscripten");
+#endif
 }
 
 void TextureObjects::get_parameter_I(const GLenum pname, GLuint *params) const {
+#ifndef __EMSCRIPTEN__
   glGetTexParameterIuiv(target(), pname, params);
+#else
+  throw std::runtime_error("glGetTexParameterIuiv is not available in Emscripten");
+#endif
 }
 } // namespace gp::gl

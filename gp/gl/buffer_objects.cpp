@@ -32,10 +32,20 @@ void BufferObjects::set_sub_data(const GLintptr offset, const GLsizeiptr size, c
 }
 
 void BufferObjects::get_sub_data(const GLintptr offset, const GLsizeiptr size, void *data) const {
+#ifndef __EMSCRIPTEN__
   glGetBufferSubData(target(), offset, size, data);
+#else
+  throw std::runtime_error("glGetBufferSubData is not available in Emscripten");
+#endif
 }
 
-void *BufferObjects::map(const GLenum access) const { return glMapBuffer(target(), access); }
+void *BufferObjects::map(const GLenum access) const {
+#ifndef __EMSCRIPTEN__
+  return glMapBuffer(target(), access);
+#else
+  throw std::runtime_error("glMapBuffer is not available in Emscripten");
+#endif
+}
 
 void *BufferObjects::map_range(const GLintptr offset, const GLsizeiptr length, const GLbitfield access) const {
   return glMapBufferRange(target(), offset, length, access);

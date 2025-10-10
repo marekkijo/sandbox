@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gp/glfw/glfw.hpp>
+#include <gp/gl/gl.hpp>
 
 namespace gp::gl {
 /**

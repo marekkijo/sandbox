@@ -2,7 +2,7 @@
 
 #include "wolf_common/vswap_file.hpp"
 
-#include <gp/glfw/glfw.hpp>
+#include <gp/gl/gl.hpp>
 
 #include <glm/glm.hpp>
 
