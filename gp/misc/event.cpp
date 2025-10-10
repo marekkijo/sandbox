@@ -1,5 +1,7 @@
 #include "event.hpp"
 
+#include <stdexcept>
+
 namespace gp::misc {
 bool Event::MouseMoveData::left_is_down() const { return mouse_button_mask & MouseButtonMask::Left; }
 

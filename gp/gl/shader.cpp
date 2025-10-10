@@ -25,7 +25,7 @@ void Shader::source(const std::string &code, const bool do_not_compile) const {
 #else
   constexpr auto version_directive = "#version 330 core\n";
 #endif
-  auto full_code = std::string{version_directive} + code;
+  const auto full_code = std::string{version_directive} + code;
   auto code_ptr = full_code.c_str();
   glShaderSource(id(), 1, &code_ptr, nullptr);
   if (!do_not_compile) {
