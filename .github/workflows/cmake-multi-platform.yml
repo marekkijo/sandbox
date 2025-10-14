@@ -41,6 +41,8 @@ jobs:
             preset: default
 
           - os: ubuntu-latest
+            preset: ninja
+          - os: ubuntu-latest
             preset: vs2022
           - os: macos-latest
             preset: vs2022
