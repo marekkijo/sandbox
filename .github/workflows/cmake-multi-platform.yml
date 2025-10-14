@@ -28,17 +28,18 @@ jobs:
         include:
           - os: windows-latest
             preset: vs2022
-          #- os: windows-latest
-          #  preset: emscripten
-          #- os: macos-latest
-          #  preset: ninja
-          #- os: macos-latest
-          #  preset: emscripten
-          #- os: ubuntu-latest
-          #  preset: default
           - os: ubuntu-latest
             preset: emscripten
         exclude:
+          - os: windows-latest
+            preset: emscripten
+          - os: macos-latest
+            preset: ninja
+          - os: macos-latest
+            preset: emscripten
+          - os: ubuntu-latest
+            preset: default
+
           - os: ubuntu-latest
             preset: vs2022
           - os: macos-latest
