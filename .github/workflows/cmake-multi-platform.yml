@@ -1,0 +1,158 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      #
+      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        preset: [vs2022, ninja, emscripten]
+        include:
+          - os: windows-latest
+            preset: vs2022
+          - os: ubuntu-latest
+            preset: emscripten
+        exclude:
+          - os: windows-latest
+            preset: emscripten
+          - os: macos-latest
+            preset: ninja
+          - os: macos-latest
+            preset: emscripten
+          - os: ubuntu-latest
+            preset: default
+
+          - os: ubuntu-latest
+            preset: ninja
+          - os: ubuntu-latest
+            preset: vs2022
+          - os: macos-latest
+            preset: vs2022
+          - os: windows-latest
+            preset: ninja
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        #with:
+        #vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
+
+      - name: Install system dependencies
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install nasm
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install nasm
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            # NASM is usually available or vcpkg handles it
+            echo "NASM handling on Windows..."
+          fi
+        shell: bash
+
+      - name: Setup Emscripten
+        if: matrix.preset == 'emscripten'
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+
+          # Set EMSDK environment variable for all subsequent steps
+          echo "EMSDK=$PWD" >> $GITHUB_ENV
+
+          # Source the environment and export variables
+          source ./emsdk_env.sh
+
+          # Make emcc available in PATH
+          echo "$PWD/upstream/emscripten" >> $GITHUB_PATH
+
+          # Verify installation
+          which emcc
+          emcc --version
+        shell: bash
+
+      - name: Setup Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: ${{ matrix.preset }}
+          buildPreset:
+            ${{ matrix.preset }}
+            # This is the default path to the CMakeLists.txt along side the
+            # CMakePresets.json. Change if you need have CMakeLists.txt and CMakePresets.json
+            # located elsewhere.
+            # cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+
+            # You could use CMake workflow presets defined in the CMakePresets.json
+            # with just this line below. Note this one cannot be used with any other
+            # preset input, it is mutually exclusive.
+            # workflowPreset: 'workflow-name'
+
+            # This is the name of the CMakePresets.json's configuration to use to generate
+            # the project files. This configuration leverages the vcpkg.cmake toolchain file to
+            # run vcpkg and install all dependencies specified in vcpkg.json.
+
+            # Additional arguments can be appended to the cmake command.
+            # This is useful to reduce the number of CMake's Presets since you can reuse
+            # an existing preset with different variables.
+            #configurePresetAdditionalArgs: "['-DENABLE_YOUR_FEATURE=1']"
+
+            # This is the name of the CMakePresets.json's configuration to build the project.
+
+            # Additional arguments can be appended when building, for example to specify the
+            # configuration to build.
+            # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
+            #buildPresetAdditionalArgs: "['--config Release']"
+
+            # This is the name of the CMakePresets.json's configuration to test the project with.
+            #testPreset: 'ninja-multi-vcpkg'
+            # Additional arguments can be appended when testing, for example to specify the config
+            # to test.
+            # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
+            #testPresetAdditionalArgs: "['--config Release']"
+
+      #- name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      #run: >
+      #cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        # working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+        run: ctest --test-dir build/${{ matrix.preset }}

@@ -3,6 +3,8 @@
 #include <gp/math/math.hpp>
 
 #include <cmath>
+#include <condition_variable>
+#include <mutex>
 #include <numbers>
 
 namespace wolf {
