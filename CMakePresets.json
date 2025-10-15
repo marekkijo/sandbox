@@ -94,5 +94,31 @@
       "name": "default"
     }
   ],
+  "testPresets": [
+    {
+      "configurePreset": "ninja",
+      "name": "ninja"
+    },
+    {
+      "configurePreset": "ninja_debug",
+      "name": "ninja_debug"
+    },
+    {
+      "configurePreset": "vs2022",
+      "name": "vs2022"
+    },
+    {
+      "configurePreset": "default",
+      "name": "default"
+    },
+    {
+      "configurePreset": "xcode",
+      "name": "xcode"
+    },
+    {
+      "configurePreset": "emscripten",
+      "name": "emscripten"
+    }
+  ],
   "version": 2
 }

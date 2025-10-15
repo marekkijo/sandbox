@@ -31,24 +31,20 @@ jobs:
       VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
     steps:
-      - name: Set up ACTIONS_CACHE_URL and ACTIONS_RUNTIME_TOKEN for caching
-        uses: actions/github-script@v7
+      - uses: actions/github-script@v7
         with:
           script: |
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: "Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'"
-        run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
+      - run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
         shell: bash
 
-      - name: Get CMake
-        uses: lukka/get-cmake@latest
+      - uses: lukka/get-cmake@latest
 
       - name: Restore vcpkg
         uses: actions/cache@v4
@@ -62,10 +58,17 @@ jobs:
           key: |
             ${{ hashFiles( '.git/modules/vcpkg/HEAD' )}}
 
-      - name: Setup vcpkg.
+      - name: Setup vcpkg for non-Emscripten
+        if: matrix.setup.preset != 'emscripten'
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: "vcpkg.json"
+
+      - name: Setup vcpkg for Emscripten
+        if: matrix.setup.preset == 'emscripten'
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: "wasm32-emscripten/vcpkg.json"
 
       - name: Run CMake and CTest
         uses: lukka/run-cmake@v10
