@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.setup.os }}
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
@@ -23,31 +23,13 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        preset: [vs2022, ninja, emscripten]
-        include:
-          - os: windows-latest
+        setup:
+          - os: windows-2025
             preset: vs2022
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             preset: emscripten
-        exclude:
-          - os: windows-latest
+          - os: macos-15
             preset: emscripten
-          - os: macos-latest
-            preset: ninja
-          - os: macos-latest
-            preset: emscripten
-          - os: ubuntu-latest
-            preset: default
-
-          - os: ubuntu-latest
-            preset: ninja
-          - os: ubuntu-latest
-            preset: vs2022
-          - os: macos-latest
-            preset: vs2022
-          - os: windows-latest
-            preset: ninja
 
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +53,7 @@ jobs:
         shell: bash
 
       - name: Setup Emscripten
-        if: matrix.preset == 'emscripten'
+        if: matrix.setup.preset == 'emscripten'
         run: |
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
@@ -105,9 +87,9 @@ jobs:
       - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
         uses: lukka/run-cmake@v10
         with:
-          configurePreset: ${{ matrix.preset }}
+          configurePreset: ${{ matrix.setup.preset }}
           buildPreset:
-            ${{ matrix.preset }}
+            ${{ matrix.setup.preset }}
             # This is the default path to the CMakeLists.txt along side the
             # CMakePresets.json. Change if you need have CMakeLists.txt and CMakePresets.json
             # located elsewhere.
@@ -145,14 +127,14 @@ jobs:
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       #run: >
-      #cmake --preset ${{ matrix.preset }}
+      #cmake --preset ${{ matrix.setup.preset }}
 
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-        run: cmake --build --preset ${{ matrix.preset }}
+        run: cmake --build --preset ${{ matrix.setup.preset }}
 
       - name: Test
         # working-directory: ${{ steps.strings.outputs.build-output-dir }}
         # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: ctest --test-dir build/${{ matrix.preset }}
+        run: ctest --test-dir build/${{ matrix.setup.preset }}
