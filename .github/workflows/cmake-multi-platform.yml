@@ -18,12 +18,12 @@ jobs:
 
       matrix:
         setup:
-          - os: windows-2025
-            preset: vs2022
           - os: ubuntu-24.04
             preset: ninja
           - os: macos-15
             preset: xcode
+          - os: windows-2025
+            preset: vs2022
 
     steps:
       - name: Set up ACTIONS_CACHE_URL and ACTIONS_RUNTIME_TOKEN for caching
