@@ -35,7 +35,7 @@
       },
       "description": "Default build using Ninja generator",
       "displayName": "Default Config",
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "name": "ninja"
     },
     {
@@ -48,7 +48,7 @@
       },
       "description": "Debug build using Ninja generator",
       "displayName": "Debug Config",
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "name": "ninja_debug"
     },
     {
@@ -86,7 +86,7 @@
       },
       "description": "Build using Emscripten",
       "displayName": "Emscripten Config",
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "name": "emscripten"
     },
     {
