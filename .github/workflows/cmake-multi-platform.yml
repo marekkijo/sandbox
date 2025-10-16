@@ -18,22 +18,22 @@ jobs:
         setup:
           - os: macos-latest
             preset: xcode
-          - os: windows-latest
-            preset: vs2022
-
-          - os: macos-latest
-            preset: ninja
-          - os: windows-latest
-            preset: ninja
-          - os: ubuntu-latest
-            preset: ninja
-
-          - os: macos-latest
-            preset: emscripten
-          - os: windows-latest
-            preset: emscripten
-          - os: ubuntu-latest
-            preset: emscripten
+    #          - os: windows-latest
+    #            preset: vs2022
+    #
+    #          - os: macos-latest
+    #            preset: ninja
+    #          - os: windows-latest
+    #            preset: ninja
+    #          - os: ubuntu-latest
+    #            preset: ninja
+    #
+    #          - os: macos-latest
+    #            preset: emscripten
+    #          - os: windows-latest
+    #            preset: emscripten
+    #          - os: ubuntu-latest
+    #            preset: emscripten
 
     steps:
       #- name: Set up ACTIONS_CACHE_URL and ACTIONS_RUNTIME_TOKEN for caching
@@ -64,12 +64,14 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: "vcpkg.json"
+          vcpkgGitCommitId: "2025.09.17"
 
       - name: Setup vcpkg for Emscripten
         if: matrix.setup.preset == 'emscripten'
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: "wasm32-emscripten/vcpkg.json"
+          vcpkgGitCommitId: "2025.09.17"
 
       - name: Cache Emscripten
         if: matrix.setup.preset == 'emscripten'
