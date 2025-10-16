@@ -1,28 +1,44 @@
 {
   "buildPresets": [
     {
+      "configuration": "Release",
       "configurePreset": "ninja",
       "name": "ninja"
     },
     {
-      "configurePreset": "ninja_debug",
+      "configuration": "Debug",
+      "configurePreset": "ninja",
       "name": "ninja_debug"
     },
     {
+      "configuration": "Release",
       "configurePreset": "vs2022",
       "name": "vs2022"
     },
     {
-      "configurePreset": "default",
-      "name": "default"
+      "configuration": "Debug",
+      "configurePreset": "vs2022",
+      "name": "vs2022_debug"
     },
     {
+      "configuration": "Release",
       "configurePreset": "xcode",
       "name": "xcode"
     },
     {
+      "configuration": "Debug",
+      "configurePreset": "xcode",
+      "name": "xcode_debug"
+    },
+    {
+      "configuration": "Release",
       "configurePreset": "emscripten",
       "name": "emscripten"
+    },
+    {
+      "configuration": "Debug",
+      "configurePreset": "emscripten",
+      "name": "emscripten_debug"
     }
   ],
   "configurePresets": [
@@ -30,52 +46,34 @@
       "binaryDir": "${sourceDir}/build/ninja",
       "cacheVariables": {
         "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       },
-      "description": "Default build using Ninja generator",
-      "displayName": "Default Config",
+      "description": "Build using Ninja Multi-Config generator",
+      "displayName": "Ninja Config",
       "generator": "Ninja Multi-Config",
-      "name": "ninja"
-    },
-    {
-      "binaryDir": "${sourceDir}/build/ninja_debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-      },
-      "description": "Debug build using Ninja generator",
-      "displayName": "Debug Config",
-      "generator": "Ninja Multi-Config",
-      "name": "ninja_debug"
+      "name": "ninja",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     },
     {
       "binaryDir": "${sourceDir}/build/vs2022",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-      },
       "description": "Build using Visual Studio 17 2022 generator",
       "displayName": "Visual Studio 17 2022 Config",
       "generator": "Visual Studio 17 2022",
-      "name": "vs2022"
+      "name": "vs2022",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     },
     {
       "binaryDir": "${sourceDir}/build/xcode",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-      },
       "description": "Build using Xcode generator",
       "displayName": "Xcode Config",
       "generator": "Xcode",
-      "name": "xcode"
+      "name": "xcode",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     },
     {
       "binaryDir": "${sourceDir}/build/emscripten",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "EMSCRIPTEN": true,
         "EMSCRIPTEN_COMPILE_OPTIONS": "-pthread",
         "EMSCRIPTEN_LINK_OPTIONS": "-O3;-pthread;-sMAX_WEBGL_VERSION=2",
@@ -87,11 +85,8 @@
       "description": "Build using Emscripten",
       "displayName": "Emscripten Config",
       "generator": "Ninja Multi-Config",
-      "name": "emscripten"
-    },
-    {
-      "inherits": "ninja",
-      "name": "default"
+      "name": "emscripten",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     }
   ],
   "testPresets": [
@@ -100,16 +95,8 @@
       "name": "ninja"
     },
     {
-      "configurePreset": "ninja_debug",
-      "name": "ninja_debug"
-    },
-    {
       "configurePreset": "vs2022",
       "name": "vs2022"
-    },
-    {
-      "configurePreset": "default",
-      "name": "default"
     },
     {
       "configurePreset": "xcode",
@@ -120,5 +107,5 @@
       "name": "emscripten"
     }
   ],
-  "version": 2
+  "version": 8
 }
