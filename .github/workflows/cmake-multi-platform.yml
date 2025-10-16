@@ -41,8 +41,8 @@ jobs:
           submodules: true
 
       #- name: Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'
-        #run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-        #shell: bash
+      #run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
+      #shell: bash
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
@@ -69,11 +69,19 @@ jobs:
         with:
           vcpkgJsonGlob: "wasm32-emscripten/vcpkg.json"
 
+      - name: Cache Emscripten
+        if: matrix.setup.preset == 'emscripten'
+        uses: actions/cache@v4
+        with:
+          path: "emsdk-cache"
+          key: Emscripten-4.0.16-${{ matrix.setup.os }}
+
       - name: Setup Emscripten
         if: matrix.setup.preset == 'emscripten'
-        uses: lovasoa/setup-emscripten@master
+        uses: mymindstorm/setup-emsdk@v14
         with:
-          emscripten-version: '4.0.16'
+          version: 4.0.16
+          actions-cache-folder: "emsdk-cache"
 
       - name: Run CMake and CTest
         uses: lukka/run-cmake@v10
