@@ -74,6 +74,10 @@ jobs:
           version: 4.0.16
           actions-cache-folder: emsdk-cache
 
+      - name: Install build dependencies for Linux
+        if: matrix.setup.os == 'ubuntu-latest' && matrix.setup.preset == 'ninja'
+        run: sudo apt-get update && sudo apt-get install -y autoconf automake libtool m4
+
       - name: Run CMake and CTest
         uses: lukka/run-cmake@v10
         env:
