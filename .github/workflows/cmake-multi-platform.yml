@@ -38,9 +38,9 @@ jobs:
         with:
           submodules: true
 
-      - name: Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'
-        run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-        shell: bash
+      #- name: Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'
+        #run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
+        #shell: bash
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
