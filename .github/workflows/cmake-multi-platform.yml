@@ -1,5 +1,3 @@
-# Workflow created based on CppCMakeVcpkgTemplate by lukka
-# For more details visit: https://github.com/lukka/CppCMakeVcpkgTemplate/blob/v11/.github/workflows/hosted-pure-workflow.yml
 name: multiplatform-cmake-build-with-tests
 
 on:
@@ -18,37 +16,41 @@ jobs:
 
       matrix:
         setup:
-          - os: ubuntu-latest
-            preset: ninja
           - os: macos-latest
             preset: xcode
           - os: windows-latest
             preset: vs2022
+
           - os: macos-latest
+            preset: ninja
+          - os: windows-latest
+            preset: ninja
+          - os: ubuntu-latest
+            preset: ninja
+
+          - os: macos-latest
+            preset: emscripten
+          - os: windows-latest
+            preset: emscripten
+          - os: ubuntu-latest
             preset: emscripten
 
     steps:
-      - name: Set up ACTIONS_CACHE_URL and ACTIONS_RUNTIME_TOKEN for caching
-        uses: actions/github-script@v7
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+      #- name: Set up ACTIONS_CACHE_URL and ACTIONS_RUNTIME_TOKEN for caching
+      #  uses: actions/github-script@v7
+      #  with:
+      #    script: |
+      #      core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+      #      core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      #- name: Create directory '${{ env.VCPKG_DEFAULT_BINARY_CACHE }}'
-      #run: mkdir -p $VCPKG_DEFAULT_BINARY_CACHE
-      #shell: bash
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
       - name: Get nasm
-        if: matrix.setup.os == 'ubuntu-24.04'
+        if: matrix.setup.os == 'ubuntu-latest'
         uses: ilammy/setup-nasm@v1
 
       - name: Cache vcpkg
@@ -128,26 +130,3 @@ jobs:
 
 #      - name: Setup Ninja
 #        uses: seanmiddleditch/gha-setup-ninja@master
-
-#      - name: Set reusable strings
-#        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-#        id: strings
-#        shell: bash
-#        run: |
-#          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-#      - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
-#        uses: lukka/run-cmake@v10
-#        with:
-#          configurePreset: ${{ matrix.setup.preset }}
-#          buildPreset: ${{ matrix.setup.preset }}
-
-#      - name: Build
-#        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-#        run: cmake --build --preset ${{ matrix.setup.preset }}
-
-#      - name: Test
-#        # working-directory: ${{ steps.strings.outputs.build-output-dir }}
-#        # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-#        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-#        run: ctest --test-dir build/${{ matrix.setup.preset }}

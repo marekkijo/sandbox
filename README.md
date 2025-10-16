@@ -4,32 +4,30 @@
 
 ### Prepare vcpkg
 
-`vcpkg` tool is included as a git submodule. After cloning the repository, initialize and update the submodules by running:
+Clone the `vcpkg`:
 
 ```bash
-git submodule update --init --recursive
+git clone https://github.com/microsoft/vcpkg.git
 ```
 
-Bootstrap `vcpkg` by running the following commands:
+Go into the cloned `vcpkg` directory and bootstrap it.
 
 For Windows:
 
 ```bash
-cd vcpkg
-.\bootstrap-vcpkg.bat
+.\bootstrap-vcpkg.bat -disableMetrics
 ```
 
 For MacOS and Linux:
 
 ```bash
-cd vcpkg
-./bootstrap-vcpkg.sh
+./bootstrap-vcpkg.sh -disableMetrics
 ```
 
-Then, add the `vcpkg` directory to your `PATH` environment variable, and create a `VCPKG_ROOT` environment variable pointing to the `vcpkg` directory.
+Add the `vcpkg` directory to your `PATH` environment variable, and create a `VCPKG_ROOT` environment variable pointing to the `vcpkg` directory.
 
 ```bash
-export VCPKG_ROOT="$(pwd)/vcpkg"
+export VCPKG_ROOT="/path/to/your/sandbox/vcpkg"
 export PATH="$PATH:$VCPKG_ROOT"
 ```
 
@@ -42,15 +40,18 @@ echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.zprofile
 
 ### Prepare Emscripten
 
-Clone, install and activate the latest Emscripten SDK:
+Clone the `emsdk`:
 
 ```bash
 git clone https://github.com/emscripten-core/emsdk.git
-cd emsdk
+```
+
+Go into the cloned `emsdk` directory and install and activate the latest Emscripten SDK:
+
+```bash
 ./emsdk install latest
 ./emsdk activate latest
 source ./emsdk_env.sh
-cd ..
 ```
 
 Make sure to add the Emscripten environment setup script to your shell profile, e.g., for `.zprofile`:
