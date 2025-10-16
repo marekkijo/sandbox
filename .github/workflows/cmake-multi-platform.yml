@@ -25,11 +25,6 @@ jobs:
           - os: macos-15
             preset: xcode
 
-    env:
-      _VCPKG_: ${{ github.workspace }}/vcpkg
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg/bincache
-      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-
     steps:
       - name: Set up ACTIONS_CACHE_URL and ACTIONS_RUNTIME_TOKEN for caching
         uses: actions/github-script@v7
@@ -50,17 +45,11 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      - name: Restore vcpkg
+      - name: Cache vcpkg
         uses: actions/cache@v4
         with:
-          path: |
-            ${{ env._VCPKG_ }}
-            !${{ env._VCPKG_ }}/buildtrees
-            !${{ env._VCPKG_ }}/packages
-            !${{ env._VCPKG_ }}/downloads
-            !${{ env._VCPKG_ }}/installed
-          key: |
-            ${{ hashFiles( '.git/modules/vcpkg/HEAD' )}}
+          path: ${{ github.workspace }}/vcpkg_cache
+          key: vcpkg-${{ matrix.setup.os }}-${{ matrix.setup.preset }}-${{ hashFiles('vcpkg.json', 'wasm32-emscripten/vcpkg.json', 'CMakeLists.txt', '**/CMakeLists.txt', 'CMakePresets.json') }}
 
       - name: Setup vcpkg for non-Emscripten
         if: matrix.setup.preset != 'emscripten'
@@ -76,6 +65,8 @@ jobs:
 
       - name: Run CMake and CTest
         uses: lukka/run-cmake@v10
+        env:
+          VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_cache,readwrite"
         with:
           configurePreset: ${{ matrix.setup.preset }}
           buildPreset: ${{ matrix.setup.preset }}
