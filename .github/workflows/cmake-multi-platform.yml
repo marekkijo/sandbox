@@ -20,14 +20,14 @@ jobs:
             preset: xcode
           - os: windows-latest
             preset: vs2022
-          #
-          #          - os: macos-latest
-          #            preset: ninja
-          #          - os: windows-latest
-          #            preset: ninja
-          #          - os: ubuntu-latest
-          #            preset: ninja
-          #
+
+          - os: macos-latest
+            preset: ninja
+          - os: windows-latest
+            preset: ninja
+          - os: ubuntu-latest
+            preset: ninja
+
           - os: macos-latest
             preset: emscripten
           - os: windows-latest
@@ -46,6 +46,11 @@ jobs:
         if: matrix.setup.os == 'ubuntu-latest'
         uses: ilammy/setup-nasm@v1
 
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "17"
+
       - name: Cache vcpkg
         uses: actions/cache@v4
         with:
@@ -62,7 +67,7 @@ jobs:
           path: emsdk-cache
           key: Emscripten-4.0.16-${{ matrix.setup.os }}
 
-      - name: Setup Emscripten
+      - name: Setup Emscripten for non-Windows
         if: matrix.setup.preset == 'emscripten'
         uses: mymindstorm/setup-emsdk@v14
         with:
@@ -77,40 +82,3 @@ jobs:
           configurePreset: ${{ matrix.setup.preset }}
           buildPreset: ${{ matrix.setup.preset }}
           testPreset: ${{ matrix.setup.preset }}
-#      - name: Install system dependencies
-#        run: |
-#          if [ "$RUNNER_OS" == "Linux" ]; then
-#            sudo apt-get update
-#            sudo apt-get install nasm
-#          elif [ "$RUNNER_OS" == "macOS" ]; then
-#            brew install nasm
-#          elif [ "$RUNNER_OS" == "Windows" ]; then
-#            # NASM is usually available or vcpkg handles it
-#            echo "NASM handling on Windows..."
-#          fi
-#        shell: bash
-
-#      - name: Setup Emscripten
-#        if: matrix.setup.preset == 'emscripten'
-#        run: |
-#          git clone https://github.com/emscripten-core/emsdk.git
-#          cd emsdk
-#          ./emsdk install latest
-#          ./emsdk activate latest
-#
-#          # Set EMSDK environment variable for all subsequent steps
-#          echo "EMSDK=$PWD" >> $GITHUB_ENV
-#
-#          # Source the environment and export variables
-#          source ./emsdk_env.sh
-#
-#          # Make emcc available in PATH
-#          echo "$PWD/upstream/emscripten" >> $GITHUB_PATH
-#
-#          # Verify installation
-#          which emcc
-#          emcc --version
-#        shell: bash
-
-#      - name: Setup Ninja
-#        uses: seanmiddleditch/gha-setup-ninja@master
