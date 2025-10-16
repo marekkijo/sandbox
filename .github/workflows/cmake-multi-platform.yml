@@ -66,7 +66,7 @@ jobs:
         if: matrix.setup.preset == 'emscripten'
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/emsdk_cache
+          path: emsdk-cache
           key: Emscripten-4.0.16-${{ matrix.setup.os }}
 
       - name: Setup Emscripten
@@ -74,12 +74,12 @@ jobs:
         uses: mymindstorm/setup-emsdk@v14
         with:
           version: 4.0.16
-          actions-cache-folder: ${{ github.workspace }}/emsdk_cache
+          actions-cache-folder: emsdk-cache
 
       - name: Run CMake and CTest
         uses: lukka/run-cmake@v10
         env:
-          VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_cache,readwrite"
+          VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
         with:
           configurePreset: ${{ matrix.setup.preset }}
           buildPreset: ${{ matrix.setup.preset }}
