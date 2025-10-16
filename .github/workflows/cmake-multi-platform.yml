@@ -64,14 +64,14 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: "vcpkg.json"
-          vcpkgGitCommitId: "2025.09.17"
+          vcpkgGitCommitId: "55b6b23184445152a1a2a8373d1c79f589a7ca6c"
 
       - name: Setup vcpkg for Emscripten
         if: matrix.setup.preset == 'emscripten'
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: "wasm32-emscripten/vcpkg.json"
-          vcpkgGitCommitId: "2025.09.17"
+          vcpkgGitCommitId: "55b6b23184445152a1a2a8373d1c79f589a7ca6c"
 
       - name: Cache Emscripten
         if: matrix.setup.preset == 'emscripten'
