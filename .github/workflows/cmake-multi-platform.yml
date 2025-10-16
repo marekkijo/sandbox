@@ -18,18 +18,18 @@ jobs:
         setup:
           - os: macos-latest
             preset: xcode
-    #          - os: windows-latest
-    #            preset: vs2022
-    #
-    #          - os: macos-latest
-    #            preset: ninja
-    #          - os: windows-latest
-    #            preset: ninja
-    #          - os: ubuntu-latest
-    #            preset: ninja
-    #
-    #          - os: macos-latest
-    #            preset: emscripten
+          #          - os: windows-latest
+          #            preset: vs2022
+          #
+          #          - os: macos-latest
+          #            preset: ninja
+          #          - os: windows-latest
+          #            preset: ninja
+          #          - os: ubuntu-latest
+          #            preset: ninja
+          #
+          - os: macos-latest
+            preset: emscripten
     #          - os: windows-latest
     #            preset: emscripten
     #          - os: ubuntu-latest
@@ -66,7 +66,7 @@ jobs:
         if: matrix.setup.preset == 'emscripten'
         uses: actions/cache@v4
         with:
-          path: "emsdk-cache"
+          path: ${{ github.workspace }}/emsdk_cache
           key: Emscripten-4.0.16-${{ matrix.setup.os }}
 
       - name: Setup Emscripten
@@ -74,7 +74,7 @@ jobs:
         uses: mymindstorm/setup-emsdk@v14
         with:
           version: 4.0.16
-          actions-cache-folder: "emsdk-cache"
+          actions-cache-folder: ${{ github.workspace }}/emsdk_cache
 
       - name: Run CMake and CTest
         uses: lukka/run-cmake@v10
