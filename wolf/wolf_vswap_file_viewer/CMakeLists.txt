@@ -13,19 +13,30 @@ if(NOT DEFINED EMSCRIPTEN)
   target_link_libraries(wolf_vswap_file_viewer glad::glad)
 endif()
 
-add_custom_command(
-  TARGET wolf_vswap_file_viewer
-  PRE_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders
-    $<TARGET_FILE_DIR:wolf_vswap_file_viewer>/shaders)
+if(DEFINED EMSCRIPTEN)
+  target_compile_options(wolf_vswap_file_viewer
+                         PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
+  target_link_options(wolf_vswap_file_viewer PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
 
-add_custom_command(
-  TARGET wolf_vswap_file_viewer
-  PRE_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_DIR}
-          $<TARGET_FILE_DIR:wolf_vswap_file_viewer>/data)
+  target_link_options(
+    wolf_vswap_file_viewer PRIVATE "-sASSERTIONS=1" "-sALLOW_MEMORY_GROWTH=1"
+    "SHELL:--preload-file ${DATA_DIR}@/data"
+    "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@/shaders")
+else()
+  add_custom_command(
+    TARGET wolf_vswap_file_viewer
+    PRE_BUILD
+    COMMAND
+      ${CMAKE_COMMAND} -E copy_directory_if_different
+      ${CMAKE_CURRENT_SOURCE_DIR}/shaders
+      $<TARGET_FILE_DIR:wolf_vswap_file_viewer>/shaders)
+
+  add_custom_command(
+    TARGET wolf_vswap_file_viewer
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_DIR}
+            $<TARGET_FILE_DIR:wolf_vswap_file_viewer>/data)
+endif()
 
 set_target_properties(
   wolf_vswap_file_viewer

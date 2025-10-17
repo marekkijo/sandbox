@@ -5,6 +5,4 @@ add_subdirectory(wolf_common)
 add_subdirectory(wolf_multithread)
 add_subdirectory(wolf_singlethread)
 add_subdirectory(wolf_sprite_voxelizer)
-
-# TODO(#51): Make "wolf_vswap_file_viewer" subproject buildable
-# TODO(#51): add_subdirectory(wolf_vswap_file_viewer)
+add_subdirectory(wolf_vswap_file_viewer)
