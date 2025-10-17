@@ -1,0 +1,82 @@
+name: multiplatform-cmake-build-with-tests
+
+# This workflow is not complete, following builds still fail:
+# * Windows + Emscripten
+# - os: windows-latest
+#   preset: emscripten
+# * macOS + Ninja
+# - os: macos-latest
+#   preset: ninja
+# * Windows + Ninja
+# - os: windows-latest
+#   preset: ninja
+# * Linux + Ninja
+# - os: ubuntu-latest
+#   preset: ninja
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: ${{ matrix.setup.os }} - ${{ matrix.setup.preset }}
+    runs-on: ${{ matrix.setup.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        setup:
+          - os: macos-latest
+            preset: xcode
+          - os: windows-latest
+            preset: vs2022
+          - os: macos-latest
+            preset: emscripten
+          - os: ubuntu-latest
+            preset: emscripten
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Get nasm
+        if: matrix.setup.os == 'ubuntu-latest'
+        uses: ilammy/setup-nasm@v1
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg_cache
+          key: vcpkg-${{ matrix.setup.os }}-${{ matrix.setup.preset }}-${{ hashFiles('vcpkg-configuration.json', 'vcpkg.json', 'wasm32-emscripten/vcpkg.json') }}
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: Cache Emscripten
+        if: matrix.setup.preset == 'emscripten'
+        uses: actions/cache@v4
+        with:
+          path: emsdk-cache
+          key: Emscripten-4.0.16-${{ matrix.setup.os }}
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.16
+          actions-cache-folder: emsdk-cache
+
+      - name: Run CMake and CTest
+        uses: lukka/run-cmake@v10
+        env:
+          VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
+        with:
+          configurePreset: ${{ matrix.setup.preset }}
+          buildPreset: ${{ matrix.setup.preset }}
+          testPreset: ${{ matrix.setup.preset }}
