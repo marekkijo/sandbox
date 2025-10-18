@@ -3,21 +3,20 @@
 #include "model.hpp"
 
 #include <gp/gl/buffer_objects.hpp>
+#include <gp/gl/gl.hpp>
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/vertex_array_objects.hpp>
-#include <gp/glfw/glfw.hpp>
-#include <gp/glfw/scene_gl.hpp>
 #include <gp/misc/event_fwd.hpp>
+#include <gp/sdl/scene_3d.hpp>
 
 #include <glm/glm.hpp>
 
 #include <cstdint>
 #include <memory>
 
-class ModelScene : public gp::glfw::SceneGL {
+class ModelScene : public gp::sdl::Scene3D {
 public:
   explicit ModelScene(std::shared_ptr<const Model> model);
-  ~ModelScene() final = default;
 
 private:
   void loop(const gp::misc::Event &event) final;
