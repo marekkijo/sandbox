@@ -7,6 +7,12 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace {
+#ifdef __EMSCRIPTEN__
+constexpr std::string_view shaders_path = "/shaders";
+#else
+constexpr std::string_view shaders_path = "shaders";
+#endif
+
 template<typename... Ts>
 constexpr auto make_array(Ts &&...args) {
   return std::array<std::common_type_t<Ts...>, sizeof...(Ts)>{std::forward<Ts>(args)...};
@@ -80,7 +86,8 @@ void VswapFileViewerScene::initialize(const int width, const int height) {
   frame_texture_->set_parameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   frame_texture_->set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  shader_program_ = gp::gl::create_shader_program("shaders/texture_screen");
+  const auto full_shader_path = std::string(shaders_path) + "/texture_screen";
+  shader_program_ = gp::gl::create_shader_program(full_shader_path);
   shader_program_->use();
   shader_program_->set_uniform("tex", 0);
 }
