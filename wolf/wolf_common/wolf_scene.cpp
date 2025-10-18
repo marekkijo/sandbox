@@ -109,7 +109,7 @@ void WolfScene::draw_walls() const {
       continue;
     }
 
-    r().fill_rects(rects.data(), rects.size());
+    r().fill_rects(rects.data(), static_cast<int>(rects.size()));
     rects.clear();
 
     last_color = color;
@@ -117,7 +117,7 @@ void WolfScene::draw_walls() const {
     rects.push_back(wall.rect);
   }
 
-  r().fill_rects(rects.data(), rects.size());
+  r().fill_rects(rects.data(), static_cast<int>(rects.size()));
   rects.clear();
 }
 } // namespace wolf

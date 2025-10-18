@@ -6,18 +6,16 @@
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/texture_object.hpp>
 #include <gp/gl/vertex_array_object.hpp>
-#include <gp/glfw/glfw.hpp>
-#include <gp/glfw/scene_gl.hpp>
 #include <gp/misc/event_fwd.hpp>
+#include <gp/sdl/scene_3d.hpp>
 
 #include <glm/glm.hpp>
 
 #include <memory>
 
-class VswapFileViewerScene : public gp::glfw::SceneGL {
+class VswapFileViewerScene : public gp::sdl::Scene3D {
 public:
   explicit VswapFileViewerScene(std::shared_ptr<const wolf::VswapFile> vswap_file);
-  ~VswapFileViewerScene() final = default;
 
 private:
   void loop(const gp::misc::Event &event) final;
