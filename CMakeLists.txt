@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Include utility functions
+include(cmake/ResourceUtils.cmake)
+
 if(DEFINED EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
@@ -38,13 +41,9 @@ set(SOURCE_GROUP_LABEL src)
 # TODO(#49):   add_subdirectory(streaming)
 # TODO(#49): endif()
 
-# TODO(#50): Make "loaders" subproject buildable
-# TODO(#50): if(NOT DEFINED EMSCRIPTEN)
-# TODO(#50):   add_subdirectory(loaders)
-# TODO(#50): endif()
-
 add_subdirectory(ai)
 add_subdirectory(gp)
+add_subdirectory(loaders)
 add_subdirectory(wolf)
 
 if(DEFINED CMAKE_CXX_CLANG_TIDY)

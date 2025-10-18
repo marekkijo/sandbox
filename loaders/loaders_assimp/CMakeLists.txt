@@ -6,24 +6,25 @@ target_compile_features(loaders_assimp PRIVATE cxx_std_23)
 
 target_link_libraries(loaders_assimp gp)
 target_link_libraries(loaders_assimp Boost::program_options)
-target_link_libraries(loaders_assimp glad::glad)
+target_link_libraries(loaders_assimp SDL2::SDL2)
+target_link_libraries(loaders_assimp SDL2::SDL2main)
 target_link_libraries(loaders_assimp glm::glm)
 target_link_libraries(loaders_assimp assimp::assimp)
 
-add_custom_command(
-  TARGET loaders_assimp
-  PRE_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders
-    $<TARGET_FILE_DIR:loaders_assimp>/shaders)
+if(NOT DEFINED EMSCRIPTEN)
+  target_link_libraries(loaders_assimp glad::glad)
+endif()
 
-add_custom_command(
-  TARGET loaders_assimp
-  PRE_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/data $<TARGET_FILE_DIR:loaders_assimp>/data)
+if(DEFINED EMSCRIPTEN)
+  target_compile_options(loaders_assimp PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
+  target_link_options(loaders_assimp PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
+  target_link_options(loaders_assimp PRIVATE "-sASSERTIONS=1"
+                      "-sALLOW_MEMORY_GROWTH=1")
+endif()
+
+add_target_resources(TARGET loaders_assimp RESOURCES data)
+
+add_target_resources(TARGET loaders_assimp RESOURCES shaders COPY_IF_DIFFERENT)
 
 set_target_properties(
   loaders_assimp
