@@ -7,6 +7,8 @@ target_compile_features(wolf_vswap_file_viewer PRIVATE cxx_std_23)
 target_link_libraries(wolf_vswap_file_viewer gp)
 target_link_libraries(wolf_vswap_file_viewer wolf_common)
 target_link_libraries(wolf_vswap_file_viewer Boost::program_options)
+target_link_libraries(wolf_vswap_file_viewer SDL2::SDL2)
+target_link_libraries(wolf_vswap_file_viewer SDL2::SDL2main)
 target_link_libraries(wolf_vswap_file_viewer glm::glm)
 
 if(NOT DEFINED EMSCRIPTEN)
