@@ -54,7 +54,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-${{ matrix.setup.os }}-${{ matrix.setup.preset }}-${{ hashFiles('vcpkg-configuration.json', 'vcpkg.json', 'wasm32-emscripten/vcpkg.json') }}
+          key: vcpkg-${{ matrix.setup.os }}-${{ matrix.setup.preset }}-${{ hashFiles('vcpkg-configuration.json', 'vcpkg.json', 'wasm32-emscripten/**', 'CMakePresets.json') }}
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11

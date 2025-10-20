@@ -11,18 +11,18 @@ target_link_libraries(wolf_sprite_voxelizer SDL2::SDL2)
 target_link_libraries(wolf_sprite_voxelizer SDL2::SDL2main)
 target_link_libraries(wolf_sprite_voxelizer glm::glm)
 
-if(NOT DEFINED EMSCRIPTEN)
+if(NOT EMSCRIPTEN)
   target_link_libraries(wolf_sprite_voxelizer glad::glad)
 endif()
 
-if(DEFINED EMSCRIPTEN)
+if(EMSCRIPTEN)
   target_compile_options(wolf_sprite_voxelizer
-                         PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
-  target_link_options(wolf_sprite_voxelizer PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
+                         PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(wolf_sprite_voxelizer PRIVATE ${PRESET_LINK_OPTIONS})
+  target_link_options(wolf_sprite_voxelizer PRIVATE "-sALLOW_MEMORY_GROWTH=1")
 
   target_link_options(
-    wolf_sprite_voxelizer PRIVATE "-sASSERTIONS=1" "-sALLOW_MEMORY_GROWTH=1"
-    "SHELL:--preload-file ${DATA_DIR}@/data"
+    wolf_sprite_voxelizer PRIVATE "SHELL:--preload-file ${DATA_DIR}@/data"
     "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@/shaders")
 else()
   add_custom_command(

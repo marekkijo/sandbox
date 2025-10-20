@@ -11,15 +11,14 @@ target_link_libraries(loaders_assimp SDL2::SDL2main)
 target_link_libraries(loaders_assimp glm::glm)
 target_link_libraries(loaders_assimp assimp::assimp)
 
-if(NOT DEFINED EMSCRIPTEN)
+if(NOT EMSCRIPTEN)
   target_link_libraries(loaders_assimp glad::glad)
 endif()
 
-if(DEFINED EMSCRIPTEN)
-  target_compile_options(loaders_assimp PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
-  target_link_options(loaders_assimp PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
-  target_link_options(loaders_assimp PRIVATE "-sASSERTIONS=1"
-                      "-sALLOW_MEMORY_GROWTH=1")
+if(EMSCRIPTEN)
+  target_compile_options(loaders_assimp PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(loaders_assimp PRIVATE ${PRESET_LINK_OPTIONS})
+  target_link_options(loaders_assimp PRIVATE "-sALLOW_MEMORY_GROWTH=1")
 endif()
 
 add_target_resources(TARGET loaders_assimp RESOURCES data)
