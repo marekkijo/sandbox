@@ -11,7 +11,11 @@ target_link_libraries(streaming_receiver LibDataChannel::LibDataChannel)
 target_link_libraries(streaming_receiver nlohmann_json::nlohmann_json)
 target_link_libraries(streaming_receiver glm::glm)
 target_link_libraries(streaming_receiver glad::glad)
-target_link_libraries(streaming_receiver glfw)
+target_link_libraries(
+  streaming_receiver
+  PRIVATE
+    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>)
 
 add_custom_command(
   TARGET streaming_receiver

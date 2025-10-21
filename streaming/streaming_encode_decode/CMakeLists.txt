@@ -8,8 +8,12 @@ target_link_libraries(streaming_encode_decode gp)
 target_link_libraries(streaming_encode_decode streaming_common)
 target_link_libraries(streaming_encode_decode Boost::program_options)
 target_link_libraries(streaming_encode_decode glad::glad)
-target_link_libraries(streaming_encode_decode glfw)
 target_link_libraries(streaming_encode_decode glm::glm)
+target_link_libraries(
+  streaming_encode_decode
+  PRIVATE
+    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>)
 
 add_custom_command(
   TARGET streaming_encode_decode

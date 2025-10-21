@@ -24,13 +24,11 @@ DecodeScene::~DecodeScene() = default;
 void DecodeScene::init(const VideoStreamInfo &video_stream_info) {
   video_stream_info_ = video_stream_info;
   ms_per_frame_ = 1000 / video_stream_info.fps;
-  const auto async = true;
-  SceneGL::init(video_stream_info.width, video_stream_info.height, "Decoding...", async);
+  Scene3D::init(video_stream_info.width, video_stream_info.height, "Decoding...");
 }
 
 void DecodeScene::consume_data(const std::byte *data, const std::size_t size) {
-  const auto async = true;
-  decoder_->incoming_data(data, size, async);
+  decoder_->incoming_data(data, size, true);
 }
 
 void DecodeScene::set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback) {

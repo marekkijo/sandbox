@@ -49,6 +49,5 @@ int main(int argc, char *argv[]) {
 
   receiver->connect();
 
-  const auto async_init = true;
-  return decode_scene->exec(async_init);
+  return decode_scene->exec();
 }

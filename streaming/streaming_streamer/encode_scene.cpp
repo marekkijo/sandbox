@@ -22,7 +22,7 @@ constexpr auto make_array(Ts &&...args) {
 EncodeScene::EncodeScene(const VideoStreamInfo &video_stream_info)
     : encoder_(std::make_shared<Encoder>(video_stream_info))
     , ms_per_frame_(1000 / video_stream_info.fps) {
-  SceneGL::init(video_stream_info.width, video_stream_info.height, "Streamer...");
+  Scene3D::init(video_stream_info.width, video_stream_info.height, "Streamer...");
 }
 
 EncodeScene::~EncodeScene() = default;

@@ -8,7 +8,7 @@
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/texture_object.hpp>
 #include <gp/gl/vertex_array_object.hpp>
-#include <gp/glfw/scene_gl.hpp>
+#include <gp/sdl/scene_3d.hpp>
 
 #include <cstdint>
 #include <fstream>
@@ -16,7 +16,7 @@
 #include <string>
 
 namespace streaming {
-class DecodeScene : public gp::glfw::SceneGL {
+class DecodeScene : public gp::sdl::Scene3D {
 public:
   DecodeScene(const VideoStreamInfo &video_stream_info);
   ~DecodeScene() final;

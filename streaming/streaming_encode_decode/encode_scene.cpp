@@ -5,6 +5,7 @@
 
 #include <gp/gl/misc.hpp>
 #include <gp/misc/event.hpp>
+#include <gp/sdl/sdl.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -23,7 +24,7 @@ EncodeScene::EncodeScene(const VideoStreamInfo &video_stream_info, const int len
     : video_stream_info_(video_stream_info)
     , number_of_frames_(length_s * video_stream_info.fps)
     , ms_per_frame_(1000 / video_stream_info.fps) {
-  SceneGL::init(video_stream_info.width, video_stream_info.height, "Encoding...");
+  Scene3D::init(video_stream_info.width, video_stream_info.height, "Encoding...");
 }
 
 EncodeScene::~EncodeScene() = default;
@@ -44,7 +45,9 @@ void EncodeScene::loop(const gp::misc::Event &event) {
       swap_buffers();
       frame_counter_++;
     } else {
-      request_close();
+      SDL_Event quit_event;
+      quit_event.type = SDL_QUIT;
+      SDL_PushEvent(&quit_event);
     }
     break;
   default:

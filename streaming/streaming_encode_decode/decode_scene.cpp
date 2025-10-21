@@ -20,7 +20,7 @@ DecodeScene::DecodeScene(const VideoStreamInfo &video_stream_info)
     : video_stream_info_(video_stream_info)
     , ms_per_frame_(1000 / video_stream_info.fps)
     , decoder_{std::make_unique<Decoder>()} {
-  SceneGL::init(video_stream_info.width, video_stream_info.height, "Decoding...");
+  Scene3D::init(video_stream_info.width, video_stream_info.height, "Decoding...");
 }
 
 DecodeScene::~DecodeScene() = default;
