@@ -21,9 +21,8 @@ if(EMSCRIPTEN)
   target_link_options(loaders_assimp PRIVATE "-sALLOW_MEMORY_GROWTH=1")
 endif()
 
-add_target_resources(TARGET loaders_assimp RESOURCES data)
-
-add_target_resources(TARGET loaders_assimp RESOURCES shaders COPY_IF_DIFFERENT)
+add_target_resources(loaders_assimp RESOURCES data)
+add_target_resources(loaders_assimp RESOURCES shaders COPY_IF_DIFFERENT)
 
 set_target_properties(
   loaders_assimp

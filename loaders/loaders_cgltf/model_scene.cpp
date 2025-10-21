@@ -6,14 +6,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace {
-#ifdef __EMSCRIPTEN__
-constexpr std::string_view shaders_path = "/shaders";
-#else
-constexpr std::string_view shaders_path = "shaders";
-#endif
-} // namespace
-
 ModelScene::ModelScene(std::shared_ptr<const Model> model)
     : model_{model} {}
 
@@ -79,8 +71,7 @@ void ModelScene::initialize(const int width, const int height) {
   resize(width, height);
 
   upload_data();
-  const auto full_shader_path = std::string(shaders_path) + "/shader_program";
-  shader_program_ = gp::gl::create_shader_program(full_shader_path);
+  shader_program_ = gp::gl::create_shader_program("shaders/shader_program");
 }
 
 void ModelScene::finalize() {

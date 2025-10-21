@@ -16,7 +16,7 @@ if(EMSCRIPTEN)
   target_link_options(ai_pong PRIVATE ${PRESET_LINK_OPTIONS})
 endif()
 
-add_target_resources(TARGET ai_pong RESOURCES data)
+add_target_resources(ai_pong RESOURCES data)
 
 set_target_properties(
   ai_pong PROPERTIES FOLDER ${SOLUTION_FOLDER} VS_DEBUGGER_WORKING_DIRECTORY

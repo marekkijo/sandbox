@@ -1,50 +1,63 @@
-# ResourceUtils.cmake - Utility functions for handling resources in both native
-# and Emscripten builds
-
 #[=======================================================================[.rst:
-add_target_resources
---------------------
+ResourceUtils
+-------------
 
-Adds resources (files or directories) to a target, handling both native and Emscripten builds.
+Functions for copying resource directories to build targets.
 
-For native builds: Copies resources to the target's output directory using custom commands
-For Emscripten builds: Preloads resources using --preload-file linker options
+.. command:: add_target_resources
 
-Syntax:
-  add_target_resources(TARGET target_name
-                      RESOURCES resource1 [resource2 ...]
-                      [DESTINATION dest1 [dest2 ...]]
-                      [COPY_IF_DIFFERENT])
+  Copy resource directories to the target's output directory.
+  For Emscripten builds, directories are embedded using --preload-file.
+  For native builds, directories are copied using custom commands.
 
-Arguments:
-  TARGET - The target to add resources to
-  RESOURCES - List of source files/directories (relative to CMAKE_CURRENT_SOURCE_DIR)
-  DESTINATION - List of destination paths (optional, defaults to same name as source)
-  COPY_IF_DIFFERENT - Use copy_directory_if_different instead of copy_directory for native builds
+  .. code-block:: cmake
 
-Examples:
-  # Copy data and shaders directories
-  add_target_resources(TARGET myapp RESOURCES data shaders)
+    add_target_resources(<target-name>
+                         RESOURCES <dir1> [<dir2> ...]
+                         [DESTINATIONS <dest1> [<dest2> ...]]
+                         [COPY_IF_DIFFERENT])
 
-  # Copy with different destination names
-  add_target_resources(TARGET myapp
-                       RESOURCES data config
-                       DESTINATION assets settings)
+  ``<target-name>``
+    The target to copy resource directories to (required, first argument).
 
-  # Copy single file
-  add_target_resources(TARGET myapp RESOURCES config.json)
+  ``RESOURCES <dir1> [<dir2> ...]``
+    List of resource directories to copy (required).
+    Paths can be absolute or relative to CMAKE_CURRENT_SOURCE_DIR.
+
+  ``DESTINATIONS <dest1> [<dest2> ...]``
+    List of destination directory names (optional).
+    If not specified, uses the same names as RESOURCES.
+    Must have the same length as RESOURCES if provided.
+
+  ``COPY_IF_DIFFERENT``
+    For native builds, only copy directories if content differs (optional).
+    Uses copy_directory_if_different instead of copy_directory.
+
+  **Examples:**
+
+  .. code-block:: cmake
+
+    # Copy data and shaders directories
+    add_target_resources(myapp RESOURCES data shaders)
+
+    # Copy with custom destination names
+    add_target_resources(myapp
+                         RESOURCES data config
+                         DESTINATIONS assets settings)
+
+    # Copy only if directories are different
+    add_target_resources(myapp RESOURCES textures COPY_IF_DIFFERENT)
+
 #]=======================================================================]
 
-function(add_target_resources)
-  set(options COPY_IF_DIFFERENT)
-  set(oneValueArgs TARGET)
-  set(multiValueArgs RESOURCES DESTINATION)
+function(add_target_resources target_name)
+  cmake_parse_arguments(PARSE_ARGV 1 ARG "COPY_IF_DIFFERENT" ""
+                        "RESOURCES;DESTINATIONS")
 
-  cmake_parse_arguments(PARSE_ARGV 0 ARG "${options}" "${oneValueArgs}"
-                        "${multiValueArgs}")
-
-  if(NOT ARG_TARGET)
-    message(FATAL_ERROR "add_target_resources: TARGET argument is required")
+  if(NOT TARGET ${target_name})
+    message(
+      FATAL_ERROR "add_target_resources: target '${target_name}' does not exist"
+    )
   endif()
 
   if(NOT ARG_RESOURCES)
@@ -52,92 +65,49 @@ function(add_target_resources)
   endif()
 
   # If no destination specified, use same names as resources
-  if(NOT ARG_DESTINATION)
-    set(ARG_DESTINATION ${ARG_RESOURCES})
+  if(NOT ARG_DESTINATIONS)
+    set(ARG_DESTINATIONS ${ARG_RESOURCES})
   endif()
 
   # Check that RESOURCES and DESTINATION lists have same length
   list(LENGTH ARG_RESOURCES resources_count)
-  list(LENGTH ARG_DESTINATION destination_count)
-  if(NOT resources_count EQUAL destination_count)
+  list(LENGTH ARG_DESTINATIONS destinations_count)
+  if(NOT resources_count EQUAL destinations_count)
     message(
       FATAL_ERROR
-        "add_target_resources: RESOURCES and DESTINATION lists must have same length"
+        "add_target_resources: RESOURCES and DESTINATIONS lists must have same length"
     )
   endif()
 
-  if(DEFINED EMSCRIPTEN)
-    # Emscripten build - use preload-file
-    math(EXPR last_index "${resources_count} - 1")
-    foreach(index RANGE ${last_index})
-      list(GET ARG_RESOURCES ${index} resource)
-      list(GET ARG_DESTINATION ${index} destination)
+  # Make resource paths absolute
+  set(absolute_resources)
+  foreach(resource IN LISTS ARG_RESOURCES)
+    cmake_path(ABSOLUTE_PATH resource BASE_DIRECTORY
+               "${CMAKE_CURRENT_SOURCE_DIR}")
+    list(APPEND absolute_resources "${resource}")
+  endforeach()
 
-      set(source_path "${CMAKE_CURRENT_SOURCE_DIR}/${resource}")
-      target_link_options(${ARG_TARGET} PRIVATE
-                          "SHELL:--preload-file ${source_path}@/${destination}")
-    endforeach()
-  else()
-    # Native build - use custom commands
-    set(copy_command "copy_directory")
-    if(ARG_COPY_IF_DIFFERENT)
-      set(copy_command "copy_directory_if_different")
-    endif()
+  # Set copy command
+  set(copy_command "copy_directory")
+  if(ARG_COPY_IF_DIFFERENT)
+    set(copy_command "copy_directory_if_different")
+  endif()
 
-    math(EXPR last_index "${resources_count} - 1")
-    foreach(index RANGE ${last_index})
-      list(GET ARG_RESOURCES ${index} resource)
-      list(GET ARG_DESTINATION ${index} destination)
+  math(EXPR last_index "${resources_count} - 1")
+  foreach(index RANGE ${last_index})
+    list(GET absolute_resources ${index} resource)
+    list(GET ARG_DESTINATIONS ${index} destination)
 
-      set(source_path "${CMAKE_CURRENT_SOURCE_DIR}/${resource}")
-      set(dest_path "$<TARGET_FILE_DIR:${ARG_TARGET}>/${destination}")
-
+    if(DEFINED EMSCRIPTEN)
+      target_link_options(${target_name} PRIVATE
+                          "SHELL:--preload-file ${resource}@/${destination}")
+    else()
+      set(full_destination "$<TARGET_FILE_DIR:${target_name}>/${destination}")
       add_custom_command(
-        TARGET ${ARG_TARGET}
+        TARGET ${target_name}
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E ${copy_command} "${source_path}"
-                "${dest_path}"
-        COMMENT "Copying ${resource} to ${destination}")
-    endforeach()
-  endif()
-endfunction()
-
-#[=======================================================================[.rst:
-add_target_resource_file
-------------------------
-
-Adds a single resource file to a target (convenience wrapper around add_target_resources)
-
-Syntax:
-  add_target_resource_file(TARGET target_name
-                          SOURCE source_file
-                          [DESTINATION dest_file])
-
-Examples:
-  add_target_resource_file(TARGET myapp SOURCE config.json)
-  add_target_resource_file(TARGET myapp SOURCE settings.ini DESTINATION config.ini)
-#]=======================================================================]
-
-function(add_target_resource_file)
-  set(options)
-  set(oneValueArgs TARGET SOURCE DESTINATION)
-  set(multiValueArgs)
-
-  cmake_parse_arguments(PARSE_ARGV 0 ARG "${options}" "${oneValueArgs}"
-                        "${multiValueArgs}")
-
-  if(NOT ARG_TARGET)
-    message(FATAL_ERROR "add_target_resource_file: TARGET argument is required")
-  endif()
-
-  if(NOT ARG_SOURCE)
-    message(FATAL_ERROR "add_target_resource_file: SOURCE argument is required")
-  endif()
-
-  if(ARG_DESTINATION)
-    add_target_resources(TARGET ${ARG_TARGET} RESOURCES ${ARG_SOURCE}
-                         DESTINATION ${ARG_DESTINATION})
-  else()
-    add_target_resources(TARGET ${ARG_TARGET} RESOURCES ${ARG_SOURCE})
-  endif()
+        COMMAND ${CMAKE_COMMAND} -E ${copy_command} "${resource}"
+                "${full_destination}")
+    endif()
+  endforeach()
 endfunction()

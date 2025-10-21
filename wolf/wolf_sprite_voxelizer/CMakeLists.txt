@@ -20,25 +20,11 @@ if(EMSCRIPTEN)
                          PRIVATE ${PRESET_COMPILE_OPTIONS})
   target_link_options(wolf_sprite_voxelizer PRIVATE ${PRESET_LINK_OPTIONS})
   target_link_options(wolf_sprite_voxelizer PRIVATE "-sALLOW_MEMORY_GROWTH=1")
-
-  target_link_options(
-    wolf_sprite_voxelizer PRIVATE "SHELL:--preload-file ${DATA_DIR}@/data"
-    "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@/shaders")
-else()
-  add_custom_command(
-    TARGET wolf_sprite_voxelizer
-    PRE_BUILD
-    COMMAND
-      ${CMAKE_COMMAND} -E copy_directory_if_different
-      ${CMAKE_CURRENT_SOURCE_DIR}/shaders
-      $<TARGET_FILE_DIR:wolf_sprite_voxelizer>/shaders)
-
-  add_custom_command(
-    TARGET wolf_sprite_voxelizer
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_DIR}
-            $<TARGET_FILE_DIR:wolf_sprite_voxelizer>/data)
 endif()
+
+add_target_resources(wolf_sprite_voxelizer RESOURCES ${DATA_DIR} DESTINATIONS
+                     data)
+add_target_resources(wolf_sprite_voxelizer RESOURCES shaders COPY_IF_DIFFERENT)
 
 set_target_properties(
   wolf_sprite_voxelizer

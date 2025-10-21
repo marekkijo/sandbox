@@ -8,12 +8,6 @@
 #include <memory>
 #include <string>
 
-#ifdef __EMSCRIPTEN__
-constexpr std::string_view resource_path = "/data";
-#else
-constexpr std::string_view resource_path = "data";
-#endif
-
 struct ProgramSetup {
   bool exit{};
 
@@ -29,18 +23,15 @@ struct ProgramSetup {
 ProgramSetup process_args(const int argc, const char *const argv[]) {
   boost::program_options::options_description desc("Wolf options");
   desc.add_options()("help", "This help message");
-  desc.add_options()(
-      "asciimap",
-      boost::program_options::value<std::string>()->default_value(std::string(resource_path) + "/map1.map"),
-      "Ascii map filename");
-  desc.add_options()(
-      "maphead",
-      boost::program_options::value<std::string>()->default_value(std::string(resource_path) + "/MAPHEAD.WL6"),
-      "Wolf MAPHEAD filename");
-  desc.add_options()(
-      "gamemaps",
-      boost::program_options::value<std::string>()->default_value(std::string(resource_path) + "/GAMEMAPS.WL6"),
-      "Wolf GAMEMAPS filename");
+  desc.add_options()("asciimap",
+                     boost::program_options::value<std::string>()->default_value("data/map1.map"),
+                     "Ascii map filename");
+  desc.add_options()("maphead",
+                     boost::program_options::value<std::string>()->default_value("data/MAPHEAD.WL6"),
+                     "Wolf MAPHEAD filename");
+  desc.add_options()("gamemaps",
+                     boost::program_options::value<std::string>()->default_value("data/GAMEMAPS.WL6"),
+                     "Wolf GAMEMAPS filename");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(1520), "Width of the window");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(760), "Height of the window");
   desc.add_options()("fov",
