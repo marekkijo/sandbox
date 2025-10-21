@@ -1,6 +1,6 @@
 #pragma once
 
-#include "streaming_common/encoder_fwd.hpp"
+#include "streaming_common/encoder.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/misc/event.hpp>

@@ -19,13 +19,11 @@ constexpr auto make_array(Ts &&...args) {
 DecodeScene::DecodeScene()
     : decoder_{std::make_unique<Decoder>()} {}
 
-DecodeScene::~DecodeScene() = default;
-
 void DecodeScene::init(const VideoStreamInfo &video_stream_info) {
   video_stream_info_ = video_stream_info;
   ms_per_frame_ = 1000 / video_stream_info.fps;
   const auto async = true;
-  SceneGL::init(video_stream_info.width, video_stream_info.height, "Decoding...", async);
+  Scene3D::init(video_stream_info.width, video_stream_info.height, "Decoding...", async);
 }
 
 void DecodeScene::consume_data(const std::byte *data, const std::size_t size) {

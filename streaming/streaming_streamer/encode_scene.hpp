@@ -1,26 +1,26 @@
 #pragma once
 
-#include "streaming_common/encoder_fwd.hpp"
+#include "streaming_common/encoder.hpp"
 #include "streaming_common/frame_data.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/gl/buffer_object.hpp>
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/vertex_array_object.hpp>
-#include <gp/glfw/scene_gl.hpp>
+#include <gp/sdl/scene_3d.hpp>
 
 #include <glm/glm.hpp>
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
 namespace streaming {
-class EncodeScene : public gp::glfw::SceneGL {
+class EncodeScene : public gp::sdl::Scene3D {
 public:
   explicit EncodeScene(const VideoStreamInfo &video_stream_info);
-  ~EncodeScene() final;
 
   std::shared_ptr<Encoder> encoder() const;
   void handle_event(const gp::misc::Event &event);

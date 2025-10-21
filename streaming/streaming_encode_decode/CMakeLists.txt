@@ -7,17 +7,13 @@ target_compile_features(streaming_encode_decode PRIVATE cxx_std_23)
 target_link_libraries(streaming_encode_decode gp)
 target_link_libraries(streaming_encode_decode streaming_common)
 target_link_libraries(streaming_encode_decode Boost::program_options)
-target_link_libraries(streaming_encode_decode glad::glad)
-target_link_libraries(streaming_encode_decode glfw)
+target_link_libraries(streaming_encode_decode SDL2::SDL2)
+target_link_libraries(streaming_encode_decode SDL2::SDL2main)
 target_link_libraries(streaming_encode_decode glm::glm)
+target_link_libraries(streaming_encode_decode glad::glad)
 
-add_custom_command(
-  TARGET streaming_encode_decode
-  PRE_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders
-    $<TARGET_FILE_DIR:streaming_encode_decode>/shaders)
+add_target_resources(streaming_encode_decode RESOURCES shaders
+                     COPY_IF_DIFFERENT)
 
 set_target_properties(
   streaming_encode_decode

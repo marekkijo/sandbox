@@ -1,6 +1,6 @@
 #pragma once
 
-#include "streaming_common/decoder_fwd.hpp"
+#include "streaming_common/decoder.hpp"
 #include "streaming_common/frame_data.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
@@ -8,18 +8,17 @@
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/texture_object.hpp>
 #include <gp/gl/vertex_array_object.hpp>
-#include <gp/glfw/scene_gl.hpp>
 #include <gp/misc/event.hpp>
+#include <gp/sdl/scene_3d.hpp>
 
 #include <functional>
 #include <memory>
 #include <string>
 
 namespace streaming {
-class DecodeScene : public gp::glfw::SceneGL {
+class DecodeScene : public gp::sdl::Scene3D {
 public:
   DecodeScene();
-  ~DecodeScene() final;
 
   void init(const VideoStreamInfo &video_stream_info);
   void consume_data(const std::byte *data, const std::size_t size);

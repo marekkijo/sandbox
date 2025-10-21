@@ -8,6 +8,7 @@
 #include <gp/sdl/renderer.hpp>
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 namespace gp::sdl {
@@ -16,8 +17,8 @@ public:
   explicit Scene3D(std::shared_ptr<internal::SDLContext> ctx = nullptr);
   virtual ~Scene3D();
 
-  void init(const int width, const int height, const std::string &title);
-  int exec();
+  void init(const int width, const int height, const std::string &title, const bool async = false);
+  int exec(const bool async_init = false);
 
 protected:
   virtual void loop(const misc::Event &event) = 0;
@@ -28,6 +29,7 @@ protected:
   std::uint32_t timestamp() const;
 
   void swap_buffers() const;
+  void request_close();
   std::shared_ptr<const Renderer> renderer() const;
   const Renderer &r() const;
   std::shared_ptr<misc::KeyboardState> keyboard_state() const;
@@ -44,5 +46,9 @@ private:
   std::shared_ptr<internal::SDLContext> ctx_;
   std::shared_ptr<internal::SDLWindow> wnd_;
   std::unique_ptr<internal::GLContext> gl_ctx_;
+
+  std::mutex init_mutex_{};
+  std::condition_variable init_cv_{};
+  bool init_done_{};
 };
 } // namespace gp::sdl
