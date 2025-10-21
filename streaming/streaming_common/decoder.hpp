@@ -1,7 +1,5 @@
 #pragma once
 
-#include "streaming_common/decoder_fwd.hpp"
-
 #include "streaming_common/frame_data.hpp"
 #include "streaming_common/video_stream_info.hpp"
 

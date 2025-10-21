@@ -17,7 +17,7 @@ struct ProgramSetup {
   int length_s{};
 };
 
-ProgramSetup process_args(const int argc, const char **const argv) {
+ProgramSetup process_args(const int argc, const char *const argv[]) {
   boost::program_options::options_description desc("Options");
   desc.add_options()("help", "This help message");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(512), "Width of the frame buffer");
@@ -49,7 +49,7 @@ ProgramSetup process_args(const int argc, const char **const argv) {
           vm["length_s"].as<int>()};
 }
 
-int main(int argc, const char **argv) {
+int main(int argc, char *argv[]) {
   const auto program_setup = process_args(argc, argv);
   if (program_setup.exit) {
     return 1;

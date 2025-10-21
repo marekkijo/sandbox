@@ -35,10 +35,9 @@ endif()
 
 set(SOURCE_GROUP_LABEL src)
 
-# TODO(#49): Make "streaming" subproject buildable
-# TODO(#49): if(NOT EMSCRIPTEN)
-# TODO(#49):   add_subdirectory(streaming)
-# TODO(#49): endif()
+if(NOT EMSCRIPTEN)
+  add_subdirectory(streaming)
+endif()
 
 add_subdirectory(ai)
 add_subdirectory(gp)

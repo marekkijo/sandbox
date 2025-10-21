@@ -23,10 +23,8 @@ EncodeScene::EncodeScene(const VideoStreamInfo &video_stream_info, const int len
     : video_stream_info_(video_stream_info)
     , number_of_frames_(length_s * video_stream_info.fps)
     , ms_per_frame_(1000 / video_stream_info.fps) {
-  SceneGL::init(video_stream_info.width, video_stream_info.height, "Encoding...");
+  Scene3D::init(video_stream_info.width, video_stream_info.height, "Encoding...");
 }
-
-EncodeScene::~EncodeScene() = default;
 
 void EncodeScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -44,6 +42,11 @@ void EncodeScene::loop(const gp::misc::Event &event) {
       swap_buffers();
       frame_counter_++;
     } else {
+      // TODO(59): Quit event after request_close()
+      // Here finalize() is called directly to ensure proper cleanup however, it is expected to receive Quit event from
+      // SDL event loop  after request_close() is called. After fixing this, remove finalize() call from here.
+      finalize();
+
       request_close();
     }
     break;
