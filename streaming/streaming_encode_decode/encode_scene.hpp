@@ -1,13 +1,13 @@
 #pragma once
 
-#include "streaming_common/encoder_fwd.hpp"
+#include "streaming_common/encoder.hpp"
 #include "streaming_common/frame_data.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/gl/buffer_object.hpp>
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/vertex_array_object.hpp>
-#include <gp/glfw/scene_gl.hpp>
+#include <gp/sdl/scene_3d.hpp>
 
 #include <glm/glm.hpp>
 
@@ -17,10 +17,9 @@
 #include <string>
 
 namespace streaming {
-class EncodeScene : public gp::glfw::SceneGL {
+class EncodeScene : public gp::sdl::Scene3D {
 public:
   EncodeScene(const VideoStreamInfo &video_stream_info, const int length_s);
-  ~EncodeScene() final;
 
 private:
   void init(const int width, const int height, const std::string &title);

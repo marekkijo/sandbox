@@ -11,7 +11,18 @@ namespace gp::sdl {
 Scene3D::Scene3D(std::shared_ptr<internal::SDLContext> ctx)
     : ctx_{ctx ? ctx : std::make_shared<internal::SDLContext>()} {}
 
-void Scene3D::init(const int width, const int height, const std::string &title) {
+void Scene3D::init(const int width, const int height, const std::string &title, const bool async) {
+  width_ = width;
+  height_ = height;
+  title_ = title;
+
+  if (async) {
+    const auto lock_guard = std::lock_guard(init_mutex_);
+    init_done_ = true;
+    init_cv_.notify_one();
+    return;
+  }
+
   if (wnd_) {
     return;
   }
@@ -23,14 +34,19 @@ void Scene3D::init(const int width, const int height, const std::string &title) 
   platform_gl_init();
 
   wnd_->set_window_event_callback([this](const misc::Event &event) { window_event_callback(event); });
-
-  width_ = width;
-  height_ = height;
 }
 
 Scene3D::~Scene3D() = default;
 
-int Scene3D::exec() { return ctx_->exec(); }
+int Scene3D::exec(bool async_init) {
+  if (async_init) {
+    auto unique_lock = std::unique_lock(init_mutex_);
+    init_cv_.wait(unique_lock, [this] { return init_done_; });
+    init(width_, height_, title_);
+  }
+
+  return ctx_->exec();
+}
 
 int Scene3D::width() const { return width_; }
 
@@ -39,6 +55,12 @@ int Scene3D::height() const { return height_; }
 std::uint32_t Scene3D::timestamp() const { return ctx_->timestamp(); }
 
 void Scene3D::swap_buffers() const { SDL_GL_SwapWindow(wnd_->wnd()); }
+
+void Scene3D::request_close() {
+  SDL_Event quit_event;
+  quit_event.type = SDL_QUIT;
+  SDL_PushEvent(&quit_event);
+}
 
 std::shared_ptr<const Renderer> Scene3D::renderer() const { return wnd_->renderer(); }
 

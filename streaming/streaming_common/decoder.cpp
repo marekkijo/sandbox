@@ -141,7 +141,7 @@ bool Decoder::upload() {
                                    &packet_->data,
                                    &packet_->size,
                                    buffer_.data(),
-                                   size,
+                                   static_cast<int>(size),
                                    AV_NOPTS_VALUE,
                                    AV_NOPTS_VALUE,
                                    0);
