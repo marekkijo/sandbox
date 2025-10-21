@@ -10,20 +10,13 @@ target_link_libraries(wolf_multithread Boost::program_options)
 target_link_libraries(wolf_multithread SDL2::SDL2)
 target_link_libraries(wolf_multithread SDL2::SDL2main)
 
-if(DEFINED EMSCRIPTEN)
-  target_compile_options(wolf_multithread PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
-  target_link_options(wolf_multithread PRIVATE ${EMSCRIPTEN_LINK_OPTIONS}
-                      "-sPTHREAD_POOL_SIZE=8")
-
-  target_link_options(wolf_multithread PRIVATE --preload-file
-                      "${DATA_DIR}@/data")
-else()
-  add_custom_command(
-    TARGET wolf_multithread
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_DIR}
-            $<TARGET_FILE_DIR:wolf_multithread>/data)
+if(EMSCRIPTEN)
+  target_compile_options(wolf_multithread PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(wolf_multithread PRIVATE ${PRESET_LINK_OPTIONS})
+  target_link_options(wolf_multithread PRIVATE "-sPTHREAD_POOL_SIZE=8")
 endif()
+
+add_target_resources(wolf_multithread RESOURCES ${DATA_DIR} DESTINATIONS data)
 
 set_target_properties(
   wolf_multithread

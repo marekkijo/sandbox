@@ -8,9 +8,9 @@ target_include_directories(ai_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 target_link_libraries(ai_common gp)
 
-if(DEFINED EMSCRIPTEN)
-  target_compile_options(ai_common PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
-  target_link_options(ai_common PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
+if(EMSCRIPTEN)
+  target_compile_options(ai_common PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(ai_common PRIVATE ${PRESET_LINK_OPTIONS})
 endif()
 
 set_target_properties(ai_common PROPERTIES FOLDER ${SOLUTION_FOLDER})

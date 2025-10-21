@@ -32,13 +32,23 @@
     },
     {
       "configuration": "Release",
+      "configurePreset": "emscripten_native",
+      "name": "emscripten_native"
+    },
+    {
+      "configuration": "Release",
       "configurePreset": "emscripten",
       "name": "emscripten"
     },
     {
-      "configuration": "Debug",
-      "configurePreset": "emscripten",
-      "name": "emscripten_debug"
+      "configuration": "Release",
+      "configurePreset": "emscripten_no_exceptions",
+      "name": "emscripten_no_exceptions"
+    },
+    {
+      "configuration": "Release",
+      "configurePreset": "emscripten_no_pthreads",
+      "name": "emscripten_no_pthreads"
     }
   ],
   "configurePresets": [
@@ -71,22 +81,72 @@
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     },
     {
-      "binaryDir": "${sourceDir}/build/emscripten",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "EMSCRIPTEN": true,
-        "EMSCRIPTEN_COMPILE_OPTIONS": "-pthread",
-        "EMSCRIPTEN_LINK_OPTIONS": "-O3;-pthread;-sMAX_WEBGL_VERSION=2",
+        "EMSCRIPTEN": "ON",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
         "VCPKG_MANIFEST_DIR": "wasm32-emscripten",
-        "VCPKG_OVERLAY_TRIPLETS": "wasm32-emscripten",
-        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten-pthread"
+        "VCPKG_OVERLAY_TRIPLETS": "wasm32-emscripten"
+      },
+      "generator": "Ninja",
+      "hidden": true,
+      "name": "emscripten_base",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/emscripten_native",
+      "cacheVariables": {
+        "EMSCRIPTEN_EXCEPTIONS_DISABLED": "ON",
+        "EMSCRIPTEN_PTHREAD_DISABLED": "ON",
+        "PRESET_LINK_OPTIONS": "-sMAX_WEBGL_VERSION=2",
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten"
+      },
+      "description": "Build using Emscripten (native)",
+      "displayName": "Emscripten Config (native)",
+      "inherits": "emscripten_base",
+      "name": "emscripten_native"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/emscripten",
+      "cacheVariables": {
+        "EMSCRIPTEN_EXCEPTIONS_DISABLED": "OFF",
+        "EMSCRIPTEN_PTHREAD_DISABLED": "OFF",
+        "PRESET_COMPILE_OPTIONS": "-pthread;-fexceptions",
+        "PRESET_LINK_OPTIONS": "-pthread;-fexceptions;-sMAX_WEBGL_VERSION=2",
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten--fexceptions-pthread"
       },
       "description": "Build using Emscripten",
       "displayName": "Emscripten Config",
-      "generator": "Ninja Multi-Config",
-      "name": "emscripten",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      "inherits": "emscripten_base",
+      "name": "emscripten"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/emscripten_no_exceptions",
+      "cacheVariables": {
+        "EMSCRIPTEN_EXCEPTIONS_DISABLED": "ON",
+        "EMSCRIPTEN_PTHREAD_DISABLED": "OFF",
+        "PRESET_COMPILE_OPTIONS": "-pthread",
+        "PRESET_LINK_OPTIONS": "-pthread;-sMAX_WEBGL_VERSION=2",
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten--pthread"
+      },
+      "description": "Build using Emscripten (no exceptions)",
+      "displayName": "Emscripten Config (no exceptions)",
+      "inherits": "emscripten_base",
+      "name": "emscripten_no_exceptions"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/emscripten_no_pthreads",
+      "cacheVariables": {
+        "EMSCRIPTEN_EXCEPTIONS_DISABLED": "OFF",
+        "EMSCRIPTEN_PTHREAD_DISABLED": "ON",
+        "PRESET_COMPILE_OPTIONS": "-fexceptions",
+        "PRESET_LINK_OPTIONS": "-fexceptions;-sMAX_WEBGL_VERSION=2",
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten--fexceptions"
+      },
+      "description": "Build using Emscripten (no pthreads)",
+      "displayName": "Emscripten Config (no pthreads)",
+      "inherits": "emscripten_base",
+      "name": "emscripten_no_pthreads"
     }
   ],
   "testPresets": [
@@ -103,8 +163,20 @@
       "name": "xcode"
     },
     {
+      "configurePreset": "emscripten_native",
+      "name": "emscripten_native"
+    },
+    {
       "configurePreset": "emscripten",
       "name": "emscripten"
+    },
+    {
+      "configurePreset": "emscripten_no_exceptions",
+      "name": "emscripten_no_exceptions"
+    },
+    {
+      "configurePreset": "emscripten_no_pthreads",
+      "name": "emscripten_no_pthreads"
     }
   ],
   "version": 8

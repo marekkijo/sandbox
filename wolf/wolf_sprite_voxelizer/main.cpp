@@ -8,12 +8,6 @@
 #include <iostream>
 #include <memory>
 
-#ifdef __EMSCRIPTEN__
-constexpr std::string_view resource_path = "/data";
-#else
-constexpr std::string_view resource_path = "data";
-#endif
-
 struct ProgramSetup {
   bool exit{};
 
@@ -45,7 +39,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  auto vswap_file = std::make_shared<const wolf::VswapFile>(std::string(resource_path) + "/VSWAP.WL6");
+  auto vswap_file = std::make_shared<const wolf::VswapFile>("data/VSWAP.WL6");
   auto sprite_voxelizer = std::make_shared<SpriteVoxelizer>(vswap_file);
   auto voxel_scene = std::make_unique<VoxelScene>(sprite_voxelizer);
   voxel_scene->init(program_setup.width, program_setup.height, "sprite_voxelizer");

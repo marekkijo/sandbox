@@ -10,9 +10,9 @@ target_link_libraries(wolf_common gp)
 target_link_libraries(wolf_common glm::glm)
 target_link_libraries(wolf_common SDL2::SDL2)
 
-if(DEFINED EMSCRIPTEN)
-  target_compile_options(wolf_common PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
-  target_link_options(wolf_common PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
+if(EMSCRIPTEN)
+  target_compile_options(wolf_common PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(wolf_common PRIVATE ${PRESET_LINK_OPTIONS})
 endif()
 
 set_target_properties(wolf_common PROPERTIES FOLDER ${SOLUTION_FOLDER})

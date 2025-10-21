@@ -1,4 +1,6 @@
 set(SOLUTION_FOLDER loaders)
 
-add_subdirectory(loaders_assimp)
+if(NOT EMSCRIPTEN_EXCEPTIONS_DISABLED)
+  add_subdirectory(loaders_assimp)
+endif()
 add_subdirectory(loaders_cgltf)
