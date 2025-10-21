@@ -28,10 +28,10 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
                      boost::program_options::value<std::string>()->default_value("data/map1.map"),
                      "Ascii map filename");
   desc.add_options()("maphead",
-                     boost::program_options::value<std::string>()->default_value(+"data/MAPHEAD.WL6"),
+                     boost::program_options::value<std::string>()->default_value("data/MAPHEAD.WL6"),
                      "Wolf MAPHEAD filename");
   desc.add_options()("gamemaps",
-                     boost::program_options::value<std::string>()->default_value(+"data/GAMEMAPS.WL6"),
+                     boost::program_options::value<std::string>()->default_value("data/GAMEMAPS.WL6"),
                      "Wolf GAMEMAPS filename");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(1520), "Width of the window");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(760), "Height of the window");

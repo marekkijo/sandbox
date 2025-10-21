@@ -36,19 +36,9 @@
       "name": "emscripten_native"
     },
     {
-      "configuration": "Debug",
-      "configurePreset": "emscripten_native",
-      "name": "emscripten_native_debug"
-    },
-    {
       "configuration": "Release",
       "configurePreset": "emscripten",
       "name": "emscripten"
-    },
-    {
-      "configuration": "Debug",
-      "configurePreset": "emscripten",
-      "name": "emscripten_debug"
     },
     {
       "configuration": "Release",
@@ -56,19 +46,9 @@
       "name": "emscripten_no_exceptions"
     },
     {
-      "configuration": "Debug",
-      "configurePreset": "emscripten_no_exceptions",
-      "name": "emscripten_no_exceptions_debug"
-    },
-    {
       "configuration": "Release",
       "configurePreset": "emscripten_no_pthreads",
       "name": "emscripten_no_pthreads"
-    },
-    {
-      "configuration": "Debug",
-      "configurePreset": "emscripten_no_pthreads",
-      "name": "emscripten_no_pthreads_debug"
     }
   ],
   "configurePresets": [
@@ -108,7 +88,7 @@
         "VCPKG_MANIFEST_DIR": "wasm32-emscripten",
         "VCPKG_OVERLAY_TRIPLETS": "wasm32-emscripten"
       },
-      "generator": "Ninja Multi-Config",
+      "generator": "Ninja",
       "hidden": true,
       "name": "emscripten_base",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"

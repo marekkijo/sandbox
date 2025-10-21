@@ -98,7 +98,7 @@ function(add_target_resources target_name)
     list(GET absolute_resources ${index} resource)
     list(GET ARG_DESTINATIONS ${index} destination)
 
-    if(DEFINED EMSCRIPTEN)
+    if(EMSCRIPTEN)
       target_link_options(${target_name} PRIVATE
                           "SHELL:--preload-file ${resource}@/${destination}")
     else()
