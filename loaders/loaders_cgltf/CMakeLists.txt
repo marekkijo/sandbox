@@ -4,27 +4,25 @@ add_executable(loaders_cgltf ${SRC_FILES})
 
 target_compile_features(loaders_cgltf PRIVATE cxx_std_23)
 
-target_link_libraries(loaders_cgltf PRIVATE gp)
-target_link_libraries(loaders_cgltf PRIVATE Boost::program_options)
-target_link_libraries(loaders_cgltf PRIVATE glad::glad)
-target_link_libraries(loaders_cgltf PRIVATE glfw)
-target_link_libraries(loaders_cgltf PRIVATE glm::glm)
+target_link_libraries(loaders_cgltf gp)
+target_link_libraries(loaders_cgltf Boost::program_options)
+target_link_libraries(loaders_cgltf SDL2::SDL2)
+target_link_libraries(loaders_cgltf SDL2::SDL2main)
+target_link_libraries(loaders_cgltf glm::glm)
 target_include_directories(loaders_cgltf PRIVATE ${CGLTF_INCLUDE_DIRS})
 
-add_custom_command(
-  TARGET loaders_cgltf
-  PRE_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders
-    $<TARGET_FILE_DIR:loaders_cgltf>/shaders)
+if(NOT EMSCRIPTEN)
+  target_link_libraries(loaders_cgltf glad::glad)
+endif()
 
-add_custom_command(
-  TARGET loaders_cgltf
-  PRE_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/data $<TARGET_FILE_DIR:loaders_cgltf>/data)
+if(EMSCRIPTEN)
+  target_compile_options(loaders_cgltf PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(loaders_cgltf PRIVATE ${PRESET_LINK_OPTIONS})
+  target_link_options(loaders_cgltf PRIVATE "-sALLOW_MEMORY_GROWTH=1")
+endif()
+
+add_target_resources(loaders_cgltf RESOURCES data)
+add_target_resources(loaders_cgltf RESOURCES shaders COPY_IF_DIFFERENT)
 
 set_target_properties(
   loaders_cgltf

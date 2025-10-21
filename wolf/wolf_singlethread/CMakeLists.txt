@@ -10,20 +10,12 @@ target_link_libraries(wolf_singlethread Boost::program_options)
 target_link_libraries(wolf_singlethread SDL2::SDL2)
 target_link_libraries(wolf_singlethread SDL2::SDL2main)
 
-if(DEFINED EMSCRIPTEN)
-  target_compile_options(wolf_singlethread
-                         PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
-  target_link_options(wolf_singlethread PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
-
-  target_link_options(wolf_singlethread PRIVATE --preload-file
-                      "${DATA_DIR}@/data")
-else()
-  add_custom_command(
-    TARGET wolf_singlethread
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_DIR}
-            $<TARGET_FILE_DIR:wolf_singlethread>/data)
+if(EMSCRIPTEN)
+  target_compile_options(wolf_singlethread PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(wolf_singlethread PRIVATE ${PRESET_LINK_OPTIONS})
 endif()
+
+add_target_resources(wolf_singlethread RESOURCES ${DATA_DIR} DESTINATIONS data)
 
 set_target_properties(
   wolf_singlethread

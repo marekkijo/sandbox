@@ -17,7 +17,7 @@ file(GLOB_RECURSE MISC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/misc/*")
 file(GLOB_RECURSE SDL_FILES "${CMAKE_CURRENT_SOURCE_DIR}/sdl/*")
 file(GLOB_RECURSE UTILS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/utils/*")
 
-if(NOT DEFINED EMSCRIPTEN)
+if(NOT EMSCRIPTEN)
   set(SRC_FILES ${SRC_FILES} ${FFMPEG_FILES})
 endif()
 
@@ -44,16 +44,16 @@ target_link_libraries(
     $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
 )
 
-if(NOT DEFINED EMSCRIPTEN)
+if(NOT EMSCRIPTEN)
   target_include_directories(gp PRIVATE ${FFMPEG_INCLUDE_DIRS})
   target_link_directories(gp PRIVATE ${FFMPEG_LIBRARY_DIRS})
   target_link_libraries(gp PRIVATE ${FFMPEG_LIBRARIES})
   target_link_libraries(gp PRIVATE glad::glad)
 endif()
 
-if(DEFINED EMSCRIPTEN)
-  target_compile_options(gp PRIVATE ${EMSCRIPTEN_COMPILE_OPTIONS})
-  target_link_options(gp PRIVATE ${EMSCRIPTEN_LINK_OPTIONS})
+if(EMSCRIPTEN)
+  target_compile_options(gp PRIVATE ${PRESET_COMPILE_OPTIONS})
+  target_link_options(gp PRIVATE ${PRESET_LINK_OPTIONS})
 endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})

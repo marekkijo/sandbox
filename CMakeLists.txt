@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if(DEFINED EMSCRIPTEN)
+include(cmake/ResourceUtils.cmake)
+
+if(EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
 
@@ -22,7 +24,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
 
-if(NOT DEFINED EMSCRIPTEN)
+if(NOT EMSCRIPTEN)
   find_package(
     FFMPEG
     COMPONENTS avcodec avformat avutil swscale
@@ -34,20 +36,16 @@ endif()
 set(SOURCE_GROUP_LABEL src)
 
 # TODO(#49): Make "streaming" subproject buildable
-# TODO(#49): if(NOT DEFINED EMSCRIPTEN)
+# TODO(#49): if(NOT EMSCRIPTEN)
 # TODO(#49):   add_subdirectory(streaming)
 # TODO(#49): endif()
 
-# TODO(#50): Make "loaders" subproject buildable
-# TODO(#50): if(NOT DEFINED EMSCRIPTEN)
-# TODO(#50):   add_subdirectory(loaders)
-# TODO(#50): endif()
-
 add_subdirectory(ai)
 add_subdirectory(gp)
+add_subdirectory(loaders)
 add_subdirectory(wolf)
 
-if(DEFINED CMAKE_CXX_CLANG_TIDY)
+if(CMAKE_CXX_CLANG_TIDY)
   set(CMAKE_CXX_CLANG_TIDY_CONFIG_FILE "${CMAKE_SOURCE_DIR}/.clang-tidy")
   message(
     STATUS

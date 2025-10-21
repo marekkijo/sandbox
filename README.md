@@ -27,14 +27,14 @@ For MacOS and Linux:
 Add the `vcpkg` directory to your `PATH` environment variable, and create a `VCPKG_ROOT` environment variable pointing to the `vcpkg` directory.
 
 ```bash
-export VCPKG_ROOT="/path/to/your/sandbox/vcpkg"
+export VCPKG_ROOT="/path/to/your/vcpkg"
 export PATH="$PATH:$VCPKG_ROOT"
 ```
 
 Make sure to make these changes permanent by adding them to your shell profile, e.g., for `.zprofile`:
 
 ```bash
-echo 'export VCPKG_ROOT="/path/to/your/sandbox/vcpkg"' >> ~/.zprofile
+echo 'export VCPKG_ROOT="/path/to/your/vcpkg"' >> ~/.zprofile
 echo 'export PATH="$PATH:$VCPKG_ROOT"' >> ~/.zprofile
 ```
 
