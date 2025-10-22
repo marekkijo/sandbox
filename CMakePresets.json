@@ -85,8 +85,8 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "EMSCRIPTEN": "ON",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "VCPKG_MANIFEST_DIR": "wasm32-emscripten",
-        "VCPKG_OVERLAY_TRIPLETS": "wasm32-emscripten"
+        "VCPKG_MANIFEST_DIR": ".vcpkg_wasm32-emscripten",
+        "VCPKG_OVERLAY_TRIPLETS": ".vcpkg_wasm32-emscripten"
       },
       "generator": "Ninja",
       "hidden": true,
