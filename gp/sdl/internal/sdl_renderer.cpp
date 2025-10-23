@@ -1,7 +1,5 @@
 #include "sdl_renderer.hpp"
 
-#include <gp/sdl/internal/sdl_window.hpp>
-
 #include <stdexcept>
 
 namespace gp::sdl::internal {

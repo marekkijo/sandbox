@@ -1,9 +1,5 @@
 #include "scene_2d.hpp"
 
-#include <gp/misc/event.hpp>
-#include <gp/sdl/internal/sdl_context.hpp>
-#include <gp/sdl/internal/sdl_window.hpp>
-
 namespace gp::sdl {
 Scene2D::Scene2D(std::shared_ptr<internal::SDLContext> ctx)
     : ctx_{ctx ? ctx : std::make_shared<internal::SDLContext>()} {}

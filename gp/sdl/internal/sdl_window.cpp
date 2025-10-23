@@ -1,7 +1,6 @@
 #include "sdl_window.hpp"
 
 #include <gp/misc/event.hpp>
-#include <gp/sdl/internal/sdl_context.hpp>
 #include <gp/sdl/internal/sdl_renderer.hpp>
 #include <gp/sdl/sdl.hpp>
 

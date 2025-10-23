@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gp/misc/event_fwd.hpp>
+#include <gp/misc/event.hpp>
 #include <gp/misc/keyboard_state.hpp>
 #include <gp/sdl/internal/gl_context.hpp>
-#include <gp/sdl/internal/sdl_context_fwd.hpp>
-#include <gp/sdl/internal/sdl_window_fwd.hpp>
+#include <gp/sdl/internal/sdl_context.hpp>
+#include <gp/sdl/internal/sdl_window.hpp>
 #include <gp/sdl/renderer.hpp>
 
 #include <memory>
