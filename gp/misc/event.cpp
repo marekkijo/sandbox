@@ -208,7 +208,7 @@ void Event::assign_all(const Event &other) {
     init_.height = other.init_.height;
     break;
   case Type::Quit:
-    quit_.close_flag = other.quit_.close_flag;
+    quit_.return_code = other.quit_.return_code;
     break;
   case Type::Resize:
     resize_.width = other.resize_.width;

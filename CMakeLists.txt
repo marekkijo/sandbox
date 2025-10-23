@@ -9,6 +9,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(cmake/ResourceUtils.cmake)
 
+enable_testing()
+
 if(EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
@@ -31,6 +33,7 @@ if(NOT EMSCRIPTEN)
     REQUIRED)
   find_package(glad CONFIG REQUIRED)
   find_package(libdatachannel CONFIG REQUIRED)
+  find_package(GTest CONFIG REQUIRED)
 endif()
 
 set(SOURCE_GROUP_LABEL src)

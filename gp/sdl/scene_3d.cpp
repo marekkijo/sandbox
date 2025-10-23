@@ -53,11 +53,7 @@ std::uint32_t Scene3D::timestamp() const { return ctx_->timestamp(); }
 
 void Scene3D::swap_buffers() const { SDL_GL_SwapWindow(wnd_->wnd()); }
 
-void Scene3D::request_close() {
-  SDL_Event quit_event;
-  quit_event.type = SDL_QUIT;
-  SDL_PushEvent(&quit_event);
-}
+void Scene3D::request_close() { wnd_->request_close(); }
 
 std::shared_ptr<const Renderer> Scene3D::renderer() const { return wnd_->renderer(); }
 
@@ -102,7 +98,7 @@ void Scene3D::window_event_callback(const misc::Event &event) {
   if (event.type() == misc::Event::Type::Resize) {
     width_ = event.resize().width;
     height_ = event.resize().height;
-  } else if (event.type() == misc::Event::Type::Quit) {
+  } else if (event.type() == misc::Event::Type::Close) {
     wnd_.reset();
   }
 }

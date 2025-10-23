@@ -28,6 +28,7 @@ public:
   const Renderer &r() const;
   std::shared_ptr<misc::KeyboardState> keyboard_state() const;
   void set_window_event_callback(SDLWindowEventCallback callback);
+  void request_close();
 
 private:
   const std::shared_ptr<SDLContext> ctx_{};

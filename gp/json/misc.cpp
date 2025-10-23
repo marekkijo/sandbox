@@ -495,7 +495,7 @@ misc::Event to_event(const nlohmann::json &json_event) {
   } break;
   case misc::Event::Type::Quit: {
     const auto quit = json_event.at("quit");
-    event.quit().close_flag = quit.at("close_flag");
+    event.quit().return_code = quit.at("return_code");
   } break;
   case misc::Event::Type::Resize: {
     const auto resize = json_event.at("resize");
@@ -585,7 +585,7 @@ nlohmann::json from_event(const misc::Event &event) {
     json_event["type"] = "Quit";
 
     json_event["quit"] = nlohmann::json{
-        {"close_flag", event.quit().close_flag}
+        {"return_code", event.quit().return_code}
     };
     break;
   case misc::Event::Type::Resize:

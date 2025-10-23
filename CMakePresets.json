@@ -31,22 +31,18 @@
       "name": "xcode_debug"
     },
     {
-      "configuration": "Release",
       "configurePreset": "emscripten_native",
       "name": "emscripten_native"
     },
     {
-      "configuration": "Release",
       "configurePreset": "emscripten",
       "name": "emscripten"
     },
     {
-      "configuration": "Release",
       "configurePreset": "emscripten_no_exceptions",
       "name": "emscripten_no_exceptions"
     },
     {
-      "configuration": "Release",
       "configurePreset": "emscripten_no_pthreads",
       "name": "emscripten_no_pthreads"
     }
@@ -151,16 +147,34 @@
   ],
   "testPresets": [
     {
+      "configuration": "Release",
       "configurePreset": "ninja",
       "name": "ninja"
     },
     {
+      "configuration": "Debug",
+      "configurePreset": "ninja",
+      "name": "ninja_debug"
+    },
+    {
+      "configuration": "Release",
       "configurePreset": "vs2022",
       "name": "vs2022"
     },
     {
+      "configuration": "Debug",
+      "configurePreset": "vs2022",
+      "name": "vs2022_debug"
+    },
+    {
+      "configuration": "Release",
       "configurePreset": "xcode",
       "name": "xcode"
+    },
+    {
+      "configuration": "Debug",
+      "configurePreset": "xcode",
+      "name": "xcode_debug"
     },
     {
       "configurePreset": "emscripten_native",

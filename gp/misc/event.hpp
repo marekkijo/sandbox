@@ -20,7 +20,8 @@ public:
   enum class Type : TypeSubtype {
     None,        /**< No input event */
     Init,        /**< Window got initialized */
-    Quit,        /**< Window is about to quit */
+    Quit,        /**< Application is about to quit */
+    Close,       /**< Window is about to close */
     Resize,      /**< Window resize */
     Redraw,      /**< Redraw */
     MouseButton, /**< Mouse button press/release */
@@ -311,7 +312,7 @@ public:
   };
 
   struct QuitData {
-    int close_flag; /**< Closing flag received from the underlying system */
+    int return_code; /**< Application return code */
   };
 
   struct ResizeData {
