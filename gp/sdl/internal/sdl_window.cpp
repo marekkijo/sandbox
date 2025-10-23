@@ -1,5 +1,6 @@
 #include "sdl_window.hpp"
 
+#include <SDL_video.h>
 #include <gp/misc/event.hpp>
 #include <gp/sdl/internal/sdl_renderer.hpp>
 #include <gp/sdl/sdl.hpp>
@@ -31,12 +32,7 @@ SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx,
   }
 }
 
-SDLWindow::~SDLWindow() {
-  const auto wnd_id = SDL_GetWindowID(wnd());
-  ctx_->withdraw_window_event_callback(wnd_id);
-  r_.reset();
-  SDL_DestroyWindow(wnd());
-}
+SDLWindow::~SDLWindow() { request_close(); }
 
 SDL_Window *SDLWindow::wnd() const { return wnd_; }
 
@@ -58,5 +54,17 @@ void SDLWindow::set_window_event_callback(SDLWindowEventCallback callback) {
   });
 
   window_event_callback_ = std::move(callback);
+}
+
+void SDLWindow::request_close() {
+  if (!wnd_) {
+    return;
+  }
+
+  const auto wnd_id = SDL_GetWindowID(wnd());
+  SDL_DestroyWindow(wnd());
+  wnd_ = nullptr;
+  ctx_->withdraw_window_event_callback(wnd_id);
+  r_.reset();
 }
 } // namespace gp::sdl::internal

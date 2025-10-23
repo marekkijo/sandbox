@@ -9,15 +9,9 @@
 #include <cstdint>
 
 namespace ai {
-class PongScene final : public gp::sdl::Scene2D {
+class PongScene : public gp::sdl::Scene2D {
 public:
   PongScene();
-  ~PongScene() final = default;
-
-  PongScene(const PongScene &) = delete;
-  PongScene &operator=(const PongScene &) = delete;
-  PongScene(PongScene &&) noexcept = delete;
-  PongScene &operator=(PongScene &&) noexcept = delete;
 
 private:
   struct GameState {

@@ -1,6 +1,8 @@
 #include "model.hpp"
 #include "model_scene.hpp"
 
+#include <gp/utils/utils.hpp>
+
 #include <boost/program_options.hpp>
 
 #include <iostream>
@@ -36,6 +38,8 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+  gp::utils::set_working_directory();
+
   const auto program_setup = process_args(argc, argv);
   if (program_setup.exit) {
     return 1;

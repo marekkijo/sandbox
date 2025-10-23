@@ -6,14 +6,7 @@ target_compile_features(loaders_cgltf PRIVATE cxx_std_23)
 
 target_link_libraries(loaders_cgltf gp)
 target_link_libraries(loaders_cgltf Boost::program_options)
-target_link_libraries(loaders_cgltf SDL2::SDL2)
-target_link_libraries(loaders_cgltf SDL2::SDL2main)
-target_link_libraries(loaders_cgltf glm::glm)
 target_include_directories(loaders_cgltf PRIVATE ${CGLTF_INCLUDE_DIRS})
-
-if(NOT EMSCRIPTEN)
-  target_link_libraries(loaders_cgltf glad::glad)
-endif()
 
 if(EMSCRIPTEN)
   target_compile_options(loaders_cgltf PRIVATE ${PRESET_COMPILE_OPTIONS})

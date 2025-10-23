@@ -78,10 +78,11 @@ int SDLContext::exec_loop(bool &quit_flag) const {
   }
 
   switch (sdl_event.type) {
-  case SDL_QUIT:
+  case SDL_QUIT: {
+    misc::Event event(misc::Event::Type::Quit, timestamp());
+    event.quit().return_code = return_code;
     quit_flag = true;
-    return_code = 1;
-    break;
+  } break;
   case SDL_WINDOWEVENT: {
     const auto wnd_id = sdl_event.window.windowID;
     switch (sdl_event.window.event) {
@@ -92,8 +93,7 @@ int SDLContext::exec_loop(bool &quit_flag) const {
       forward_event_to_window(wnd_id, event);
     } break;
     case SDL_WINDOWEVENT_CLOSE: {
-      misc::Event event(misc::Event::Type::Quit, timestamp());
-      event.quit().close_flag = 0;
+      misc::Event event(misc::Event::Type::Close, timestamp());
       forward_event_to_window(wnd_id, event);
     } break;
     default:
