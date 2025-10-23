@@ -1,6 +1,5 @@
 #include "sdl_context.hpp"
 
-#include <gp/misc/event.hpp>
 #include <gp/sdl/internal/misc.hpp>
 #include <gp/sdl/sdl.hpp>
 

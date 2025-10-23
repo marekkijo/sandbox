@@ -1,10 +1,13 @@
 #pragma once
 
-#include <gp/sdl/internal/sdl_context_fwd.hpp>
+#include <gp/misc/event.hpp>
 
+#include <functional>
 #include <unordered_map>
 
 namespace gp::sdl::internal {
+using SDLWindowEventCallback = std::function<void(const misc::Event &)>;
+
 class SDLContext {
 public:
   SDLContext();
