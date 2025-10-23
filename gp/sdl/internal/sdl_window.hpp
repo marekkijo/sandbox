@@ -1,9 +1,7 @@
 #pragma once
 
-#include <gp/sdl/internal/sdl_window_fwd.hpp>
-
 #include <gp/misc/keyboard_state.hpp>
-#include <gp/sdl/internal/sdl_context_fwd.hpp>
+#include <gp/sdl/internal/sdl_context.hpp>
 #include <gp/sdl/renderer.hpp>
 #include <gp/sdl/sdl.hpp>
 

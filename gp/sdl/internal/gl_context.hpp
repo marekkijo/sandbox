@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gp/sdl/internal/sdl_window_fwd.hpp>
+#include <gp/sdl/internal/sdl_window.hpp>
 #include <gp/sdl/sdl.hpp>
 
 #include <memory>

@@ -1,9 +1,6 @@
 #include "scene_3d.hpp"
 
 #include <gp/gl/gl.hpp>
-#include <gp/misc/event.hpp>
-#include <gp/sdl/internal/sdl_context.hpp>
-#include <gp/sdl/internal/sdl_window.hpp>
 
 #include <stdexcept>
 

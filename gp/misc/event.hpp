@@ -1,7 +1,5 @@
 #pragma once
 
-#include <gp/misc/event_fwd.hpp>
-
 #include <cstdint>
 #include <string>
 

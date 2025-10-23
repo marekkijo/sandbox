@@ -7,7 +7,7 @@
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/texture_object.hpp>
 #include <gp/gl/vertex_array_object.hpp>
-#include <gp/misc/event_fwd.hpp>
+#include <gp/misc/event.hpp>
 #include <gp/sdl/scene_3d.hpp>
 
 #include <glm/glm.hpp>
