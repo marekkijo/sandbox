@@ -4,6 +4,12 @@
 #include <random>
 #include <sstream>
 
+#ifdef __APPLE__
+# include <libgen.h>
+# include <mach-o/dyld.h>
+# include <unistd.h>
+#endif
+
 namespace gp::utils {
 std::vector<std::string> split_by(const std::string &src, const std::string &delimiter) {
   auto tokens = std::vector<std::string>{};
@@ -38,5 +44,16 @@ std::string load_txt_file(const std::string &filename) {
   auto buffer = std::stringstream{};
   buffer << txt_file.rdbuf();
   return buffer.str();
+}
+
+void set_working_directory() {
+#ifdef __APPLE__
+  char executable_path[PATH_MAX];
+  uint32_t size = PATH_MAX * sizeof(char);
+  if (_NSGetExecutablePath(executable_path, &size) == 0) {
+    const char *working_dir = dirname(executable_path);
+    chdir(working_dir);
+  }
+#endif
 }
 } // namespace gp::utils

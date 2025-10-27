@@ -6,14 +6,7 @@ target_compile_features(loaders_assimp PRIVATE cxx_std_23)
 
 target_link_libraries(loaders_assimp gp)
 target_link_libraries(loaders_assimp Boost::program_options)
-target_link_libraries(loaders_assimp SDL2::SDL2)
-target_link_libraries(loaders_assimp SDL2::SDL2main)
-target_link_libraries(loaders_assimp glm::glm)
 target_link_libraries(loaders_assimp assimp::assimp)
-
-if(NOT EMSCRIPTEN)
-  target_link_libraries(loaders_assimp glad::glad)
-endif()
 
 if(EMSCRIPTEN)
   target_compile_options(loaders_assimp PRIVATE ${PRESET_COMPILE_OPTIONS})

@@ -30,6 +30,7 @@ protected:
   int height() const;
 
   std::uint32_t timestamp() const;
+  void request_close();
   std::shared_ptr<const Renderer> renderer() const;
   const Renderer &r() const;
   std::shared_ptr<misc::KeyboardState> keyboard_state() const;

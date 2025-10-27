@@ -59,20 +59,6 @@ const Event::InitData &Event::init() const {
   return init_;
 }
 
-Event::QuitData &Event::quit() {
-  if (type() != Type::Quit) {
-    throw std::runtime_error("Wrong data access");
-  }
-  return quit_;
-}
-
-const Event::QuitData &Event::quit() const {
-  if (type() != Type::Quit) {
-    throw std::runtime_error("Wrong data access");
-  }
-  return quit_;
-}
-
 Event::ResizeData &Event::resize() {
   if (type() != Type::Resize) {
     throw std::runtime_error("Wrong data access");
@@ -208,7 +194,6 @@ void Event::assign_all(const Event &other) {
     init_.height = other.init_.height;
     break;
   case Type::Quit:
-    quit_.close_flag = other.quit_.close_flag;
     break;
   case Type::Resize:
     resize_.width = other.resize_.width;

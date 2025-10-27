@@ -56,6 +56,12 @@ int SDLContext::exec() const {
 #endif
 }
 
+void SDLContext::request_close() {
+  SDL_Event quit_event;
+  quit_event.type = SDL_QUIT;
+  SDL_PushEvent(&quit_event);
+}
+
 #ifdef __EMSCRIPTEN__
 void SDLContext::emscripten_main_loop(void *arg) {
   auto *context = static_cast<SDLContext *>(arg);
@@ -78,10 +84,12 @@ int SDLContext::exec_loop(bool &quit_flag) const {
   }
 
   switch (sdl_event.type) {
-  case SDL_QUIT:
+  case SDL_QUIT: {
+    misc::Event event(misc::Event::Type::Quit, timestamp());
+    forward_event_to_all_windows(event);
+
     quit_flag = true;
-    return_code = 1;
-    break;
+  } break;
   case SDL_WINDOWEVENT: {
     const auto wnd_id = sdl_event.window.windowID;
     switch (sdl_event.window.event) {
@@ -89,11 +97,6 @@ int SDLContext::exec_loop(bool &quit_flag) const {
       misc::Event event(misc::Event::Type::Resize, timestamp());
       event.resize().width = sdl_event.window.data1;
       event.resize().height = sdl_event.window.data2;
-      forward_event_to_window(wnd_id, event);
-    } break;
-    case SDL_WINDOWEVENT_CLOSE: {
-      misc::Event event(misc::Event::Type::Quit, timestamp());
-      event.quit().close_flag = 0;
       forward_event_to_window(wnd_id, event);
     } break;
     default:

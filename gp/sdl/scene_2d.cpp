@@ -26,6 +26,8 @@ int Scene2D::height() const { return height_; }
 
 std::uint32_t Scene2D::timestamp() const { return ctx_->timestamp(); }
 
+void Scene2D::request_close() { ctx_->request_close(); }
+
 std::shared_ptr<const Renderer> Scene2D::renderer() const { return wnd_->renderer(); }
 
 const Renderer &Scene2D::r() const { return wnd_->r(); }
