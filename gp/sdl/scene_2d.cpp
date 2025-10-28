@@ -1,5 +1,7 @@
 #include "scene_2d.hpp"
 
+#include <gp/sdl/internal/sdl_renderer.hpp>
+
 namespace gp::sdl {
 Scene2D::Scene2D(std::shared_ptr<internal::SDLContext> ctx)
     : ctx_{ctx ? ctx : std::make_shared<internal::SDLContext>()} {}
@@ -11,6 +13,9 @@ void Scene2D::init(const int width, const int height, const std::string &title) 
   wnd_ = std::make_unique<internal::SDLWindow>(ctx_, width, height, title);
 
   wnd_->set_window_event_callback([this](const misc::Event &event) { window_event_callback(event); });
+
+  auto r = std::make_unique<internal::SDLRenderer>(*wnd_);
+  r_ = std::make_shared<Renderer>(std::move(r));
 
   width_ = width;
   height_ = height;
@@ -28,9 +33,9 @@ std::uint32_t Scene2D::timestamp() const { return ctx_->timestamp(); }
 
 void Scene2D::request_close() { ctx_->request_close(); }
 
-std::shared_ptr<const Renderer> Scene2D::renderer() const { return wnd_->renderer(); }
+std::shared_ptr<const Renderer> Scene2D::renderer() const { return r_; }
 
-const Renderer &Scene2D::r() const { return wnd_->r(); }
+const Renderer &Scene2D::r() const { return *r_; }
 
 std::shared_ptr<misc::KeyboardState> Scene2D::keyboard_state() const { return wnd_->keyboard_state(); }
 

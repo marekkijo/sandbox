@@ -74,7 +74,6 @@ void Server::on_client_closed(std::weak_ptr<Client> weak_client) {
 
   auto client = weak_client.lock();
   if (client) {
-    clients_.erase(client->info.id());
     type = client->info.type();
   }
 
@@ -85,11 +84,12 @@ void Server::on_client_closed(std::weak_ptr<Client> weak_client) {
   case Client::Type::streamer:
     printf("Streamer '%s' disconnected\n", client->info.id().c_str());
     streamers_.erase(client->info.id());
+    clients_.erase(client->info.id());
     break;
   case Client::Type::receiver:
     printf("Receiver '%s' disconnected\n", client->info.id().c_str());
-    clients_.erase(client->info.id());
     receivers_.erase(client->info.id());
+    clients_.erase(client->info.id());
     break;
   }
 }
@@ -120,6 +120,8 @@ void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::st
 
   if (json.contains("video_stream_info")) {
     parse_video_stream_info(client, json.at("video_stream_info"));
+
+    send_video_stream_infos_to_unpaired_receivers();
     return;
   }
 
@@ -168,25 +170,7 @@ void Server::parse_video_stream_info(std::shared_ptr<Client> &client, const nloh
 void Server::parse_command(std::shared_ptr<Client> &client, const nlohmann::json &json_command) {
   const auto type = std::string{json_command.at("type")};
   if (type == "request_video_stream_infos") {
-    auto video_stream_infos_json = nlohmann::json::array();
-    for (const auto &streamer_pair : streamers_) {
-      const auto &streamer = streamer_pair.second;
-      if (!streamer.paired) {
-        const auto video_stream_info_json = nlohmann::json{
-            {"streamer_id",                           streamer.id},
-            {      "width",      streamer.video_stream_info.width},
-            {     "height",     streamer.video_stream_info.height},
-            {        "fps",        streamer.video_stream_info.fps},
-            {   "codec_id",   streamer.video_stream_info.codec_id},
-            { "codec_name", streamer.video_stream_info.codec_name}
-        };
-        video_stream_infos_json.push_back(video_stream_info_json);
-      }
-    }
-    const auto json = nlohmann::json{
-        {"video_stream_infos", video_stream_infos_json}
-    };
-    client->web_socket->send(json.dump());
+    send_video_stream_infos(client);
     return;
   }
   if (type == "request_video_stream") {
@@ -204,5 +188,41 @@ void Server::parse_command(std::shared_ptr<Client> &client, const nlohmann::json
     return;
   }
   printf("Unknown command: %s\n", json_command.dump().c_str());
+}
+
+void Server::send_video_stream_infos_to_unpaired_receivers() {
+  for (const auto &receiver_pair : receivers_) {
+    const auto &receiver = receiver_pair.second;
+    if (receiver.paired) {
+      continue;
+    }
+    auto client_it = clients_.find(receiver.id);
+    if (client_it != clients_.end()) {
+      send_video_stream_infos(client_it->second);
+    }
+  }
+}
+
+void Server::send_video_stream_infos(std::shared_ptr<Client> &client) {
+  auto video_stream_infos_json = nlohmann::json::array();
+  for (const auto &streamer_pair : streamers_) {
+    const auto &streamer = streamer_pair.second;
+    if (streamer.paired) {
+      continue;
+    }
+    const auto video_stream_info_json = nlohmann::json{
+        {"streamer_id",                           streamer.id},
+        {      "width",      streamer.video_stream_info.width},
+        {     "height",     streamer.video_stream_info.height},
+        {        "fps",        streamer.video_stream_info.fps},
+        {   "codec_id",   streamer.video_stream_info.codec_id},
+        { "codec_name", streamer.video_stream_info.codec_name}
+    };
+    video_stream_infos_json.push_back(video_stream_info_json);
+  }
+  const auto json = nlohmann::json{
+      {"video_stream_infos", video_stream_infos_json}
+  };
+  client->web_socket->send(json.dump());
 }
 } // namespace streaming

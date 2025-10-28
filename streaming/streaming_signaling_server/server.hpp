@@ -44,6 +44,8 @@ private:
 
   void parse_video_stream_info(std::shared_ptr<Client> &client, const nlohmann::json &json_video_stream_info);
   void parse_command(std::shared_ptr<Client> &client, const nlohmann::json &json_command);
+  void send_video_stream_infos_to_unpaired_receivers();
+  void send_video_stream_infos(std::shared_ptr<Client> &client);
 
   rtc::WebSocketServer server_{};
   std::unordered_set<std::shared_ptr<Client>> temporary_store_{};
