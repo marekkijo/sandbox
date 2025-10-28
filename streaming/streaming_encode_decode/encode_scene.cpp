@@ -42,11 +42,6 @@ void EncodeScene::loop(const gp::misc::Event &event) {
       swap_buffers();
       frame_counter_++;
     } else {
-      // TODO(59): Quit event after request_close()
-      // Here finalize() is called directly to ensure proper cleanup however, it is expected to receive Quit event from
-      // SDL event loop  after request_close() is called. After fixing this, remove finalize() call from here.
-      finalize();
-
       request_close();
     }
     break;

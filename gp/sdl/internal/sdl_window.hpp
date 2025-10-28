@@ -35,5 +35,7 @@ private:
   std::shared_ptr<Renderer> r_{};
   std::shared_ptr<misc::KeyboardState> keyboard_state_{std::make_shared<misc::KeyboardState>()};
   SDLWindowEventCallback window_event_callback_{};
+
+  Uint32 wnd_id() const;
 };
 } // namespace gp::sdl::internal

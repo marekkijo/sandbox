@@ -6,6 +6,7 @@
     "ffmpeg",
     "glad",
     "glm",
+    "gtest",
     "libdatachannel",
     "nlohmann-json",
     "sdl2",

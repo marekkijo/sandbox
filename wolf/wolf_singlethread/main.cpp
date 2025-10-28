@@ -2,6 +2,8 @@
 
 #include "wolf_common/raw_map_from_wolf.hpp"
 
+#include <gp/utils/utils.hpp>
+
 #include <boost/program_options.hpp>
 
 #include <iostream>
@@ -68,6 +70,8 @@ std::unique_ptr<gp::sdl::Scene2D> create_scene(const ProgramSetup &program_setup
 }
 
 int main(int argc, char *argv[]) {
+  gp::utils::set_working_directory();
+
   const auto program_setup = process_args(argc, argv);
   if (program_setup.exit) {
     return 1;

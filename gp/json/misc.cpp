@@ -493,10 +493,8 @@ misc::Event to_event(const nlohmann::json &json_event) {
     event.init().width = init.at("width");
     event.init().height = init.at("height");
   } break;
-  case misc::Event::Type::Quit: {
-    const auto quit = json_event.at("quit");
-    event.quit().close_flag = quit.at("close_flag");
-  } break;
+  case misc::Event::Type::Quit:
+    break;
   case misc::Event::Type::Resize: {
     const auto resize = json_event.at("resize");
     event.resize().width = resize.at("width");
@@ -583,10 +581,6 @@ nlohmann::json from_event(const misc::Event &event) {
     break;
   case misc::Event::Type::Quit:
     json_event["type"] = "Quit";
-
-    json_event["quit"] = nlohmann::json{
-        {"close_flag", event.quit().close_flag}
-    };
     break;
   case misc::Event::Type::Resize:
     json_event["type"] = "Resize";

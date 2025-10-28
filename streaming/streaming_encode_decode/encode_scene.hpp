@@ -39,8 +39,8 @@ private:
   const int number_of_frames_{};
   const int ms_per_frame_{};
   int frame_counter_{};
-  std::unique_ptr<Encoder> encoder_;
   std::unique_ptr<std::ofstream> output_file_{};
+  std::unique_ptr<Encoder> encoder_;
 
   std::shared_ptr<FrameData> video_frame_{};
 

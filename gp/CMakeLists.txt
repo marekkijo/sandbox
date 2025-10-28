@@ -9,6 +9,8 @@
 # Please ensure that your project includes the necessary dependencies for SDL
 # and OpenGL.
 
+set(SOLUTION_FOLDER gp)
+
 file(GLOB_RECURSE FFMPEG_FILES "${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/*")
 file(GLOB_RECURSE GL_FILES "${CMAKE_CURRENT_SOURCE_DIR}/gl/*")
 file(GLOB_RECURSE JSON_FILES "${CMAKE_CURRENT_SOURCE_DIR}/json/*")
@@ -35,20 +37,21 @@ target_compile_features(gp PRIVATE cxx_std_23)
 target_include_directories(gp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_include_directories(gp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(gp PRIVATE glm::glm)
-target_link_libraries(gp PRIVATE nlohmann_json::nlohmann_json)
-target_link_libraries(gp PRIVATE SDL2::SDL2)
+target_link_libraries(gp PUBLIC glm::glm)
+target_link_libraries(gp PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(gp PUBLIC SDL2::SDL2)
+target_link_libraries(gp PUBLIC SDL2::SDL2main)
 target_link_libraries(
   gp
-  PRIVATE
+  PUBLIC
     $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
 )
 
 if(NOT EMSCRIPTEN)
-  target_include_directories(gp PRIVATE ${FFMPEG_INCLUDE_DIRS})
-  target_link_directories(gp PRIVATE ${FFMPEG_LIBRARY_DIRS})
-  target_link_libraries(gp PRIVATE ${FFMPEG_LIBRARIES})
-  target_link_libraries(gp PRIVATE glad::glad)
+  target_include_directories(gp PUBLIC ${FFMPEG_INCLUDE_DIRS})
+  target_link_directories(gp PUBLIC ${FFMPEG_LIBRARY_DIRS})
+  target_link_libraries(gp PUBLIC ${FFMPEG_LIBRARIES})
+  target_link_libraries(gp PUBLIC glad::glad)
 endif()
 
 if(EMSCRIPTEN)
@@ -57,3 +60,7 @@ if(EMSCRIPTEN)
 endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_FILES})
+
+if(NOT EMSCRIPTEN)
+  add_subdirectory(${TESTS_DIRECTORY})
+endif()
