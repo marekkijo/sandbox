@@ -4,13 +4,8 @@ add_executable(streaming_encode_decode ${SRC_FILES})
 
 target_compile_features(streaming_encode_decode PRIVATE cxx_std_23)
 
-target_link_libraries(streaming_encode_decode gp)
 target_link_libraries(streaming_encode_decode streaming_common)
 target_link_libraries(streaming_encode_decode Boost::program_options)
-target_link_libraries(streaming_encode_decode SDL2::SDL2)
-target_link_libraries(streaming_encode_decode SDL2::SDL2main)
-target_link_libraries(streaming_encode_decode glm::glm)
-target_link_libraries(streaming_encode_decode glad::glad)
 
 add_target_resources(streaming_encode_decode RESOURCES shaders
                      COPY_IF_DIFFERENT)

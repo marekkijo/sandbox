@@ -4,11 +4,9 @@ add_executable(streaming_signaling_server ${SRC_FILES})
 
 target_compile_features(streaming_signaling_server PRIVATE cxx_std_23)
 
-target_link_libraries(streaming_signaling_server gp)
 target_link_libraries(streaming_signaling_server streaming_common)
 target_link_libraries(streaming_signaling_server Boost::program_options)
 target_link_libraries(streaming_signaling_server LibDataChannel::LibDataChannel)
-target_link_libraries(streaming_signaling_server nlohmann_json::nlohmann_json)
 
 set_target_properties(
   streaming_signaling_server

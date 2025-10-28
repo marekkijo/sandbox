@@ -27,6 +27,7 @@ public:
    */
   std::uint32_t timestamp() const;
   int exec() const;
+  void request_close();
 
 private:
 #ifdef __EMSCRIPTEN__

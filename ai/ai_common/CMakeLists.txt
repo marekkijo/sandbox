@@ -6,7 +6,7 @@ target_compile_features(ai_common PRIVATE cxx_std_23)
 
 target_include_directories(ai_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-target_link_libraries(ai_common gp)
+target_link_libraries(ai_common PUBLIC gp)
 
 if(EMSCRIPTEN)
   target_compile_options(ai_common PRIVATE ${PRESET_COMPILE_OPTIONS})

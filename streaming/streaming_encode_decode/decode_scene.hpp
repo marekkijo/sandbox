@@ -38,8 +38,8 @@ private:
   const int ms_per_frame_{};
   int frame_counter_{};
   std::uint32_t last_timestamp_ms_{};
-  std::unique_ptr<Decoder> decoder_;
   std::unique_ptr<std::ifstream> input_file_{};
+  std::unique_ptr<Decoder> decoder_;
 
   std::shared_ptr<FrameData> rgb_frame_{};
   bool frame_ready_{};

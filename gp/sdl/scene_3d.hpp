@@ -27,7 +27,6 @@ protected:
   int height() const;
 
   std::uint32_t timestamp() const;
-
   void swap_buffers() const;
   void request_close();
   std::shared_ptr<const Renderer> renderer() const;

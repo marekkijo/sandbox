@@ -20,7 +20,7 @@ public:
   enum class Type : TypeSubtype {
     None,        /**< No input event */
     Init,        /**< Window got initialized */
-    Quit,        /**< Window is about to quit */
+    Quit,        /**< Application is about to quit */
     Resize,      /**< Window resize */
     Redraw,      /**< Redraw */
     MouseButton, /**< Mouse button press/release */
@@ -310,10 +310,6 @@ public:
     int height; /**< Initial window height */
   };
 
-  struct QuitData {
-    int close_flag; /**< Closing flag received from the underlying system */
-  };
-
   struct ResizeData {
     int width;  /**< New window width */
     int height; /**< New window height */
@@ -381,8 +377,6 @@ public:
   std::uint32_t timestamp() const;
   InitData &init();
   const InitData &init() const;
-  QuitData &quit();
-  const QuitData &quit() const;
   ResizeData &resize();
   const ResizeData &resize() const;
   MouseButtonData &mouse_button();
@@ -418,7 +412,6 @@ private:
    */
   union {
     InitData init_;                /**< Init event */
-    QuitData quit_;                /**< Quit event */
     ResizeData resize_;            /**< Resize event */
     MouseButtonData mouse_button_; /**< Mouse button event */
     MouseMoveData mouse_move_;     /**< Mouse move event */

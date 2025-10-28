@@ -32,8 +32,7 @@ SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx,
 }
 
 SDLWindow::~SDLWindow() {
-  const auto wnd_id = SDL_GetWindowID(wnd());
-  ctx_->withdraw_window_event_callback(wnd_id);
+  ctx_->withdraw_window_event_callback(wnd_id());
   r_.reset();
   SDL_DestroyWindow(wnd());
 }
@@ -47,8 +46,7 @@ const Renderer &SDLWindow::r() const { return *r_; }
 std::shared_ptr<misc::KeyboardState> SDLWindow::keyboard_state() const { return keyboard_state_; }
 
 void SDLWindow::set_window_event_callback(SDLWindowEventCallback callback) {
-  const auto wnd_id = SDL_GetWindowID(wnd());
-  ctx_->set_window_event_callback(wnd_id, [this](const misc::Event &event) {
+  ctx_->set_window_event_callback(wnd_id(), [this](const misc::Event &event) {
     if (event.type() == misc::Event::Type::Key) {
       keyboard_state_->process_key_event(event.key());
     }
@@ -59,4 +57,6 @@ void SDLWindow::set_window_event_callback(SDLWindowEventCallback callback) {
 
   window_event_callback_ = std::move(callback);
 }
+
+Uint32 SDLWindow::wnd_id() const { return SDL_GetWindowID(wnd()); }
 } // namespace gp::sdl::internal

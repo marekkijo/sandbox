@@ -6,9 +6,7 @@ target_compile_features(wolf_common PRIVATE cxx_std_23)
 
 target_include_directories(wolf_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-target_link_libraries(wolf_common gp)
-target_link_libraries(wolf_common glm::glm)
-target_link_libraries(wolf_common SDL2::SDL2)
+target_link_libraries(wolf_common PUBLIC gp)
 
 if(EMSCRIPTEN)
   target_compile_options(wolf_common PRIVATE ${PRESET_COMPILE_OPTIONS})

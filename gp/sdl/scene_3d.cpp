@@ -53,11 +53,7 @@ std::uint32_t Scene3D::timestamp() const { return ctx_->timestamp(); }
 
 void Scene3D::swap_buffers() const { SDL_GL_SwapWindow(wnd_->wnd()); }
 
-void Scene3D::request_close() {
-  SDL_Event quit_event;
-  quit_event.type = SDL_QUIT;
-  SDL_PushEvent(&quit_event);
-}
+void Scene3D::request_close() { ctx_->request_close(); }
 
 std::shared_ptr<const Renderer> Scene3D::renderer() const { return wnd_->renderer(); }
 
