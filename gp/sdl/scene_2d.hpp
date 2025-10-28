@@ -44,5 +44,6 @@ private:
 
   std::shared_ptr<internal::SDLContext> ctx_;
   std::unique_ptr<internal::SDLWindow> wnd_;
+  std::shared_ptr<Renderer> r_;
 };
 } // namespace gp::sdl

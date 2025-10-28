@@ -2,7 +2,6 @@
 
 #include <gp/misc/keyboard_state.hpp>
 #include <gp/sdl/internal/sdl_context.hpp>
-#include <gp/sdl/renderer.hpp>
 #include <gp/sdl/sdl.hpp>
 
 #include <memory>
@@ -15,7 +14,7 @@ public:
             const int width,
             const int height,
             const std::string &title,
-            const bool gl_support = false);
+            Uint32 flags = default_window_flags);
   ~SDLWindow();
 
   SDLWindow(SDLWindow &&) = delete;
@@ -23,16 +22,15 @@ public:
   SDLWindow(const SDLWindow &) = delete;
   SDLWindow &operator=(const SDLWindow &) = delete;
 
+  static constexpr Uint32 default_window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN;
+
   SDL_Window *wnd() const;
-  std::shared_ptr<const Renderer> renderer() const;
-  const Renderer &r() const;
   std::shared_ptr<misc::KeyboardState> keyboard_state() const;
   void set_window_event_callback(SDLWindowEventCallback callback);
 
 private:
   const std::shared_ptr<SDLContext> ctx_{};
   SDL_Window *wnd_{};
-  std::shared_ptr<Renderer> r_{};
   std::shared_ptr<misc::KeyboardState> keyboard_state_{std::make_shared<misc::KeyboardState>()};
   SDLWindowEventCallback window_event_callback_{};
 

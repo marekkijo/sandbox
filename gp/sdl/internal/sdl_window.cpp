@@ -1,7 +1,6 @@
 #include "sdl_window.hpp"
 
 #include <gp/misc/event.hpp>
-#include <gp/sdl/internal/sdl_renderer.hpp>
 #include <gp/sdl/sdl.hpp>
 
 #include <stdexcept>
@@ -11,37 +10,20 @@ SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx,
                      const int width,
                      const int height,
                      const std::string &title,
-                     const bool gl_support)
+                     Uint32 flags)
     : ctx_{std::move(ctx)}
-    , wnd_{SDL_CreateWindow(title.c_str(),
-                            SDL_WINDOWPOS_CENTERED,
-                            SDL_WINDOWPOS_CENTERED,
-                            width,
-                            height,
-                            SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN | (gl_support ? SDL_WINDOW_OPENGL : 0))} {
+    , wnd_{SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags)} {
   if (!wnd()) {
     throw std::runtime_error{std::string{"SDL_CreateWindow error:"} + SDL_GetError()};
-  }
-
-  // TODO(#48): Not very elegant, renderer should be created outside SDLWindow when needed.
-  if (!gl_support) {
-    // Create renderer only if OpenGL is not used.
-    auto r = std::make_unique<SDLRenderer>(*this);
-    r_ = std::make_shared<Renderer>(std::move(r));
   }
 }
 
 SDLWindow::~SDLWindow() {
   ctx_->withdraw_window_event_callback(wnd_id());
-  r_.reset();
   SDL_DestroyWindow(wnd());
 }
 
 SDL_Window *SDLWindow::wnd() const { return wnd_; }
-
-std::shared_ptr<const Renderer> SDLWindow::renderer() const { return r_; }
-
-const Renderer &SDLWindow::r() const { return *r_; }
 
 std::shared_ptr<misc::KeyboardState> SDLWindow::keyboard_state() const { return keyboard_state_; }
 

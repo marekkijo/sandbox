@@ -25,7 +25,11 @@ void Scene3D::init(const int width, const int height, const std::string &title, 
   }
 
   set_gl_hints();
-  wnd_ = std::make_shared<internal::SDLWindow>(ctx_, width, height, title, true);
+  wnd_ = std::make_shared<internal::SDLWindow>(ctx_,
+                                               width,
+                                               height,
+                                               title,
+                                               internal::SDLWindow::default_window_flags | SDL_WINDOW_OPENGL);
   gl_ctx_ = std::make_unique<internal::GLContext>(wnd_);
 
   platform_gl_init();
@@ -54,10 +58,6 @@ std::uint32_t Scene3D::timestamp() const { return ctx_->timestamp(); }
 void Scene3D::swap_buffers() const { SDL_GL_SwapWindow(wnd_->wnd()); }
 
 void Scene3D::request_close() { ctx_->request_close(); }
-
-std::shared_ptr<const Renderer> Scene3D::renderer() const { return wnd_->renderer(); }
-
-const Renderer &Scene3D::r() const { return wnd_->r(); }
 
 std::shared_ptr<misc::KeyboardState> Scene3D::keyboard_state() const { return wnd_->keyboard_state(); }
 
