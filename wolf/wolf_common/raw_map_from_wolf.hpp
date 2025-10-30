@@ -4,22 +4,17 @@
 
 #include <cstdint>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace wolf {
 class RawMapFromWolf {
 public:
-  RawMapFromWolf(const RawMapFromWolf &) = delete;
-  RawMapFromWolf &operator=(const RawMapFromWolf &) = delete;
-  RawMapFromWolf(RawMapFromWolf &&) noexcept = default;
-  RawMapFromWolf &operator=(RawMapFromWolf &&) noexcept = default;
-  ~RawMapFromWolf() = default;
-
   RawMapFromWolf(const std::string &maphead_filename, const std::string &gamemaps_filename);
 
-  [[nodiscard]] std::size_t maps_size();
-  [[nodiscard]] RawMap create_map(const std::size_t map_index);
+  std::size_t number_of_maps() const;
+  std::unique_ptr<const RawMap> create_map(const std::size_t map_index);
 
 private:
   std::ifstream gamemaps_file_{};

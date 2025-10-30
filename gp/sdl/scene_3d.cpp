@@ -98,8 +98,6 @@ void Scene3D::window_event_callback(const misc::Event &event) {
   if (event.type() == misc::Event::Type::Resize) {
     width_ = event.resize().width;
     height_ = event.resize().height;
-  } else if (event.type() == misc::Event::Type::Quit) {
-    wnd_.reset();
   }
 }
 } // namespace gp::sdl

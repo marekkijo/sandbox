@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+namespace wolf {
 namespace {
 template<typename... Ts>
 constexpr auto make_array(Ts &&...args) {
@@ -12,7 +13,7 @@ constexpr auto make_array(Ts &&...args) {
 }
 } // namespace
 
-VswapFileViewerScene::VswapFileViewerScene(std::shared_ptr<const wolf::VswapFile> vswap_file)
+VswapFileViewerScene::VswapFileViewerScene(std::shared_ptr<const VswapFile> vswap_file)
     : vswap_file_(std::move(vswap_file)) {}
 
 void VswapFileViewerScene::loop(const gp::misc::Event &event) {
@@ -127,3 +128,4 @@ void VswapFileViewerScene::upload_sprite() {
   frame_texture_->bind();
   frame_texture_->set_image(0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, glm::value_ptr(data[0]));
 }
+} // namespace wolf

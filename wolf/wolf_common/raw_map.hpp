@@ -2,9 +2,9 @@
 
 #include "wolf_common/wolf_map_info.hpp"
 
+#include <glm/vec2.hpp>
+
 #include <cstdint>
-#include <limits>
-#include <tuple>
 #include <vector>
 
 namespace wolf {
@@ -16,40 +16,29 @@ public:
     Map::Objects object;
     Map::Extra extra;
 
-    [[nodiscard]] std::uint16_t operator[](const std::size_t index) const;
-    [[nodiscard]] std::uint16_t &operator[](const std::size_t index);
+    std::uint16_t operator[](const std::size_t index) const;
+    std::uint16_t &operator[](const std::size_t index);
   };
 
-  RawMap(const RawMap &) = default;
-  RawMap &operator=(const RawMap &) = delete;
-  RawMap(RawMap &&) noexcept = default;
-  RawMap &operator=(RawMap &&) noexcept = delete;
-  ~RawMap() = default;
+  RawMap(const int width, const int height, std::vector<BlockType> &&blocks);
 
-  RawMap(const std::size_t width, const std::size_t height, std::vector<BlockType> &&blocks);
+  int width() const;
+  int height() const;
+  glm::ivec2 size() const;
+  glm::ivec2 bounds() const;
+  const BlockType &block(const int w, const int h) const;
+  bool is_within_bounds(const int w, const int h) const;
+  bool is_wall(const int w, const int h) const;
 
-  [[nodiscard]] std::size_t width() const;
-  [[nodiscard]] std::size_t height() const;
-  [[nodiscard]] const BlockType &block(const std::size_t w, const std::size_t h) const;
-  [[nodiscard]] bool is_wall(const std::size_t w, const std::size_t h) const;
-  /// Checks if there is a wall on north, south west or east direction from the given location.
-  /// @{
-  [[nodiscard]] bool is_wall_on_n(const std::size_t w, const std::size_t h) const;
-  [[nodiscard]] bool is_wall_on_s(const std::size_t w, const std::size_t h) const;
-  [[nodiscard]] bool is_wall_on_w(const std::size_t w, const std::size_t h) const;
-  [[nodiscard]] bool is_wall_on_e(const std::size_t w, const std::size_t h) const;
-  /// @}
-  [[nodiscard]] std::tuple<std::size_t, std::size_t> player_pos() const;
+  const glm::ivec2 &player_pos() const;
 
 private:
-  const std::size_t width_{};
-  const std::size_t height_{};
+  glm::ivec2 size_{-1, -1};
 
   std::vector<BlockType> blocks_{};
-  std::size_t player_pos_w_{std::numeric_limits<std::size_t>::max()};
-  std::size_t player_pos_h_{std::numeric_limits<std::size_t>::max()};
+  glm::ivec2 player_pos_{-1, -1};
 
-  [[nodiscard]] BlockType &block(const std::size_t w, const std::size_t h);
+  BlockType &block(const int w, const int h);
 
   void process_doors();
   void process_ambush_tiles();
