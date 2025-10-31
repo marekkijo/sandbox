@@ -3,7 +3,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
-#include <algorithm>
 #include <sstream>
 
 namespace ai {
@@ -63,7 +62,7 @@ void PongScene::animate(const std::uint32_t time_elapsed_ms) {
     } else {
       game_states_[0].paddle_position += paddle_speed * time_elapsed_ms;
     }
-    game_states_[0].paddle_position = std::clamp(game_states_[0].paddle_position, 0.0f, 1.0f);
+    game_states_[0].paddle_position = glm::clamp(game_states_[0].paddle_position, 0.0f, 1.0f);
   }
 
   for (std::size_t i = 0; i < number_per_generation; i++) {
@@ -82,7 +81,7 @@ void PongScene::animate(const std::uint32_t time_elapsed_ms) {
     } else if (output[0] < 0.5f) {
       game_state.paddle_position += paddle_speed * time_elapsed_ms;
     }
-    game_state.paddle_position = std::clamp(game_state.paddle_position, 0.0f, 1.0f);
+    game_state.paddle_position = glm::clamp(game_state.paddle_position, 0.0f, 1.0f);
     game_state.prev_ball_position = game_state.ball_position;
 
     game_state.ball_angle = glm::normalize(game_state.ball_angle);

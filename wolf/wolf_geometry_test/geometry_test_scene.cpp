@@ -2,7 +2,6 @@
 
 #include "wolf_common/map_utils.hpp"
 
-#include <glm/fwd.hpp>
 #include <gp/math/math.hpp>
 
 #include <glm/ext/matrix_transform.hpp>

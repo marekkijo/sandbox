@@ -1,7 +1,6 @@
 #include "raw_map_from_wolf.hpp"
 
 #include <array>
-#include <memory>
 #include <stdexcept>
 
 namespace wolf {

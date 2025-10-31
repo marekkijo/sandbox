@@ -1,7 +1,5 @@
 #include "renderer.hpp"
 
-#include <glm/ext/quaternion_common.hpp>
-#include <glm/fwd.hpp>
 #include <gp/sdl/internal/sdl_renderer.hpp>
 
 #include <SDL2/SDL_ttf.h>
@@ -9,7 +7,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp>
 
-#include <algorithm>
 #include <iterator>
 #include <stdexcept>
 
@@ -17,7 +14,7 @@ namespace gp::sdl {
 namespace {
 uint8_t lerp(const uint8_t start, const uint8_t end, const float t) {
   const auto d = static_cast<float>(end) - start;
-  return static_cast<uint8_t>(std::clamp(start + t * d, 0.0f, 255.0f));
+  return static_cast<uint8_t>(glm::clamp(start + t * d, 0.0f, 255.0f));
 }
 
 glm::uvec3 lerp(const glm::uvec3 &start, const glm::uvec3 &end, const float t) {
