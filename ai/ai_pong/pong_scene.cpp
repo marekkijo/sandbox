@@ -3,7 +3,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
-#include <algorithm>
 #include <sstream>
 
 namespace ai {
@@ -63,7 +62,7 @@ void PongScene::animate(const std::uint32_t time_elapsed_ms) {
     } else {
       game_states_[0].paddle_position += paddle_speed * time_elapsed_ms;
     }
-    game_states_[0].paddle_position = std::clamp(game_states_[0].paddle_position, 0.0f, 1.0f);
+    game_states_[0].paddle_position = glm::clamp(game_states_[0].paddle_position, 0.0f, 1.0f);
   }
 
   for (std::size_t i = 0; i < number_per_generation; i++) {
@@ -82,7 +81,7 @@ void PongScene::animate(const std::uint32_t time_elapsed_ms) {
     } else if (output[0] < 0.5f) {
       game_state.paddle_position += paddle_speed * time_elapsed_ms;
     }
-    game_state.paddle_position = std::clamp(game_state.paddle_position, 0.0f, 1.0f);
+    game_state.paddle_position = glm::clamp(game_state.paddle_position, 0.0f, 1.0f);
     game_state.prev_ball_position = game_state.ball_position;
 
     game_state.ball_angle = glm::normalize(game_state.ball_angle);
@@ -117,10 +116,10 @@ void PongScene::animate(const std::uint32_t time_elapsed_ms) {
 }
 
 void PongScene::redraw() {
-  r().set_draw_color(0, 0, 0, 255);
+  r().set_color(0, 0, 0);
   r().clear();
 
-  r().set_draw_color(255, 255, 255, 255);
+  r().set_color(255, 255, 255);
   r().draw_line(0, height_ / 2, width_, height_ / 2);
 
   auto score_label_pos = glm::vec2{10, 10};
@@ -131,7 +130,7 @@ void PongScene::redraw() {
     score_label_pos.y += 20;
   }
 
-  r().set_draw_color(255, 255, 255, static_cast<int>(255.0f / number_per_generation + 0.5f));
+  r().set_color(255, 255, 255, static_cast<int>(255.0f / number_per_generation + 0.5f));
   for (std::size_t i = 0; i < number_per_generation; i++) {
     const auto ball_rect = SDL_Rect{
         static_cast<int>(width_ * game_states_[i].ball_position.x - width_ * ball_radius),

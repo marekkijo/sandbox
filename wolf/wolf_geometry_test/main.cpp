@@ -1,4 +1,4 @@
-#include "multi_thread_wolf_scene.hpp"
+#include "geometry_test_scene.hpp"
 
 #include "wolf_common/raw_map_from_wolf.hpp"
 
@@ -19,8 +19,6 @@ struct ProgramSetup {
   int width{};
   int height{};
   std::uint32_t fov{};
-  std::uint32_t rays{};
-  std::uint32_t threads{};
 };
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
@@ -40,8 +38,6 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   desc.add_options()("fov",
                      boost::program_options::value<std::uint32_t>()->default_value(60u),
                      "Field of view in degrees");
-  desc.add_options()("rays", boost::program_options::value<std::uint32_t>()->default_value(152u), "Number of rays");
-  desc.add_options()("threads", boost::program_options::value<std::uint32_t>()->default_value(8u), "Number of threads");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -58,20 +54,15 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["gamemaps"].as<std::string>(),
           vm["width"].as<int>(),
           vm["height"].as<int>(),
-          vm["fov"].as<std::uint32_t>(),
-          vm["rays"].as<std::uint32_t>(),
-          vm["threads"].as<std::uint32_t>()};
+          vm["fov"].as<std::uint32_t>()};
 }
 
 std::unique_ptr<gp::sdl::Scene2D> create_scene(const ProgramSetup &program_setup) {
   auto raw_map_from_wolf = wolf::RawMapFromWolf{program_setup.maphead, program_setup.gamemaps};
   auto raw_map = raw_map_from_wolf.create_map(0u);
 
-  auto scene = std::make_unique<wolf::MultiThreadWolfScene>(std::move(raw_map),
-                                                            program_setup.fov,
-                                                            program_setup.rays,
-                                                            program_setup.threads);
-  scene->init(program_setup.width, program_setup.height, "Wolf: Multithread");
+  auto scene = std::make_unique<wolf::GeometryTestScene>(std::move(raw_map), program_setup.fov);
+  scene->init(program_setup.width, program_setup.height, "Wolf: Geometry Test");
   return scene;
 }
 

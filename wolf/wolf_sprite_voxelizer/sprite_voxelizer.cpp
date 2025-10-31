@@ -4,6 +4,7 @@
 #include <iterator>
 #include <stdexcept>
 
+namespace wolf {
 namespace {
 constexpr auto SPRITE_WIDTH = 64;
 
@@ -13,7 +14,7 @@ constexpr auto make_array(Ts &&...args) {
 }
 } // namespace
 
-SpriteVoxelizer::SpriteVoxelizer(std::shared_ptr<const wolf::VswapFile> vswap_file)
+SpriteVoxelizer::SpriteVoxelizer(std::shared_ptr<const VswapFile> vswap_file)
     : vswap_file_{std::move(vswap_file)} {}
 
 void SpriteVoxelizer::voxelize(const std::size_t front_sprite_index,
@@ -279,3 +280,4 @@ void SpriteVoxelizer::build_voxel(const int x, const int y, const int z, const g
     return voxel_start_index + index;
   });
 }
+} // namespace wolf

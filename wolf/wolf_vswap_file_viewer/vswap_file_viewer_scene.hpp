@@ -13,12 +13,13 @@
 
 #include <memory>
 
+namespace wolf {
 class VswapFileViewerScene : public gp::sdl::Scene3D {
 public:
-  explicit VswapFileViewerScene(std::shared_ptr<const wolf::VswapFile> vswap_file);
+  explicit VswapFileViewerScene(std::shared_ptr<const VswapFile> vswap_file);
 
 private:
-  void loop(const gp::misc::Event &event) final;
+  void loop(const gp::misc::Event &event) override;
 
   void initialize(const int width, const int height);
   void finalize();
@@ -28,7 +29,7 @@ private:
   void upload_wall();
   void upload_sprite();
 
-  std::shared_ptr<const wolf::VswapFile> vswap_file_{};
+  std::shared_ptr<const VswapFile> vswap_file_{};
 
   std::size_t wall_index_{};
   std::size_t sprite_index_{};
@@ -38,3 +39,4 @@ private:
   std::unique_ptr<gp::gl::TextureObject> frame_texture_{};
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
 };
+} // namespace wolf

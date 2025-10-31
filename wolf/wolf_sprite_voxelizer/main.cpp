@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
   }
 
   auto vswap_file = std::make_shared<const wolf::VswapFile>("data/VSWAP.WL6");
-  auto sprite_voxelizer = std::make_shared<SpriteVoxelizer>(vswap_file);
-  auto voxel_scene = std::make_unique<VoxelScene>(sprite_voxelizer);
+  auto sprite_voxelizer = std::make_shared<wolf::SpriteVoxelizer>(vswap_file);
+  auto voxel_scene = std::make_unique<wolf::VoxelScene>(sprite_voxelizer);
   voxel_scene->init(program_setup.width, program_setup.height, "sprite_voxelizer");
   return voxel_scene->exec();
 }

@@ -16,13 +16,9 @@
 namespace wolf {
 class WolfScene : public gp::sdl::Scene2D {
 public:
-  WolfScene(const RawMap &raw_map, const std::uint32_t fov_in_degrees, const std::uint32_t number_of_rays);
-  ~WolfScene() override = default;
-
-  WolfScene(const WolfScene &) = delete;
-  WolfScene &operator=(const WolfScene &) = delete;
-  WolfScene(WolfScene &&) noexcept = delete;
-  WolfScene &operator=(WolfScene &&) noexcept = delete;
+  WolfScene(std::unique_ptr<const RawMap> raw_map,
+            const std::uint32_t fov_in_degrees,
+            const std::uint32_t number_of_rays);
 
 protected:
   struct RayRot {
@@ -38,15 +34,16 @@ protected:
 
   virtual void prepare_walls() = 0;
 
-  std::shared_ptr<VectorMap> vector_map_{};
-  std::shared_ptr<PlayerState> player_state_{};
+  const std::unique_ptr<const RawMap> raw_map_{};
+  PlayerState player_state_{*raw_map_};
+  VectorMap vector_map_{*raw_map_};
   std::vector<RayRot> ray_rots_{};
   std::vector<Wall> walls_{};
   int width_{};
   int height_{};
 
 private:
-  void loop(const gp::misc::Event &event) final;
+  void loop(const gp::misc::Event &event) override;
 
   void initialize(const int width, const int height);
   void finalize();
@@ -57,7 +54,7 @@ private:
   void draw_background() const;
   void draw_walls() const;
 
-  std::unique_ptr<MapRenderer> map_renderer_{};
+  MapRenderer map_renderer_;
   std::uint32_t last_timestamp_ms_{};
 };
 } // namespace wolf

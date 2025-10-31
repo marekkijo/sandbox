@@ -15,12 +15,13 @@
 #include <cstdint>
 #include <memory>
 
+namespace wolf {
 class VoxelScene : public gp::sdl::Scene3D {
 public:
   explicit VoxelScene(std::shared_ptr<SpriteVoxelizer> sprite_voxelizer);
 
 private:
-  void loop(const gp::misc::Event &event) final;
+  void loop(const gp::misc::Event &event) override;
 
   void initialize(const int width, const int height);
   void finalize();
@@ -49,3 +50,4 @@ private:
 
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
 };
+} // namespace wolf

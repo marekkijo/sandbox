@@ -5,8 +5,8 @@
 #include <numbers>
 
 namespace wolf {
-MapRenderer::MapRenderer(const std::shared_ptr<const VectorMap> vector_map,
-                         const std::shared_ptr<const PlayerState> player_state,
+MapRenderer::MapRenderer(const VectorMap &vector_map,
+                         const PlayerState &player_state,
                          const std::uint32_t fov_in_degrees,
                          const bool player_oriented)
     : vector_map_{vector_map}
@@ -17,7 +17,7 @@ MapRenderer::MapRenderer(const std::shared_ptr<const VectorMap> vector_map,
 void MapRenderer::set_renderer(std::shared_ptr<const gp::sdl::Renderer> renderer) { r_ = std::move(renderer); }
 
 void MapRenderer::resize(const int width, const int height) {
-  scale_ = std::min(width, height) / vector_map_->diagonal_length();
+  scale_ = std::min(width, height) / vector_map_.diagonal_length();
   screen_center_translation_ = glm::vec3{static_cast<float>(width) / 2.0f, static_cast<float>(height) / 2.0f, 0.0f};
 }
 
@@ -39,9 +39,9 @@ void MapRenderer::redraw_player_oriented() const {
   // scale map
   map_mat = glm::scale(map_mat, glm::vec3(scale_));
   // player rotation
-  map_mat = glm::rotate(map_mat, -player_state_->orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
+  map_mat = glm::rotate(map_mat, -player_state_.orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
   // player translation
-  map_mat = glm::translate(map_mat, glm::vec3(-player_state_->pos().x, -player_state_->pos().y, 0.0f));
+  map_mat = glm::translate(map_mat, glm::vec3(-player_state_.pos().x, -player_state_.pos().y, 0.0f));
 
   draw_map(map_mat);
 
@@ -61,7 +61,7 @@ void MapRenderer::redraw_map_oriented() const {
   // scale map
   map_mat = glm::scale(map_mat, glm::vec3(scale_));
   // to the center of the map
-  map_mat = glm::translate(map_mat, glm::vec3(-vector_map_->width() / 2.0f, -vector_map_->height() / 2.0f, 0.0f));
+  map_mat = glm::translate(map_mat, glm::vec3(-vector_map_.width() / 2.0f, -vector_map_.height() / 2.0f, 0.0f));
 
   draw_map(map_mat);
 
@@ -70,21 +70,21 @@ void MapRenderer::redraw_map_oriented() const {
   // scale map
   player_mat = glm::scale(player_mat, glm::vec3(scale_));
   // to the center of the map
-  player_mat = glm::translate(player_mat, glm::vec3(-vector_map_->width() / 2.0f, -vector_map_->height() / 2.0f, 0.0f));
+  player_mat = glm::translate(player_mat, glm::vec3(-vector_map_.width() / 2.0f, -vector_map_.height() / 2.0f, 0.0f));
   // player translation
-  player_mat = glm::translate(player_mat, glm::vec3(player_state_->pos().x, player_state_->pos().y, 0.0f));
+  player_mat = glm::translate(player_mat, glm::vec3(player_state_.pos().x, player_state_.pos().y, 0.0f));
   // player rotation
-  player_mat = glm::rotate(player_mat, player_state_->orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
+  player_mat = glm::rotate(player_mat, player_state_.orientation(), glm::vec3(0.0f, 0.0f, 1.0f));
 
   draw_player(player_mat);
 }
 
 void MapRenderer::draw_map(const glm::mat4 &mat) const {
-  for (auto v_it = std::size_t{0u}; v_it < vector_map_->vectors().size(); v_it++) {
-    const auto &c = vector_map_->colors()[v_it];
-    r().set_draw_color(c.r, c.g, c.b, 255);
+  for (auto v_it = std::size_t{0u}; v_it < vector_map_.vectors().size(); v_it++) {
+    const auto &c = vector_map_.colors()[v_it];
+    r().set_color(c);
 
-    const auto &v = vector_map_->vectors()[v_it];
+    const auto &v = vector_map_.vectors()[v_it];
     const auto beg = mat * glm::vec4(v.first, 0.0f, 1.0f);
     const auto end = mat * glm::vec4(v.second, 0.0f, 1.0f);
     r().draw_line(beg.x, beg.y, end.x, end.y);
@@ -101,10 +101,10 @@ void MapRenderer::draw_player(const glm::mat4 &mat) const {
       mat *
       glm::vec4(std::cosf(fov_in_rad_ / 2.0f) * ray_length, std::sinf(fov_in_rad_ / 2.0f) * ray_length, 0.0f, 1.0f);
   const auto front = mat * glm::vec4(ray_length, 0.0f, 0.0f, 1.0f);
-  r().set_draw_color(0, 0, 0, 255);
+  r().set_color(0, 0, 0);
   r().draw_line(zero.x, zero.y, left.x, left.y);
   r().draw_line(zero.x, zero.y, right.x, right.y);
-  r().set_draw_color(128, 0, 0, 255);
+  r().set_color(128, 0, 0);
   r().draw_line(zero.x, zero.y, front.x, front.y);
 }
 } // namespace wolf
