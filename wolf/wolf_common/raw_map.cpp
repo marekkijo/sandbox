@@ -31,49 +31,56 @@ std::uint16_t &RawMap::BlockType::operator[](const std::size_t index) {
   return dump;
 }
 
-RawMap::RawMap(const std::size_t width, const std::size_t height, std::vector<BlockType> &&blocks)
-    : width_{width}
-    , height_{height}
+RawMap::RawMap(const int width, const int height, std::vector<BlockType> &&blocks)
+    : size_{width, height}
     , blocks_{std::move(blocks)} {
   process_doors();
   process_ambush_tiles();
   process_start_position();
 }
 
-std::size_t RawMap::width() const { return width_; }
+int RawMap::width() const { return size_.x; }
 
-std::size_t RawMap::height() const { return height_; }
+int RawMap::height() const { return size_.y; }
 
-const RawMap::BlockType &RawMap::block(const std::size_t w, const std::size_t h) const {
+glm::ivec2 RawMap::size() const { return size_; }
+
+glm::ivec2 RawMap::bounds() const { return glm::ivec2{width() - 1, height() - 1}; }
+
+const RawMap::BlockType &RawMap::block(const int w, const int h) const {
+  if (!is_within_bounds(w, h)) {
+    throw std::out_of_range{"RawMap::block(): requested block is out of map bounds"};
+  }
+
   return blocks_[w + h * width()];
 }
 
-bool RawMap::is_wall(const std::size_t w, const std::size_t h) const {
+bool RawMap::is_within_bounds(const int w, const int h) const {
+  return w >= 0 && w < width() && h >= 0 && h < height();
+}
+
+bool RawMap::is_wall(const int w, const int h) const {
+  if (!is_within_bounds(w, h)) {
+    return false;
+  }
+
   const auto wall = block(w, h).wall;
   return wall > Map::Walls::nothing && wall < Map::Walls::elevator_to_secret_floor;
 }
 
-bool RawMap::is_wall_on_n(const std::size_t w, const std::size_t h) const { return h == 0 || is_wall(w, h - 1); }
+const glm::ivec2 &RawMap::player_pos() const { return player_pos_; }
 
-bool RawMap::is_wall_on_s(const std::size_t w, const std::size_t h) const {
-  return h == (height() - 1) || is_wall(w, h + 1);
+RawMap::BlockType &RawMap::block(const int w, const int h) {
+  if (!is_within_bounds(w, h)) {
+    throw std::out_of_range{"RawMap::block(): requested block is out of map bounds"};
+  }
+
+  return blocks_[w + h * width()];
 }
-
-bool RawMap::is_wall_on_w(const std::size_t w, const std::size_t h) const { return w == 0 || is_wall(w - 1, h); }
-
-bool RawMap::is_wall_on_e(const std::size_t w, const std::size_t h) const {
-  return w == (width() - 1) || is_wall(w + 1, h);
-}
-
-std::tuple<std::size_t, std::size_t> RawMap::player_pos() const {
-  return std::make_tuple(player_pos_w_, player_pos_h_);
-}
-
-RawMap::BlockType &RawMap::block(const std::size_t w, const std::size_t h) { return blocks_[w + h * width()]; }
 
 void RawMap::process_doors() {
-  for (auto h = std::size_t{0u}; h < height(); h++) {
-    for (auto w = std::size_t{0u}; w < width(); w++) {
+  for (auto h = 0; h < height(); ++h) {
+    for (auto w = 0; w < width(); ++w) {
       switch (block(w, h).wall) {
       case Map::Walls::door_vertical:
       case Map::Walls::door_vertical_gold_key:
@@ -95,8 +102,8 @@ void RawMap::process_doors() {
 }
 
 void RawMap::process_ambush_tiles() {
-  for (auto h = std::size_t{0u}; h < height(); h++) {
-    for (auto w = std::size_t{0u}; w < width(); w++) {
+  for (auto h = 0; h < height(); ++h) {
+    for (auto w = 0; w < width(); ++w) {
       switch (block(w, h).wall) {
       case Map::Walls::floor_deaf_guard:
         block(w, h).wall = Map::Walls::nothing;
@@ -109,28 +116,25 @@ void RawMap::process_ambush_tiles() {
 }
 
 void RawMap::process_start_position() {
-  for (auto h = std::size_t{0u}; h < height(); h++) {
-    for (auto w = std::size_t{0u}; w < width(); w++) {
+  for (auto h = 0; h < height(); ++h) {
+    for (auto w = 0; w < width(); ++w) {
       const auto object = block(w, h).object;
       switch (object) {
       case Map::Objects::start_position_n:
       case Map::Objects::start_position_s:
       case Map::Objects::start_position_w:
       case Map::Objects::start_position_e:
-        if (player_pos_w_ != std::numeric_limits<std::size_t>::max() ||
-            player_pos_h_ != std::numeric_limits<std::size_t>::max()) {
+        if (player_pos_ != glm::ivec2{-1, -1}) {
           throw std::runtime_error{"map error: more than one player position detected"};
         }
-        player_pos_w_ = w;
-        player_pos_h_ = h;
+        player_pos_ = glm::ivec2{w, h};
         break;
       default:
         break;
       }
     }
   }
-  if (player_pos_w_ == std::numeric_limits<std::size_t>::max() ||
-      player_pos_h_ == std::numeric_limits<std::size_t>::max()) {
+  if (player_pos_ == glm::ivec2{-1, -1}) {
     throw std::runtime_error{"map error: no player position detected"};
   }
 }

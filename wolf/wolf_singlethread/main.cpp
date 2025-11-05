@@ -62,9 +62,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
 
 std::unique_ptr<gp::sdl::Scene2D> create_scene(const ProgramSetup &program_setup) {
   auto raw_map_from_wolf = wolf::RawMapFromWolf{program_setup.maphead, program_setup.gamemaps};
-  const auto raw_map = raw_map_from_wolf.create_map(0u);
+  auto raw_map = raw_map_from_wolf.create_map(0u);
 
-  auto scene = std::make_unique<wolf::SingleThreadWolfScene>(raw_map, program_setup.fov, program_setup.rays);
+  auto scene = std::make_unique<wolf::SingleThreadWolfScene>(std::move(raw_map), program_setup.fov, program_setup.rays);
   scene->init(program_setup.width, program_setup.height, "Wolf: Singlethread");
   return scene;
 }

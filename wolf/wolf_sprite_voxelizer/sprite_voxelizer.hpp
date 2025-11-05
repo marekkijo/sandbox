@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+namespace wolf {
 class SpriteVoxelizer {
 public:
 #pragma pack(push, 1)
@@ -21,7 +22,7 @@ public:
 
 #pragma pack(pop)
 
-  explicit SpriteVoxelizer(std::shared_ptr<const wolf::VswapFile> vswap_file);
+  explicit SpriteVoxelizer(std::shared_ptr<const VswapFile> vswap_file);
   ~SpriteVoxelizer() = default;
 
   void voxelize(const std::size_t front_sprite_index,
@@ -47,7 +48,8 @@ private:
   void build_voxel_model(const std::vector<VoxelPoint> &voxel_map);
   void build_voxel(const int x, const int y, const int z, const glm::u8vec4 &color);
 
-  std::shared_ptr<const wolf::VswapFile> vswap_file_{};
+  std::shared_ptr<const VswapFile> vswap_file_{};
   std::vector<VoxelVertexData> vertex_data_{};
   std::vector<GLuint> indices_{};
 };
+} // namespace wolf

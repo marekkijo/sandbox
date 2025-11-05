@@ -13,16 +13,10 @@
 namespace wolf {
 class MapRenderer {
 public:
-  MapRenderer(const std::shared_ptr<const VectorMap> vector_map,
-              const std::shared_ptr<const PlayerState> player_state,
+  MapRenderer(const VectorMap &vector_map,
+              const PlayerState &player_state,
               const std::uint32_t fov_in_degrees,
               const bool player_oriented = false);
-
-  MapRenderer(const MapRenderer &) = default;
-  MapRenderer &operator=(const MapRenderer &) = delete;
-  MapRenderer(MapRenderer &&) noexcept = default;
-  MapRenderer &operator=(MapRenderer &&) noexcept = delete;
-  ~MapRenderer() = default;
 
   void set_renderer(std::shared_ptr<const gp::sdl::Renderer> renderer);
   void resize(const int width, const int height);
@@ -35,8 +29,8 @@ private:
   void draw_map(const glm::mat4 &mat) const;
   void draw_player(const glm::mat4 &mat) const;
 
-  const std::shared_ptr<const VectorMap> vector_map_{};
-  const std::shared_ptr<const PlayerState> player_state_{};
+  const VectorMap &vector_map_;
+  const PlayerState &player_state_;
   const float fov_in_rad_{};
   const bool player_oriented_{};
 

@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+namespace wolf {
 VoxelScene::VoxelScene(std::shared_ptr<SpriteVoxelizer> sprite_voxelizer)
     : sprite_voxelizer_(std::move(sprite_voxelizer)) {}
 
@@ -173,3 +174,4 @@ void VoxelScene::upload_data() {
 
   size_ = static_cast<GLsizei>(sprite_voxelizer_->indices().size());
 }
+} // namespace wolf

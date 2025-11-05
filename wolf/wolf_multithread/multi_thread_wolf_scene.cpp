@@ -11,6 +11,8 @@ namespace wolf {
 struct MultiThreadWolfScene::PrepareWallsThreadState {
   MultiThreadWolfScene &scene;
 
+  glm::vec2 player_pos{};
+  glm::vec2 player_dir{};
   glm::vec2 cam_1{};
   glm::vec2 cam_2{};
 
@@ -38,11 +40,11 @@ public:
 
     std::unique_lock lk(state_.m);
 
-    const auto &dir = state_.scene.player_state_->dir();
-    const auto &pos = state_.scene.player_state_->pos();
-    const auto &vector_map = *state_.scene.vector_map_;
+    const auto &player_pos = state_.player_pos;
+    const auto &player_dir = state_.player_dir;
     const auto &cam_1 = state_.cam_1;
     const auto &cam_2 = state_.cam_2;
+    const auto &vector_map = state_.scene.vector_map_;
     auto &ray_rots = state_.scene.ray_rots_;
     auto &walls = state_.scene.walls_;
     do {
@@ -56,8 +58,8 @@ public:
       for (auto r_it = ray_first_; r_it < ray_one_past_last_; r_it++) {
         const auto ray_cos = ray_rots.at(r_it).cos;
         const auto ray_sin = ray_rots.at(r_it).sin;
-        const auto ray_x = (ray_cos * dir.x - ray_sin * dir.y) * ray_length + pos.x;
-        const auto ray_y = (ray_sin * dir.x + ray_cos * dir.y) * ray_length + pos.y;
+        const auto ray_x = (ray_cos * player_dir.x - ray_sin * player_dir.y) * ray_length + player_pos.x;
+        const auto ray_y = (ray_sin * player_dir.x + ray_cos * player_dir.y) * ray_length + player_pos.y;
 
         auto v_index = std::numeric_limits<std::size_t>::max();
         auto min_dist = ray_length * 2.0f;
@@ -66,17 +68,30 @@ public:
         for (auto v_it = std::size_t{0u}; v_it < vector_map.vectors().size(); v_it++) {
           const auto &v = vector_map.vectors().at(v_it);
 
-          if (!gp::math::do_intersect(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y)) {
+          if (!gp::math::do_intersect(player_pos.x,
+                                      player_pos.y,
+                                      ray_x,
+                                      ray_y,
+                                      v.first.x,
+                                      v.first.y,
+                                      v.second.x,
+                                      v.second.y)) {
             continue;
           }
-          const auto [crossed, cross_x, cross_y] =
-              gp::math::intersection_point(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y);
+          const auto [crossed, cross_x, cross_y] = gp::math::intersection_point(player_pos.x,
+                                                                                player_pos.y,
+                                                                                ray_x,
+                                                                                ray_y,
+                                                                                v.first.x,
+                                                                                v.first.y,
+                                                                                v.second.x,
+                                                                                v.second.y);
           if (!crossed) {
             continue;
           }
 
-          const auto curr_dist =
-              std::sqrtf((cross_x - pos.x) * (cross_x - pos.x) + (cross_y - pos.y) * (cross_y - pos.y));
+          const auto curr_dist = std::sqrtf((cross_x - player_pos.x) * (cross_x - player_pos.x) +
+                                            (cross_y - player_pos.y) * (cross_y - player_pos.y));
           if (curr_dist < min_dist) {
             min_dist = curr_dist;
             min_x = cross_x;
@@ -94,8 +109,8 @@ public:
           }
         }
 
-        walls.at(r_it).rect.h = 1.0f / cam_dist * state_.scene.height_;
-        walls.at(r_it).rect.y = (state_.scene.height_ - walls.at(r_it).rect.h) / 2.0f;
+        walls.at(r_it).rect.h = static_cast<int>(1.0f / cam_dist * state_.scene.height_);
+        walls.at(r_it).rect.y = (state_.scene.height_ - walls.at(r_it).rect.h) / 2;
         walls.at(r_it).color_index = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
 
         const int num_steps = 8;
@@ -119,11 +134,11 @@ private:
   MultiThreadWolfScene::PrepareWallsThreadState &state_;
 };
 
-MultiThreadWolfScene::MultiThreadWolfScene(const RawMap &raw_map,
+MultiThreadWolfScene::MultiThreadWolfScene(std::unique_ptr<const RawMap> raw_map,
                                            const std::uint32_t fov_in_degrees,
                                            const std::uint32_t number_of_rays,
                                            const std::uint32_t number_of_threads)
-    : WolfScene{raw_map, fov_in_degrees, number_of_rays}
+    : WolfScene{std::move(raw_map), fov_in_degrees, number_of_rays}
     , state_{std::make_unique<PrepareWallsThreadState>(*this)} {
   state_->do_work = std::vector<bool>(number_of_threads, false);
 
@@ -155,13 +170,15 @@ void MultiThreadWolfScene::prepare_walls() {
   const auto cam_cos2 = std::cosf(std::numbers::pi / 2.0f);
   const auto cam_sin2 = std::sinf(std::numbers::pi / 2.0f);
 
-  const auto &dir = player_state_->dir();
-  const auto &pos = player_state_->pos();
+  const auto player_pos = player_state_.pos();
+  const auto player_dir = player_state_.dir();
 
-  state_->cam_1 =
-      glm::vec2{(cam_cos1 * dir.x - cam_sin1 * dir.y) + pos.x, (cam_sin1 * dir.x + cam_cos1 * dir.y) + pos.y};
-  state_->cam_2 =
-      glm::vec2{(cam_cos2 * dir.x - cam_sin2 * dir.y) + pos.x, (cam_sin2 * dir.x + cam_cos2 * dir.y) + pos.y};
+  state_->player_pos = player_pos;
+  state_->player_dir = player_dir;
+  state_->cam_1 = glm::vec2{(cam_cos1 * player_dir.x - cam_sin1 * player_dir.y) + player_pos.x,
+                            (cam_sin1 * player_dir.x + cam_cos1 * player_dir.y) + player_pos.y};
+  state_->cam_2 = glm::vec2{(cam_cos2 * player_dir.x - cam_sin2 * player_dir.y) + player_pos.x,
+                            (cam_sin2 * player_dir.x + cam_cos2 * player_dir.y) + player_pos.y};
 
   state_->done = 0u;
   std::fill(state_->do_work.begin(), state_->do_work.end(), true);

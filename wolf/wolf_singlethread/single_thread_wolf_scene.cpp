@@ -6,50 +6,64 @@
 #include <numbers>
 
 namespace wolf {
-SingleThreadWolfScene::SingleThreadWolfScene(const RawMap &raw_map,
+SingleThreadWolfScene::SingleThreadWolfScene(std::unique_ptr<const RawMap> raw_map,
                                              const std::uint32_t fov_in_degrees,
                                              const std::uint32_t number_of_rays)
-    : WolfScene{raw_map, fov_in_degrees, number_of_rays} {}
+    : WolfScene{std::move(raw_map), fov_in_degrees, number_of_rays} {}
 
 void SingleThreadWolfScene::prepare_walls() {
   constexpr auto ray_length{100.0f};
 
-  const auto cam_cos1 = std::cosf(-std::numbers::pi_v<float> / 2.0f);
-  const auto cam_sin1 = std::sinf(-std::numbers::pi_v<float> / 2.0f);
-  const auto cam_cos2 = std::cosf(std::numbers::pi_v<float> / 2.0f);
-  const auto cam_sin2 = std::sinf(std::numbers::pi_v<float> / 2.0f);
+  const auto cam_cos1 = std::cosf(-std::numbers::pi / 2.0f);
+  const auto cam_sin1 = std::sinf(-std::numbers::pi / 2.0f);
+  const auto cam_cos2 = std::cosf(std::numbers::pi / 2.0f);
+  const auto cam_sin2 = std::sinf(std::numbers::pi / 2.0f);
 
-  const auto dir = player_state_->dir();
-  const auto pos = player_state_->pos();
+  const auto player_pos = player_state_.pos();
+  const auto player_dir = player_state_.dir();
 
-  const auto cam_x1 = (cam_cos1 * dir.x - cam_sin1 * dir.y) + pos.x;
-  const auto cam_y1 = (cam_sin1 * dir.x + cam_cos1 * dir.y) + pos.y;
-  const auto cam_x2 = (cam_cos2 * dir.x - cam_sin2 * dir.y) + pos.x;
-  const auto cam_y2 = (cam_sin2 * dir.x + cam_cos2 * dir.y) + pos.y;
+  const auto cam_x1 = (cam_cos1 * player_dir.x - cam_sin1 * player_dir.y) + player_pos.x;
+  const auto cam_y1 = (cam_sin1 * player_dir.x + cam_cos1 * player_dir.y) + player_pos.y;
+  const auto cam_x2 = (cam_cos2 * player_dir.x - cam_sin2 * player_dir.y) + player_pos.x;
+  const auto cam_y2 = (cam_sin2 * player_dir.x + cam_cos2 * player_dir.y) + player_pos.y;
 
   for (auto r_it = std::size_t{0u}; r_it < ray_rots_.size(); r_it++) {
     const auto ray_cos = ray_rots_[r_it].cos;
     const auto ray_sin = ray_rots_[r_it].sin;
-    const auto ray_x = (ray_cos * dir.x - ray_sin * dir.y) * ray_length + pos.x;
-    const auto ray_y = (ray_sin * dir.x + ray_cos * dir.y) * ray_length + pos.y;
+    const auto ray_x = (ray_cos * player_dir.x - ray_sin * player_dir.y) * ray_length + player_pos.x;
+    const auto ray_y = (ray_sin * player_dir.x + ray_cos * player_dir.y) * ray_length + player_pos.y;
 
     auto v_index = std::numeric_limits<std::size_t>::max();
     auto min_dist = ray_length * 2.0f;
     auto min_x = 0.0f;
     auto min_y = 0.0f;
-    for (auto v_it = std::size_t{0u}; v_it < vector_map_->vectors().size(); v_it++) {
-      const auto &v = vector_map_->vectors()[v_it];
+    for (auto v_it = std::size_t{0u}; v_it < vector_map_.vectors().size(); v_it++) {
+      const auto &v = vector_map_.vectors()[v_it];
 
-      if (!gp::math::do_intersect(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y)) {
+      if (!gp::math::do_intersect(player_pos.x,
+                                  player_pos.y,
+                                  ray_x,
+                                  ray_y,
+                                  v.first.x,
+                                  v.first.y,
+                                  v.second.x,
+                                  v.second.y)) {
         continue;
       }
-      const auto [crossed, cross_x, cross_y] =
-          gp::math::intersection_point(pos.x, pos.y, ray_x, ray_y, v.first.x, v.first.y, v.second.x, v.second.y);
+      const auto [crossed, cross_x, cross_y] = gp::math::intersection_point(player_pos.x,
+                                                                            player_pos.y,
+                                                                            ray_x,
+                                                                            ray_y,
+                                                                            v.first.x,
+                                                                            v.first.y,
+                                                                            v.second.x,
+                                                                            v.second.y);
       if (!crossed) {
         continue;
       }
 
-      const auto curr_dist = std::sqrtf((cross_x - pos.x) * (cross_x - pos.x) + (cross_y - pos.y) * (cross_y - pos.y));
+      const auto curr_dist = std::sqrtf((cross_x - player_pos.x) * (cross_x - player_pos.x) +
+                                        (cross_y - player_pos.y) * (cross_y - player_pos.y));
       if (curr_dist < min_dist) {
         min_dist = curr_dist;
         min_x = cross_x;
@@ -68,7 +82,7 @@ void SingleThreadWolfScene::prepare_walls() {
     }
 
     walls_[r_it].rect.h = static_cast<int>(1.0f / cam_dist * height_);
-    walls_[r_it].rect.y = static_cast<int>((height_ - walls_[r_it].rect.h) / 2.0f);
+    walls_[r_it].rect.y = (height_ - walls_[r_it].rect.h) / 2;
     walls_[r_it].color_index = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
 
     const int num_steps = 8;

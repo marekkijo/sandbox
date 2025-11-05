@@ -19,7 +19,7 @@ public:
   explicit ModelScene(std::shared_ptr<const Model> model);
 
 private:
-  void loop(const gp::misc::Event &event) final;
+  void loop(const gp::misc::Event &event) override;
 
   void initialize(const int width, const int height);
   void finalize();
