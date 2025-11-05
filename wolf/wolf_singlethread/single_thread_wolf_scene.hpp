@@ -3,19 +3,16 @@
 #include "wolf_common/wolf_scene.hpp"
 
 #include <cstdint>
+#include <memory>
 
 namespace wolf {
-class SingleThreadWolfScene final : public WolfScene {
+class SingleThreadWolfScene : public WolfScene {
 public:
-  SingleThreadWolfScene(const RawMap &raw_map, const std::uint32_t fov_in_degrees, const std::uint32_t number_of_rays);
-  ~SingleThreadWolfScene() final = default;
-
-  SingleThreadWolfScene(const SingleThreadWolfScene &) = delete;
-  SingleThreadWolfScene &operator=(const SingleThreadWolfScene &) = delete;
-  SingleThreadWolfScene(SingleThreadWolfScene &&) noexcept = delete;
-  SingleThreadWolfScene &operator=(SingleThreadWolfScene &&) noexcept = delete;
+  SingleThreadWolfScene(std::unique_ptr<const RawMap> raw_map,
+                        const std::uint32_t fov_in_degrees,
+                        const std::uint32_t number_of_rays);
 
 private:
-  void prepare_walls() final;
+  void prepare_walls() override;
 };
 } // namespace wolf

@@ -25,7 +25,7 @@ private:
 
   constexpr static std::size_t number_per_generation{25};
 
-  void loop(const gp::misc::Event &event) final;
+  void loop(const gp::misc::Event &event) override;
 
   void initialize(const int width, const int height);
   void finalize();
