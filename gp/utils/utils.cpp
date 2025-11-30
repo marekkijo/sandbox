@@ -56,4 +56,10 @@ void set_working_directory() {
   }
 #endif
 }
+
+glm::vec2 orientation_to_dir(const float orientation) {
+  return glm::vec2{std::cosf(orientation), std::sinf(orientation)};
+}
+
+SDL_FRect rect_at(const glm::vec2 &pos, const float size) { return SDL_FRect{pos.x, pos.y, size, size}; }
 } // namespace gp::utils

@@ -3,6 +3,7 @@
 #include "wolf_common/map_utils.hpp"
 
 #include <gp/math/math.hpp>
+#include <gp/utils/utils.hpp>
 
 #include <glm/ext/matrix_transform.hpp>
 
@@ -32,15 +33,9 @@ bool ray_aabb_intersect_2d(const glm::vec2 &ray_start,
 
   return true;
 }
-
-bool ray_collide(const int wall_w, const int wall_h, const glm::vec2 &ray_start, const glm::vec2 &ray_dir) {
-  const auto wall_min = glm::vec2{wall_w, wall_h};
-  const auto wall_max = wall_min + glm::vec2{1.0f, 1.0f};
-  return ray_aabb_intersect_2d(ray_start, ray_dir, wall_min, wall_max);
-}
 } // namespace
 
-GeometryTestScene::GeometryTestScene(std::unique_ptr<const RawMap> raw_map, const std::uint32_t fov_in_degrees)
+GeometryTestScene::GeometryTestScene(std::unique_ptr<const RawMap> raw_map, const std::uint64_t fov_in_degrees)
     : raw_map_{std::move(raw_map)}
     , last_timestamp_ms_{timestamp()} {}
 
@@ -58,6 +53,15 @@ void GeometryTestScene::loop(const gp::misc::Event &event) {
   case gp::misc::Event::Type::Redraw: {
     const auto time_elapsed_ms = event.timestamp() - last_timestamp_ms_;
     player_state_.animate(time_elapsed_ms);
+    raycaster_.cast_rays();
+    for (int i = 0; i < raycaster_.num_rays(); ++i) {
+      auto ray_dist = raycaster_.rays()[i].dist * 10;
+      for (int d = 0; d < std::min(static_cast<int>(ray_dist), 30); ++d) {
+        printf("X");
+      }
+      printf("\n");
+    }
+    printf("\n");
     last_timestamp_ms_ = event.timestamp();
     redraw();
   } break;
@@ -216,5 +220,20 @@ void GeometryTestScene::draw_wall_at(const glm::mat4 &map_mat, const int x, cons
   const auto pt_br = map_mat * glm::vec4{x + wall_size, y + wall_size, 0.0f, 1.0f};
   const auto wall_rect = SDL_FRect{pt_tl.x, pt_tl.y, pt_br.x - pt_tl.x, pt_br.y - pt_tl.y};
   r().fill_rect(wall_rect);
+}
+
+bool GeometryTestScene::ray_collide(const int wall_w,
+                                    const int wall_h,
+                                    const glm::vec2 &ray_start,
+                                    const glm::vec2 &ray_dir) const {
+  const auto wall_min = glm::vec2{wall_w, wall_h};
+  auto wall_rect = gp::utils::rect_at(wall_min);
+  auto ray_start_copy = ray_start;
+  auto ray_end_copy = ray_start + ray_dir * 100.0f;
+  return SDL_GetRectAndLineIntersectionFloat(&wall_rect,
+                                             &ray_start_copy.x,
+                                             &ray_start_copy.y,
+                                             &ray_end_copy.x,
+                                             &ray_end_copy.y);
 }
 } // namespace wolf
