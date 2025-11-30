@@ -12,7 +12,7 @@
 namespace wolf {
 class GeometryTestScene : public gp::sdl::Scene2D {
 public:
-  GeometryTestScene(std::unique_ptr<const RawMap> raw_map, const std::uint32_t fov_in_degrees);
+  explicit GeometryTestScene(std::unique_ptr<const RawMap> raw_map);
 
 private:
   void loop(const gp::misc::Event &event) override;
@@ -30,11 +30,13 @@ private:
   void draw_colored_wall_at(const glm::mat4 &map_mat, const int x, const int y) const;
   void draw_wall_at(const glm::mat4 &map_mat, const int x, const int y) const;
 
+  bool ray_collide(const int wall_x, const int wall_y, const glm::vec2 &player_pos, const glm::vec2 &player_dir) const;
+
   const std::unique_ptr<const RawMap> raw_map_{};
   PlayerState player_state_{*raw_map_};
   float width_{};
   float height_{};
-  std::uint64_t last_timestamp_ms_{0};
+  std::uint64_t last_timestamp_ms_{0u};
   float map_scale_{0.9f}; // percent of min(width, height)
 };
 } // namespace wolf
