@@ -18,20 +18,30 @@ public:
   ~Renderer();
 
   void clear() const;
+
   void present() const;
+
   void set_color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b) const;
   void set_color(const std::uint8_t r, const std::uint8_t g, const std::uint8_t b, const std::uint8_t a) const;
   void set_color(const glm::uvec3 &color) const;
   void set_color(const glm::uvec4 &color) const;
-  void draw_rect(const SDL_Rect &rect) const;
-  void draw_rects(const SDL_Rect *rects, const int count) const;
-  void fill_rect(const SDL_Rect &rect) const;
-  void fill_rects(const SDL_Rect *rects, const int count) const;
-  void draw_rect_around(const glm::vec2 &center, const float size) const;
-  void fill_rect_around(const glm::vec2 &center, const float size) const;
-  void draw_line(const int x1, const int y1, const int x2, const int y2) const;
+  void set_color(const glm::vec3 &color) const;
+  void set_color(const glm::vec4 &color) const;
+
+  void draw_rect(const SDL_FRect &rect) const;
+  void draw_rects(const SDL_FRect *rects, const int count) const;
+  void draw_rects(const std::vector<SDL_FRect> &rects) const;
+
+  void fill_rect(const SDL_FRect &rect) const;
+  void fill_rects(const SDL_FRect *rects, const int count) const;
+  void fill_rects(const std::vector<SDL_FRect> &rects) const;
+
+  void draw_rect_at(const glm::vec2 &center, const float size = 1.0f) const;
+  void fill_rect_at(const glm::vec2 &center, const float size = 1.0f) const;
+
   void draw_line(const float x1, const float y1, const float x2, const float y2) const;
   void draw_line(const glm::vec2 &start, const glm::vec2 &end) const;
+
   void draw_gradient_line(const glm::vec2 &start,
                           const glm::uvec3 &start_color,
                           const glm::vec2 &end,
@@ -42,7 +52,9 @@ public:
                           const glm::vec2 &end,
                           const glm::uvec4 &end_color,
                           const unsigned int segments = default_segments) const;
+
   void draw_geometry(const std::vector<glm::vec2> &points) const;
+
   void draw_text(const std::string &text, const int x, const int y) const;
 
   static constexpr auto default_segments = 8u;

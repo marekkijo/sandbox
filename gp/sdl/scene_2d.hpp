@@ -29,7 +29,7 @@ protected:
   int width() const;
   int height() const;
 
-  std::uint32_t timestamp() const;
+  std::uint64_t timestamp() const;
   void request_close();
   std::shared_ptr<const Renderer> renderer() const;
   const Renderer &r() const;

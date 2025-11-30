@@ -54,7 +54,7 @@ void PongScene::resize(const int width, const int height) {
   height_ = height;
 }
 
-void PongScene::animate(const std::uint32_t time_elapsed_ms) {
+void PongScene::animate(const std::uint64_t time_elapsed_ms) {
   if (keyboard_state()->is_down(gp::misc::Event::ScanCode::Left) !=
       keyboard_state()->is_down(gp::misc::Event::ScanCode::Right)) {
     if (keyboard_state()->is_down(gp::misc::Event::ScanCode::Left)) {
@@ -132,21 +132,21 @@ void PongScene::redraw() {
 
   r().set_color(255, 255, 255, static_cast<int>(255.0f / number_per_generation + 0.5f));
   for (std::size_t i = 0; i < number_per_generation; i++) {
-    const auto ball_rect = SDL_Rect{
-        static_cast<int>(width_ * game_states_[i].ball_position.x - width_ * ball_radius),
-        static_cast<int>(height_ * game_states_[i].ball_position.y - height_ * ball_radius),
-        static_cast<int>(width_ * ball_radius * 2),
-        static_cast<int>(height_ * ball_radius * 2),
+    const auto ball_rect = SDL_FRect{
+        width_ * game_states_[i].ball_position.x - width_ * ball_radius,
+        height_ * game_states_[i].ball_position.y - height_ * ball_radius,
+        width_ * ball_radius * 2.0f,
+        height_ * ball_radius * 2.0f,
     };
     r().fill_rect(ball_rect);
   }
 
   for (std::size_t i = 0; i < number_per_generation; i++) {
-    const auto paddle_rect = SDL_Rect{
-        static_cast<int>(width_ * game_states_[i].paddle_position - width_ * paddle_width / 2),
-        static_cast<int>(height_ - height_ * paddle_height),
-        static_cast<int>(width_ * paddle_width),
-        static_cast<int>(height_ * paddle_height),
+    const auto paddle_rect = SDL_FRect{
+        width_ * game_states_[i].paddle_position - width_ * paddle_width / 2.0f,
+        height_ - height_ * paddle_height,
+        width_ * paddle_width,
+        height_ * paddle_height,
     };
     r().fill_rect(paddle_rect);
   }

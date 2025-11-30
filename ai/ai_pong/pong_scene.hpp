@@ -30,10 +30,10 @@ private:
   void initialize(const int width, const int height);
   void finalize();
   void resize(const int width, const int height);
-  void animate(const std::uint32_t time_elapsed_ms);
+  void animate(const std::uint64_t time_elapsed_ms);
   void redraw();
 
-  std::uint32_t last_timestamp_ms_{};
+  std::uint64_t last_timestamp_ms_{};
   int width_{};
   int height_{};
 

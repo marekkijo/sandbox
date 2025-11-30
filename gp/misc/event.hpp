@@ -154,22 +154,17 @@ public:
     AltErase,                          /**< The 'AltErase' key. */
     Apostrophe,                        /**< The 'Apostrophe' key. Example: ''' */
     Application,                       /**< The 'Application' key. */
-    AudioMute,                         /**< The 'AudioMute' key. */
-    AudioNext,                         /**< The 'AudioNext' key. */
-    AudioPlay,                         /**< The 'AudioPlay' key. */
-    AudioPrev,                         /**< The 'AudioPrev' key. */
-    AudioStop,                         /**< The 'AudioStop' key. */
+    MediaNextTrack,                    /**< The 'MediaNextTrack' key. */
+    MediaPlay,                         /**< The 'MediaPlay' key. */
+    MediaPreviousTrack,                /**< The 'MediaPreviousTrack' key. */
+    MediaStop,                         /**< The 'MediaStop' key. */
     Backslash,                         /**< The 'Backslash' key. Example: '\' */
     Backspace,                         /**< The 'Backspace' key. */
-    BrightnessDown,                    /**< The 'BrightnessDown' key. */
-    BrightnessUp,                      /**< The 'BrightnessUp' key. */
-    Calculator,                        /**< The 'Calculator' key. */
     Cancel,                            /**< The 'Cancel' key. */
     CapsLock,                          /**< The 'CapsLock' key. */
     Clear,                             /**< The 'Clear' key. */
     ClearAgain,                        /**< The 'ClearAgain' key. */
     Comma,                             /**< The 'Comma' key. Example: ',' */
-    Computer,                          /**< The 'Computer' key. */
     Copy,                              /**< The 'Copy' key. */
     CrSel,                             /**< The 'CrSel' key. */
     CurrencySubUnit,                   /**< The currency subunit key. */
@@ -177,7 +172,6 @@ public:
     Cut,                               /**< The 'Cut' key. */
     DecimalSeparator,                  /**< The decimal separator key. */
     Delete,                            /**< The 'Delete' key. */
-    DisplaySwitch,                     /**< The 'DisplaySwitch' key. */
     Down,                              /**< The 'Down' key. */
     Eject,                             /**< The 'Eject' key. */
     End,                               /**< The 'End' key. */
@@ -190,9 +184,6 @@ public:
     Help,                              /**< The 'Help' key. */
     Home,                              /**< The 'Home' key. */
     Insert,                            /**< The 'Insert' key. */
-    KeyboardIlluminationDown,          /**< The keyboard illumination down key. */
-    KeyboardIlluminationToggle,        /**< The keyboard illumination toggle key. */
-    KeyboardIlluminationUp,            /**< The keyboard illumination up key. */
     NumericKeypad0,                    /**< The '0' key on the numeric keypad. Example: '0' */
     NumericKeypad1,                    /**< The '1' key on the numeric keypad. Example: '1' */
     NumericKeypad2,                    /**< The '2' key on the numeric keypad. Example: '2' */
@@ -260,7 +251,6 @@ public:
     LeftBracket,                       /**< The '[' key. Example: '[' */
     LeftGui,                           /**< The left GUI key. */
     LeftShift,                         /**< The left Shift key. */
-    Mail,                              /**< The 'Mail' key. */
     MediaSelect,                       /**< The 'MediaSelect' key. */
     Menu,                              /**< The 'Menu' key. */
     Minus,                             /**< The '-' key. Example: '-' */
@@ -301,7 +291,6 @@ public:
     Up,                                /**< The 'Up' key. */
     VolumeDown,                        /**< The 'VolumeDown' key. */
     VolumeUp,                          /**< The 'VolumeUp' key. */
-    WWW,                               /**< The 'WWW' key. */
     EnumCount                          /**< The number of key scan codes. */
   };
 
@@ -345,17 +334,17 @@ public:
 
   struct MouseScrollData {
     /**
+     * @brief Horizontal scroll amount for mouse scrolling.
+     * Positive values indicate scrolling to the right, while negative values indicate scrolling to the left.
+     */
+    float horizontal{};
+
+    /**
      * @brief Vertical scroll amount for mouse scrolling.
      * Positive values indicate scrolling away from the user, while negative values indicate scrolling towards the
      * user.
      */
     float vertical{};
-
-    /**
-     * @brief Horizontal scroll amount for mouse scrolling.
-     * Positive values indicate scrolling to the right, while negative values indicate scrolling to the left.
-     */
-    float horizontal{};
   };
 
   struct KeyData {
@@ -367,14 +356,14 @@ public:
     std::string filepath; /**< Path of a dragged and dropped file */
   };
 
-  Event(const Type type, const std::uint32_t timestamp);
+  Event(const Type type, const std::uint64_t timestamp);
   Event(const Event &other);
   Event(Event &&other) noexcept;
   Event &operator=(const Event &other);
   Event &operator=(Event &&other) noexcept;
   ~Event();
   Type type() const;
-  std::uint32_t timestamp() const;
+  std::uint64_t timestamp() const;
   InitData &init();
   const InitData &init() const;
   ResizeData &resize();
@@ -405,7 +394,7 @@ private:
   /**
    * @brief Timestamp of the input event in milliseconds.
    */
-  std::uint32_t timestamp_{};
+  std::uint64_t timestamp_{};
 
   /**
    * @brief Union representing various input event data.

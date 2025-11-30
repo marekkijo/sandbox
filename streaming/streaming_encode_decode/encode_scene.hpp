@@ -28,7 +28,7 @@ private:
 
   void initialize();
   void finalize();
-  void animate(const std::uint32_t time_elapsed_ms);
+  void animate(const std::uint64_t time_elapsed_ms);
   void redraw();
   void encode();
 

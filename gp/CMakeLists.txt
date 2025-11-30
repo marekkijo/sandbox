@@ -39,12 +39,11 @@ target_include_directories(gp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(gp PUBLIC glm::glm)
 target_link_libraries(gp PUBLIC nlohmann_json::nlohmann_json)
-target_link_libraries(gp PUBLIC SDL2::SDL2)
-target_link_libraries(gp PUBLIC SDL2::SDL2main)
+target_link_libraries(gp PUBLIC SDL3::SDL3)
 target_link_libraries(
   gp
   PUBLIC
-    $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static>
+    $<IF:$<TARGET_EXISTS:SDL3_ttf::SDL3_ttf>,SDL3_ttf::SDL3_ttf,SDL3_ttf::SDL3_ttf-static>
 )
 
 if(NOT EMSCRIPTEN)

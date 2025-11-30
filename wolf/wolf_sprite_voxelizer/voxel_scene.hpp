@@ -26,7 +26,7 @@ private:
   void initialize(const int width, const int height);
   void finalize();
   void resize(const int width, const int height);
-  void animate(const std::uint32_t timestamp);
+  void animate(const std::uint64_t timestamp);
   void redraw();
 
   void voxelize_sprite();
@@ -36,7 +36,7 @@ private:
   std::shared_ptr<SpriteVoxelizer> sprite_voxelizer_{};
   std::size_t sprite_index_{};
 
-  std::uint32_t last_timestamp_ms_{};
+  std::uint64_t last_timestamp_ms_{};
 
   glm::mat4 projection_{};
   glm::vec3 camera_pos_{};

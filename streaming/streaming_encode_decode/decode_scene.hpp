@@ -37,7 +37,7 @@ private:
   const VideoStreamInfo video_stream_info_;
   const int ms_per_frame_{};
   int frame_counter_{};
-  std::uint32_t last_timestamp_ms_{};
+  std::uint64_t last_timestamp_ms_{};
   std::unique_ptr<std::ifstream> input_file_{};
   std::unique_ptr<Decoder> decoder_;
 
