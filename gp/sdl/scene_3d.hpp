@@ -25,7 +25,7 @@ protected:
   int width() const;
   int height() const;
 
-  std::uint32_t timestamp() const;
+  std::uint64_t timestamp() const;
   void swap_buffers() const;
   void request_close();
   std::shared_ptr<misc::KeyboardState> keyboard_state() const;

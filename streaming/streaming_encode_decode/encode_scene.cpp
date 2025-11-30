@@ -65,7 +65,7 @@ void EncodeScene::finalize() {
   output_file_.reset();
 }
 
-void EncodeScene::animate(const std::uint32_t time_elapsed_ms) {
+void EncodeScene::animate(const std::uint64_t time_elapsed_ms) {
   const auto speed_factor = 0.1f;
   camera_rot_.x += time_elapsed_ms * speed_factor;
   camera_rot_.y += time_elapsed_ms * speed_factor;

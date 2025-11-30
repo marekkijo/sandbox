@@ -24,7 +24,7 @@ void PlayerState::set_keyboard_state(std::shared_ptr<gp::misc::KeyboardState> ke
   keyboard_state_ = std::move(keyboard_state);
 }
 
-void PlayerState::animate(const std::uint32_t time_elapsed_ms) {
+void PlayerState::animate(const std::uint64_t time_elapsed_ms) {
   animate_move(time_elapsed_ms);
   animate_rot(time_elapsed_ms);
 }
@@ -50,7 +50,7 @@ float PlayerState::deduce_orientation(const RawMap &raw_map) const {
   return 0.0f;
 }
 
-void PlayerState::animate_move_noclip(const std::uint32_t time_elapsed_ms) {
+void PlayerState::animate_move_noclip(const std::uint64_t time_elapsed_ms) {
   const auto move_dir = move_direction();
   if (move_dir == 0) {
     return;
@@ -61,7 +61,7 @@ void PlayerState::animate_move_noclip(const std::uint32_t time_elapsed_ms) {
   pos_ += time_factor * move_speed_ * oriented_dir;
 }
 
-void PlayerState::animate_move(const std::uint32_t time_elapsed_ms) {
+void PlayerState::animate_move(const std::uint64_t time_elapsed_ms) {
   const auto move_dir = move_direction();
   if (move_dir == 0) {
     return;
@@ -131,7 +131,7 @@ void PlayerState::animate_move(const std::uint32_t time_elapsed_ms) {
   pos_ = new_pos;
 }
 
-void PlayerState::animate_rot(const std::uint32_t time_elapsed_ms) {
+void PlayerState::animate_rot(const std::uint64_t time_elapsed_ms) {
   const auto rot_dir = rot_direction();
   if (rot_dir == 0) {
     return;

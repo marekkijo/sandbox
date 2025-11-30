@@ -108,7 +108,7 @@ void EncodeScene::process_event_queue() {
   }
 }
 
-void EncodeScene::animate(const std::uint32_t time_elapsed_ms) {
+void EncodeScene::animate(const std::uint64_t time_elapsed_ms) {
   if (!animate_) {
     return;
   }

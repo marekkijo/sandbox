@@ -6,8 +6,7 @@
 #include "wolf_common/vector_map.hpp"
 
 #include <gp/sdl/scene_2d.hpp>
-
-#include <SDL2/SDL_rect.h>
+#include <gp/sdl/sdl.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -27,7 +26,7 @@ protected:
   };
 
   struct Wall {
-    SDL_Rect rect;
+    SDL_FRect rect;
     std::size_t color_index;
     float shadow_factor;
   };
@@ -39,8 +38,8 @@ protected:
   VectorMap vector_map_{*raw_map_};
   std::vector<RayRot> ray_rots_{};
   std::vector<Wall> walls_{};
-  int width_{};
-  int height_{};
+  float width_{};
+  float height_{};
 
 private:
   void loop(const gp::misc::Event &event) override;
@@ -48,13 +47,13 @@ private:
   void initialize(const int width, const int height);
   void finalize();
   void resize(const int width, const int height);
-  void animate(const std::uint32_t time_elapsed_ms);
+  void animate(const std::uint64_t time_elapsed_ms);
   void redraw();
 
   void draw_background() const;
   void draw_walls() const;
 
   MapRenderer map_renderer_;
-  std::uint32_t last_timestamp_ms_{};
+  std::uint64_t last_timestamp_ms_{};
 };
 } // namespace wolf

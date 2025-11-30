@@ -9,7 +9,7 @@ bool Event::MouseMoveData::middle_is_down() const { return mouse_button_mask & M
 
 bool Event::MouseMoveData::right_is_down() const { return mouse_button_mask & MouseButtonMask::Right; }
 
-Event::Event(const Type type, const std::uint32_t timestamp)
+Event::Event(const Type type, const std::uint64_t timestamp)
     : type_{type}
     , timestamp_{timestamp} {
   construct_complex_members();
@@ -43,7 +43,7 @@ Event::~Event() { destruct_complex_members(); }
 
 Event::Type Event::type() const { return type_; }
 
-std::uint32_t Event::timestamp() const { return timestamp_; }
+std::uint64_t Event::timestamp() const { return timestamp_; }
 
 Event::InitData &Event::init() {
   if (type() != Type::Init) {

@@ -1,8 +1,7 @@
 #include "renderer.hpp"
 
 #include <gp/sdl/internal/sdl_renderer.hpp>
-
-#include <SDL2/SDL_ttf.h>
+#include <gp/sdl/sdl.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp>
@@ -26,12 +25,11 @@ glm::uvec4 lerp(const glm::uvec4 &start, const glm::uvec4 &end, const float t) {
   return glm::uvec4{lerp(start.r, end.r, t), lerp(start.g, end.g, t), lerp(start.b, end.b, t), lerp(start.a, end.a, t)};
 }
 
-SDL_Rect make_sdl_rect(const glm::vec2 &center, const float size) {
-  return SDL_Rect{static_cast<int>(center.x - size / 2.0f),
-                  static_cast<int>(center.y - size / 2.0f),
-                  static_cast<int>(size),
-                  static_cast<int>(size)};
+SDL_FRect make_sdl_rect(const glm::vec2 &center, const float size = 1.0f) {
+  return {center.x - size / 2.0f, center.y - size / 2.0f, size, size};
 }
+
+glm::uvec4 to_u8(const glm::vec4 &v) { return glm::uvec4(glm::round(glm::clamp(v, 0.0f, 1.0f) * 255.0f)); }
 } // namespace
 
 Renderer::Renderer(std::unique_ptr<internal::SDLRenderer> r)
@@ -58,34 +56,36 @@ void Renderer::set_color(const glm::uvec4 &color) const {
   SDL_SetRenderDrawBlendMode(r_->r(), SDL_BLENDMODE_BLEND);
 }
 
-void Renderer::draw_rect(const SDL_Rect &rect) const { SDL_RenderDrawRect(r_->r(), &rect); }
+void Renderer::set_color(const glm::vec3 &color) const { set_color(to_u8(glm::vec4{color, 1.0f})); }
 
-void Renderer::draw_rects(const SDL_Rect *rects, const int count) const { SDL_RenderDrawRects(r_->r(), rects, count); }
+void Renderer::set_color(const glm::vec4 &color) const { set_color(to_u8(color)); }
 
-void Renderer::fill_rect(const SDL_Rect &rect) const { SDL_RenderFillRect(r_->r(), &rect); }
+void Renderer::draw_rect(const SDL_FRect &rect) const { SDL_RenderRect(r_->r(), &rect); }
 
-void Renderer::fill_rects(const SDL_Rect *rects, const int count) const { SDL_RenderFillRects(r_->r(), rects, count); }
+void Renderer::draw_rects(const SDL_FRect *rects, const int count) const { SDL_RenderRects(r_->r(), rects, count); }
 
-void Renderer::draw_rect_around(const glm::vec2 &center, const float size) const {
-  const auto rect = make_sdl_rect(center, size);
-  draw_rect(rect);
+void Renderer::draw_rects(const std::vector<SDL_FRect> &rects) const {
+  draw_rects(rects.data(), static_cast<int>(rects.size()));
 }
 
-void Renderer::fill_rect_around(const glm::vec2 &center, const float size) const {
-  const auto rect = make_sdl_rect(center, size);
-  fill_rect(rect);
+void Renderer::fill_rect(const SDL_FRect &rect) const { SDL_RenderFillRect(r_->r(), &rect); }
+
+void Renderer::fill_rects(const SDL_FRect *rects, const int count) const { SDL_RenderFillRects(r_->r(), rects, count); }
+
+void Renderer::fill_rects(const std::vector<SDL_FRect> &rects) const {
+  fill_rects(rects.data(), static_cast<int>(rects.size()));
 }
 
-void Renderer::draw_line(const int x1, const int y1, const int x2, const int y2) const {
-  SDL_RenderDrawLine(r_->r(), x1, y1, x2, y2);
-}
+void Renderer::draw_rect_at(const glm::vec2 &center, const float size) const { draw_rect(make_sdl_rect(center, size)); }
+
+void Renderer::fill_rect_at(const glm::vec2 &center, const float size) const { fill_rect(make_sdl_rect(center, size)); }
 
 void Renderer::draw_line(const float x1, const float y1, const float x2, const float y2) const {
   draw_line(glm::vec2{x1, y1}, glm::vec2{x2, y2});
 }
 
 void Renderer::draw_line(const glm::vec2 &start, const glm::vec2 &end) const {
-  SDL_RenderDrawLineF(r_->r(), start.x, start.y, end.x, end.y);
+  SDL_RenderLine(r_->r(), start.x, start.y, end.x, end.y);
 }
 
 void Renderer::draw_gradient_line(const glm::vec2 &start,
@@ -116,8 +116,8 @@ void Renderer::draw_gradient_line(const glm::vec2 &start,
 }
 
 void Renderer::draw_geometry(const std::vector<glm::vec2> &points) const {
-  SDL_Color rgba;
-  SDL_GetRenderDrawColor(r_->r(), &rgba.r, &rgba.g, &rgba.b, &rgba.a);
+  SDL_FColor rgba;
+  SDL_GetRenderDrawColorFloat(r_->r(), &rgba.r, &rgba.g, &rgba.b, &rgba.a);
   std::vector<SDL_Vertex> vertices;
   vertices.reserve(points.size());
   std::transform(points.begin(), points.end(), std::back_inserter(vertices), [&rgba](const glm::vec2 &p) {
@@ -135,18 +135,17 @@ void Renderer::draw_text(const std::string &text, const int x, const int y) cons
   SDL_Color color;
   SDL_GetRenderDrawColor(r_->r(), &color.r, &color.g, &color.b, &color.a);
 
-  const auto result = TTF_Init();
-  if (result < 0) {
+  if (!TTF_Init()) {
     throw std::runtime_error("Couldn't initialize TTF: " + std::string(SDL_GetError()));
   }
 
   const auto font = TTF_OpenFont("data/Consolas.ttf", 24);
   if (!font) {
-    throw std::runtime_error("Could not load font: " + std::string(TTF_GetError()));
+    throw std::runtime_error("Could not load font: " + std::string(SDL_GetError()));
   }
-  const auto surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  const auto surface = TTF_RenderText_Solid(font, text.c_str(), 0, color);
   if (!surface) {
-    throw std::runtime_error("Could not render text: " + std::string(TTF_GetError()));
+    throw std::runtime_error("Could not render text: " + std::string(SDL_GetError()));
   }
 
   const auto texture = SDL_CreateTextureFromSurface(r_->r(), surface);
@@ -154,16 +153,16 @@ void Renderer::draw_text(const std::string &text, const int x, const int y) cons
     throw std::runtime_error("Could not create texture: " + std::string(SDL_GetError()));
   }
 
-  SDL_Rect rect;
-  rect.x = x;
-  rect.y = y;
-  rect.w = surface->w;
-  rect.h = surface->h;
+  SDL_FRect rect;
+  rect.x = static_cast<float>(x);
+  rect.y = static_cast<float>(y);
+  rect.w = static_cast<float>(surface->w);
+  rect.h = static_cast<float>(surface->h);
 
-  SDL_RenderCopy(r_->r(), texture, nullptr, &rect);
+  SDL_RenderTexture(r_->r(), texture, nullptr, &rect);
 
   TTF_CloseFont(font);
-  SDL_FreeSurface(surface);
+  SDL_DestroySurface(surface);
   SDL_DestroyTexture(texture);
 
   TTF_Quit();

@@ -32,9 +32,9 @@ private:
 
   const std::unique_ptr<const RawMap> raw_map_{};
   PlayerState player_state_{*raw_map_};
-  int width_{};
-  int height_{};
-  std::uint32_t last_timestamp_ms_{0u};
+  float width_{};
+  float height_{};
+  std::uint64_t last_timestamp_ms_{0};
   float map_scale_{0.9f}; // percent of min(width, height)
 };
 } // namespace wolf

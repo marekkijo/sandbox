@@ -29,7 +29,7 @@ int Scene2D::width() const { return width_; }
 
 int Scene2D::height() const { return height_; }
 
-std::uint32_t Scene2D::timestamp() const { return ctx_->timestamp(); }
+std::uint64_t Scene2D::timestamp() const { return ctx_->timestamp(); }
 
 void Scene2D::request_close() { ctx_->request_close(); }
 

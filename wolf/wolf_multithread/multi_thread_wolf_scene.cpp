@@ -109,14 +109,13 @@ public:
           }
         }
 
-        walls.at(r_it).rect.h = static_cast<int>(1.0f / cam_dist * state_.scene.height_);
-        walls.at(r_it).rect.y = (state_.scene.height_ - walls.at(r_it).rect.h) / 2;
+        walls.at(r_it).rect.h = 1.0f / cam_dist * state_.scene.height_;
+        walls.at(r_it).rect.y = (state_.scene.height_ - walls.at(r_it).rect.h) / 2.0f;
         walls.at(r_it).color_index = v_index == std::numeric_limits<std::size_t>::max() ? 0u : v_index;
 
         const int num_steps = 8;
         const float step_size = 0.75f / num_steps;
-        const float shadow_factor =
-            1.0f - std::min(0.75f, static_cast<float>(walls.at(r_it).rect.h) / state_.scene.height_);
+        const float shadow_factor = 1.0f - std::min(0.75f, walls.at(r_it).rect.h / state_.scene.height_);
 
         walls.at(r_it).shadow_factor = static_cast<float>(static_cast<int>(shadow_factor / step_size)) * step_size;
       }

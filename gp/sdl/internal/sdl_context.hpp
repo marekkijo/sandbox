@@ -25,7 +25,7 @@ public:
    *
    * @return The number of milliseconds since the SDL context was created.
    */
-  std::uint32_t timestamp() const;
+  std::uint64_t timestamp() const;
   int exec() const;
   void request_close();
 

@@ -23,8 +23,8 @@ find_package(
 find_path(CGLTF_INCLUDE_DIRS "cgltf.h")
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
-find_package(SDL2_ttf CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)
+find_package(SDL3_ttf CONFIG REQUIRED)
 
 if(NOT EMSCRIPTEN)
   find_package(

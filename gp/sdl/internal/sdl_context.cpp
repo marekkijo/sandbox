@@ -14,7 +14,7 @@ SDLContext::SDLContext() {
   if (context_created_) {
     throw std::runtime_error{"SDL context already created"};
   }
-  if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+  if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
     throw std::runtime_error{std::string{"SDL_Init error:"} + SDL_GetError()};
   }
   context_created_ = true;
@@ -31,7 +31,7 @@ void SDLContext::set_window_event_callback(const std::uint32_t wnd_id, SDLWindow
 
 void SDLContext::withdraw_window_event_callback(const std::uint32_t wnd_id) { window_event_callbacks_.erase(wnd_id); }
 
-std::uint32_t SDLContext::timestamp() const { return SDL_GetTicks(); }
+std::uint64_t SDLContext::timestamp() const { return SDL_GetTicks(); }
 
 int SDLContext::exec() const {
   {
@@ -58,7 +58,7 @@ int SDLContext::exec() const {
 
 void SDLContext::request_close() {
   SDL_Event quit_event;
-  quit_event.type = SDL_QUIT;
+  quit_event.type = SDL_EVENT_QUIT;
   SDL_PushEvent(&quit_event);
 }
 
@@ -84,34 +84,28 @@ int SDLContext::exec_loop(bool &quit_flag) const {
   }
 
   switch (sdl_event.type) {
-  case SDL_QUIT: {
+  case SDL_EVENT_QUIT: {
     misc::Event event(misc::Event::Type::Quit, timestamp());
     forward_event_to_all_windows(event);
 
     quit_flag = true;
   } break;
-  case SDL_WINDOWEVENT: {
+  case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
     const auto wnd_id = sdl_event.window.windowID;
-    switch (sdl_event.window.event) {
-    case SDL_WINDOWEVENT_SIZE_CHANGED: {
-      misc::Event event(misc::Event::Type::Resize, timestamp());
-      event.resize().width = sdl_event.window.data1;
-      event.resize().height = sdl_event.window.data2;
-      forward_event_to_window(wnd_id, event);
-    } break;
-    default:
-      break;
-    }
+    misc::Event event(misc::Event::Type::Resize, timestamp());
+    event.resize().width = sdl_event.window.data1;
+    event.resize().height = sdl_event.window.data2;
+    forward_event_to_window(wnd_id, event);
   } break;
-  case SDL_MOUSEBUTTONDOWN:
-  case SDL_MOUSEBUTTONUP: {
+  case SDL_EVENT_MOUSE_BUTTON_DOWN:
+  case SDL_EVENT_MOUSE_BUTTON_UP: {
     const auto wnd_id = sdl_event.button.windowID;
     misc::Event event(misc::Event::Type::MouseButton, timestamp());
     switch (sdl_event.type) {
-    case SDL_MOUSEBUTTONDOWN:
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
       event.mouse_button().action = misc::Event::Action::Pressed;
       break;
-    case SDL_MOUSEBUTTONUP:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
       event.mouse_button().action = misc::Event::Action::Released;
       break;
     default:
@@ -134,7 +128,7 @@ int SDLContext::exec_loop(bool &quit_flag) const {
     }
     forward_event_to_window(wnd_id, event);
   } break;
-  case SDL_MOUSEMOTION: {
+  case SDL_EVENT_MOUSE_MOTION: {
     const auto wnd_id = sdl_event.motion.windowID;
     misc::Event event(misc::Event::Type::MouseMove, timestamp());
     event.mouse_move().x = sdl_event.motion.x;
@@ -150,36 +144,35 @@ int SDLContext::exec_loop(bool &quit_flag) const {
         (sdl_event.motion.state & SDL_BUTTON_RMASK) ? misc::Event::MouseButtonMask::Right : 0;
     forward_event_to_window(wnd_id, event);
   } break;
-  case SDL_MOUSEWHEEL: {
+  case SDL_EVENT_MOUSE_WHEEL: {
     const auto wnd_id = sdl_event.wheel.windowID;
     misc::Event event(misc::Event::Type::MouseScroll, timestamp());
-    event.mouse_scroll().vertical = sdl_event.wheel.preciseY;
-    event.mouse_scroll().horizontal = sdl_event.wheel.preciseX;
+    event.mouse_scroll().horizontal = sdl_event.wheel.x;
+    event.mouse_scroll().vertical = sdl_event.wheel.y;
     forward_event_to_window(wnd_id, event);
   } break;
-  case SDL_KEYDOWN:
-  case SDL_KEYUP: {
+  case SDL_EVENT_KEY_DOWN:
+  case SDL_EVENT_KEY_UP: {
     const auto wnd_id = sdl_event.key.windowID;
     misc::Event event(misc::Event::Type::Key, timestamp());
     switch (sdl_event.type) {
-    case SDL_KEYDOWN:
+    case SDL_EVENT_KEY_DOWN:
       event.key().action = misc::Event::Action::Pressed;
       break;
-    case SDL_KEYUP:
+    case SDL_EVENT_KEY_UP:
       event.key().action = misc::Event::Action::Released;
       break;
     default:
       event.key().action = misc::Event::Action::None;
       break;
     }
-    event.key().scan_code = to_scan_code(sdl_event.key.keysym.scancode);
+    event.key().scan_code = to_scan_code(sdl_event.key.scancode);
     forward_event_to_window(wnd_id, event);
   } break;
-  case SDL_DROPFILE: {
+  case SDL_EVENT_DROP_FILE: {
     const auto wnd_id = sdl_event.drop.windowID;
     misc::Event event(misc::Event::Type::DragDrop, timestamp());
-    event.drag_drop().filepath = sdl_event.drop.file;
-    SDL_free(sdl_event.drop.file);
+    event.drag_drop().filepath = sdl_event.drop.data;
     forward_event_to_window(wnd_id, event);
   } break;
   default:

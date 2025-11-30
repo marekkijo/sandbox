@@ -14,7 +14,7 @@ public:
             const int width,
             const int height,
             const std::string &title,
-            Uint32 flags = default_window_flags);
+            SDL_WindowFlags flags = default_window_flags);
   ~SDLWindow();
 
   SDLWindow(SDLWindow &&) = delete;
@@ -22,7 +22,7 @@ public:
   SDLWindow(const SDLWindow &) = delete;
   SDLWindow &operator=(const SDLWindow &) = delete;
 
-  static constexpr Uint32 default_window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN;
+  static constexpr SDL_WindowFlags default_window_flags = SDL_WINDOW_RESIZABLE;
 
   SDL_Window *wnd() const;
   std::shared_ptr<misc::KeyboardState> keyboard_state() const;
