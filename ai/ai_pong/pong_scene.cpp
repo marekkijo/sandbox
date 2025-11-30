@@ -50,8 +50,8 @@ void PongScene::initialize(const int width, const int height) { resize(width, he
 void PongScene::finalize() {}
 
 void PongScene::resize(const int width, const int height) {
-  width_ = width;
-  height_ = height;
+  width_ = static_cast<float>(width);
+  height_ = static_cast<float>(height);
 }
 
 void PongScene::animate(const std::uint64_t time_elapsed_ms) {
@@ -120,7 +120,7 @@ void PongScene::redraw() {
   r().clear();
 
   r().set_color(255, 255, 255);
-  r().draw_line(0, height_ / 2, width_, height_ / 2);
+  r().draw_line(0.0f, height_ / 2.0f, width_, height_ / 2.0f);
 
   auto score_label_pos = glm::vec2{10, 10};
   for (std::size_t i = 0; i < number_per_generation; i++) {

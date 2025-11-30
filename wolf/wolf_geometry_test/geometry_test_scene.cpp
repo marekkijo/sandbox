@@ -74,8 +74,8 @@ void GeometryTestScene::initialize(const int width, const int height) {
 void GeometryTestScene::finalize() { player_state_.set_keyboard_state(nullptr); }
 
 void GeometryTestScene::resize(const int width, const int height) {
-  width_ = width;
-  height_ = height;
+  width_ = static_cast<float>(width);
+  height_ = static_cast<float>(height);
 }
 
 void GeometryTestScene::redraw() {
@@ -88,7 +88,7 @@ void GeometryTestScene::redraw() {
   constexpr auto flip_y = -1.0f;
 
   // Translate to the center of the screen
-  const auto screen_min = static_cast<float>(std::min(width_, height_));
+  const auto screen_min = std::min(width_, height_);
   const auto map_max = screen_min * map_scale_;
   const auto screen_center_translation = glm::vec3{width_ - map_max, height_ + (map_max * flip_y), 0.0f} / 2.0f;
   map_mat = glm::translate(map_mat, screen_center_translation);

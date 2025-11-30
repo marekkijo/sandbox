@@ -34,8 +34,8 @@ private:
   void redraw();
 
   std::uint64_t last_timestamp_ms_{};
-  int width_{};
-  int height_{};
+  float width_{};
+  float height_{};
 
   std::vector<GameState> game_states_{number_per_generation};
   std::vector<std::unique_ptr<NeuralNetwork>> neural_networks_{number_per_generation};
