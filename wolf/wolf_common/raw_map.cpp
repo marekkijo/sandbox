@@ -47,24 +47,30 @@ glm::ivec2 RawMap::size() const { return size_; }
 
 glm::ivec2 RawMap::bounds() const { return glm::ivec2{width() - 1, height() - 1}; }
 
-const RawMap::BlockType &RawMap::block(const int w, const int h) const {
-  if (!is_within_bounds(w, h)) {
+const RawMap::BlockType &RawMap::block(const int w, const int h) const { return block(glm::ivec2{w, h}); }
+
+const RawMap::BlockType &RawMap::block(const glm::ivec2 &pos) const {
+  if (!is_within_bounds(pos)) {
     throw std::out_of_range{"RawMap::block(): requested block is out of map bounds"};
   }
 
-  return blocks_[w + h * width()];
+  return blocks_[pos.x + pos.y * width()];
 }
 
-bool RawMap::is_within_bounds(const int w, const int h) const {
-  return w >= 0 && w < width() && h >= 0 && h < height();
+bool RawMap::is_within_bounds(const int w, const int h) const { return is_within_bounds(glm::ivec2{w, h}); }
+
+bool RawMap::is_within_bounds(const glm::ivec2 &pos) const {
+  return pos.x >= 0 && pos.x < width() && pos.y >= 0 && pos.y < height();
 }
 
-bool RawMap::is_wall(const int w, const int h) const {
-  if (!is_within_bounds(w, h)) {
+bool RawMap::is_wall(const int w, const int h) const { return is_wall(glm::ivec2{w, h}); }
+
+bool RawMap::is_wall(const glm::ivec2 &pos) const {
+  if (!is_within_bounds(pos)) {
     return false;
   }
 
-  const auto wall = block(w, h).wall;
+  const auto wall = block(pos.x, pos.y).wall;
   return wall > Map::Walls::nothing && wall < Map::Walls::elevator_to_secret_floor;
 }
 

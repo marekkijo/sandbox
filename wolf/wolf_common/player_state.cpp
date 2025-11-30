@@ -3,6 +3,7 @@
 #include "wolf_common/wolf_map_info.hpp"
 
 #include <gp/math/math.hpp>
+#include <gp/utils/utils.hpp>
 
 #include <glm/glm.hpp>
 
@@ -21,6 +22,10 @@ PlayerState::PlayerState(const RawMap &raw_map, const float move_speed, const fl
 }
 
 void PlayerState::set_keyboard_state(std::shared_ptr<gp::misc::KeyboardState> keyboard_state) {
+  if (keyboard_state == nullptr) {
+    keyboard_state_ = dummy_keyboard_state_;
+    return;
+  }
   keyboard_state_ = std::move(keyboard_state);
 }
 
@@ -33,7 +38,12 @@ float PlayerState::orientation() const { return orientation_; }
 
 glm::vec2 PlayerState::pos() const { return pos_; }
 
-glm::vec2 PlayerState::dir() const { return glm::vec2{std::cosf(orientation()), std::sinf(orientation())}; }
+glm::ivec2 PlayerState::block_pos() const {
+  auto block_pos = glm::ivec2{static_cast<int>(std::floor(pos_.x)), static_cast<int>(std::floor(pos_.y))};
+  return glm::min(block_pos, raw_map_.bounds());
+}
+
+glm::vec2 PlayerState::dir() const { return gp::utils::orientation_to_dir(orientation_); }
 
 float PlayerState::deduce_orientation(const RawMap &raw_map) const {
   const auto pos = raw_map.player_pos();
@@ -51,84 +61,19 @@ float PlayerState::deduce_orientation(const RawMap &raw_map) const {
 }
 
 void PlayerState::animate_move_noclip(const std::uint64_t time_elapsed_ms) {
-  const auto move_dir = move_direction();
-  if (move_dir == 0) {
-    return;
-  }
-
-  const auto time_factor = time_elapsed_ms / 1000.0f;
-  const auto oriented_dir = static_cast<float>(move_dir) * dir();
-  pos_ += time_factor * move_speed_ * oriented_dir;
+  const auto move_delta = get_move_delta(time_elapsed_ms);
+  pos_ += move_delta;
 }
 
 void PlayerState::animate_move(const std::uint64_t time_elapsed_ms) {
-  const auto move_dir = move_direction();
-  if (move_dir == 0) {
+  const auto move_delta = get_move_delta(time_elapsed_ms);
+  if (move_delta == glm::vec2{}) {
     return;
   }
 
-  const auto time_factor = time_elapsed_ms / 1000.0f;
-  const auto oriented_dir = static_cast<float>(move_dir) * dir();
-  auto new_pos = pos_ + time_factor * move_speed_ * oriented_dir;
-
-  const auto tr = new_pos + half_size_;
-  const auto bl = new_pos - half_size_;
-  const auto tr_block = glm::ivec2{static_cast<int>(std::floor(tr.x)), static_cast<int>(std::floor(tr.y))};
-  const auto bl_block = glm::ivec2{static_cast<int>(std::floor(bl.x)), static_cast<int>(std::floor(bl.y))};
-
-  const auto tr_tr = raw_map_.is_wall(tr_block.x, tr_block.y);
-  const auto tr_bl = raw_map_.is_wall(tr_block.x, bl_block.y);
-  const auto bl_tr = raw_map_.is_wall(bl_block.x, tr_block.y);
-  const auto bl_bl = raw_map_.is_wall(bl_block.x, bl_block.y);
-
-  // Handle corner collisions by pushing the player out along the axis of least penetration
-  if (tr_tr && !tr_bl && !bl_tr && !bl_bl) {
-    const auto x_penetration = tr.x - std::floor(tr.x);
-    const auto y_penetration = tr.y - std::floor(tr.y);
-    if (x_penetration < y_penetration) {
-      new_pos.x -= x_penetration;
-    } else {
-      new_pos.y -= y_penetration;
-    }
-  } else if (!tr_tr && tr_bl && !bl_tr && !bl_bl) {
-    const auto x_penetration = tr.x - std::floor(tr.x);
-    const auto y_penetration = 1.0f - (bl.y - std::floor(bl.y));
-    if (x_penetration < y_penetration) {
-      new_pos.x -= x_penetration;
-    } else {
-      new_pos.y += y_penetration;
-    }
-  } else if (!tr_tr && !tr_bl && bl_tr && !bl_bl) {
-    const auto x_penetration = 1.0f - (bl.x - std::floor(bl.x));
-    const auto y_penetration = tr.y - std::floor(tr.y);
-    if (x_penetration < y_penetration) {
-      new_pos.x += x_penetration;
-    } else {
-      new_pos.y -= y_penetration;
-    }
-  } else if (!tr_tr && !tr_bl && !bl_tr && bl_bl) {
-    const auto x_penetration = 1.0f - (bl.x - std::floor(bl.x));
-    const auto y_penetration = 1.0f - (bl.y - std::floor(bl.y));
-    if (x_penetration < y_penetration) {
-      new_pos.x += x_penetration;
-    } else {
-      new_pos.y += y_penetration;
-    }
-  } else {
-    if ((bl_tr && !bl_bl) || (tr_tr && !tr_bl)) {
-      new_pos.y -= tr.y - std::floor(tr.y);
-    } else if ((bl_bl && !bl_tr) || (tr_bl && !tr_tr)) {
-      new_pos.y += 1.0f - (bl.y - std::floor(bl.y));
-    }
-
-    if ((tr_bl && !bl_bl) || (tr_tr && !bl_tr)) {
-      new_pos.x -= tr.x - std::floor(tr.x);
-    } else if ((bl_bl && !tr_bl) || (bl_tr && !tr_tr)) {
-      new_pos.x += 1.0f - (bl.x - std::floor(bl.x));
-    }
-  }
-
-  pos_ = new_pos;
+  const auto new_delta_x = resolved_x_collision(move_delta.x);
+  const auto new_delta_y = resolved_y_collision(move_delta.y);
+  pos_ += glm::vec2{new_delta_x, new_delta_y};
 }
 
 void PlayerState::animate_rot(const std::uint64_t time_elapsed_ms) {
@@ -158,5 +103,63 @@ int PlayerState::rot_direction() const {
     return 0;
   }
   return right ? 1 : -1;
+}
+
+float PlayerState::resolved_x_collision(const float delta_x) const {
+  const auto moving_right = delta_x > 0.0f;
+  const auto player_block_pos = block_pos();
+  auto check_block_pos = moving_right ? glm::ivec2{player_block_pos.x + 1, player_block_pos.y - 1}
+                                      : glm::ivec2{player_block_pos.x - 1, player_block_pos.y - 1};
+
+  auto check_rect = get_player_rect();
+  check_rect.x += delta_x;
+  do {
+    if (raw_map_.is_wall(check_block_pos)) {
+      const auto wall_rect = gp::utils::rect_at(check_block_pos);
+      SDL_FRect intersection;
+      if (SDL_GetRectIntersectionFloat(&check_rect, &wall_rect, &intersection)) {
+        intersection.w += 0.001f; // Prevent sticking to wall due to float precision
+        return delta_x - (moving_right ? intersection.w : -intersection.w);
+      }
+    }
+  } while (++check_block_pos.y <= player_block_pos.y + 1);
+
+  return delta_x;
+}
+
+float PlayerState::resolved_y_collision(const float delta_y) const {
+  const auto moving_down = delta_y > 0.0f;
+  const auto player_block_pos = block_pos();
+  auto check_block_pos = moving_down ? glm::ivec2{player_block_pos.x - 1, player_block_pos.y + 1}
+                                     : glm::ivec2{player_block_pos.x - 1, player_block_pos.y - 1};
+  auto check_rect = get_player_rect();
+  check_rect.y += delta_y;
+  do {
+    if (raw_map_.is_wall(check_block_pos)) {
+      const auto wall_rect = gp::utils::rect_at(check_block_pos);
+      SDL_FRect intersection;
+      if (SDL_GetRectIntersectionFloat(&check_rect, &wall_rect, &intersection)) {
+        intersection.h += 0.001f; // Prevent sticking to wall due to float precision
+        return delta_y - (moving_down ? intersection.h : -intersection.h);
+      }
+    }
+  } while (++check_block_pos.x <= player_block_pos.x + 1);
+
+  return delta_y;
+}
+
+glm::vec2 PlayerState::get_move_delta(const std::uint64_t time_elapsed_ms) const {
+  const auto move_dir = move_direction();
+  if (move_dir == 0) {
+    return glm::vec2{};
+  }
+
+  const auto time_factor = time_elapsed_ms / 1000.0f;
+  const auto oriented_dir = static_cast<float>(move_dir) * dir();
+  return time_factor * move_speed_ * oriented_dir;
+}
+
+SDL_FRect PlayerState::get_player_rect() const {
+  return gp::utils::rect_at(pos_ - glm::vec2{player_size_ / 2.0f}, player_size_);
 }
 } // namespace wolf

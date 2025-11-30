@@ -27,8 +27,11 @@ public:
   glm::ivec2 size() const;
   glm::ivec2 bounds() const;
   const BlockType &block(const int w, const int h) const;
+  const BlockType &block(const glm::ivec2 &pos) const;
   bool is_within_bounds(const int w, const int h) const;
+  bool is_within_bounds(const glm::ivec2 &pos) const;
   bool is_wall(const int w, const int h) const;
+  bool is_wall(const glm::ivec2 &pos) const;
 
   const glm::ivec2 &player_pos() const;
 
