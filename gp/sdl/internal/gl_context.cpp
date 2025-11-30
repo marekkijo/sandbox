@@ -15,13 +15,13 @@ GLContext::GLContext(std::shared_ptr<SDLWindow> win)
 
 GLContext::~GLContext() {
   if (gl_ctx()) {
-    SDL_GL_DeleteContext(gl_ctx());
+    SDL_GL_DestroyContext(gl_ctx());
     gl_ctx_ = nullptr;
   }
 }
 
 void GLContext::make_current() const {
-  if (SDL_GL_MakeCurrent(win_->wnd(), gl_ctx()) != 0) {
+  if (!SDL_GL_MakeCurrent(win_->wnd(), gl_ctx())) {
     throw std::runtime_error{std::string{"SDL_GL_MakeCurrent error:"} + SDL_GetError()};
   }
 }

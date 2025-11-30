@@ -10,9 +10,9 @@ SDLWindow::SDLWindow(std::shared_ptr<SDLContext> ctx,
                      const int width,
                      const int height,
                      const std::string &title,
-                     Uint32 flags)
+                     SDL_WindowFlags flags)
     : ctx_{std::move(ctx)}
-    , wnd_{SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags)} {
+    , wnd_{SDL_CreateWindow(title.c_str(), width, height, flags)} {
   if (!wnd()) {
     throw std::runtime_error{std::string{"SDL_CreateWindow error:"} + SDL_GetError()};
   }

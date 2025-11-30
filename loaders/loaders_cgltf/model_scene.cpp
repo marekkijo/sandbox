@@ -88,7 +88,7 @@ void ModelScene::resize(const int width, const int height) {
   projection_ = glm::perspective(glm::radians(60.0f), static_cast<float>(width) / height, 1.1f, 819200.0f);
 }
 
-void ModelScene::animate(const std::uint32_t timestamp) {
+void ModelScene::animate(const std::uint64_t timestamp) {
   const auto time_elapsed_ms = timestamp - last_timestamp_ms_;
 
   if (animate_) {

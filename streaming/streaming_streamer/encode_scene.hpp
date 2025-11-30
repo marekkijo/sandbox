@@ -33,7 +33,7 @@ private:
   void initialize();
   void finalize();
   void process_event_queue();
-  void animate(const std::uint32_t time_elapsed_ms);
+  void animate(const std::uint64_t time_elapsed_ms);
   void redraw();
   void encode();
 
@@ -41,7 +41,7 @@ private:
 
   std::shared_ptr<Encoder> encoder_;
   const int ms_per_frame_{};
-  std::uint32_t last_timestamp_ms_{};
+  std::uint64_t last_timestamp_ms_{};
 
   std::shared_ptr<FrameData> video_frame_{};
 

@@ -4,7 +4,7 @@
 
 namespace gp::sdl::internal {
 SDLRenderer::SDLRenderer(const SDLWindow &wnd)
-    : r_{SDL_CreateRenderer(wnd.wnd(), -1, SDL_RENDERER_ACCELERATED)} {
+    : r_{SDL_CreateRenderer(wnd.wnd(), nullptr)} {
   if (!r()) {
     throw std::runtime_error{std::string{"SDL_CreateRenderer error:"} + SDL_GetError()};
   }

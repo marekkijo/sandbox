@@ -57,20 +57,20 @@ void WolfScene::finalize() {
 }
 
 void WolfScene::resize(const int width, const int height) {
-  width_ = width;
-  height_ = height;
+  width_ = static_cast<float>(width);
+  height_ = static_cast<float>(height);
 
-  const auto w_part = width_ / static_cast<double>(walls_.size());
-  const auto w = static_cast<int>(std::ceil(w_part));
-  for (auto w_it = std::size_t{0u}; w_it < walls_.size(); w_it++) {
-    walls_[w_it].rect.x = static_cast<int>(std::floor(w_part * w_it));
+  const auto w_part = width_ / walls_.size();
+  const auto w = std::ceil(w_part);
+  for (auto w_it = 0; w_it < walls_.size(); ++w_it) {
+    walls_[w_it].rect.x = std::floor(w_part * w_it);
     walls_[w_it].rect.w = w;
   }
 
   map_renderer_.resize(width, height);
 }
 
-void WolfScene::animate(const std::uint32_t time_elapsed_ms) { player_state_.animate(time_elapsed_ms); }
+void WolfScene::animate(const std::uint64_t time_elapsed_ms) { player_state_.animate(time_elapsed_ms); }
 
 void WolfScene::redraw() {
   r().set_color(0, 0, 0);
@@ -86,8 +86,8 @@ void WolfScene::redraw() {
 }
 
 void WolfScene::draw_background() const {
-  const auto ceiling_rect = SDL_Rect{0, 0, width_, height_ / 2};
-  const auto floor_rect = SDL_Rect{0, height_ / 2, width_, height_ / 2};
+  const auto ceiling_rect = SDL_FRect{0.0f, 0.0f, width_, height_ / 2.0f};
+  const auto floor_rect = SDL_FRect{0.0f, height_ / 2.0f, width_, height_ / 2.0f};
 
   r().set_color(57, 57, 57);
   r().fill_rect(ceiling_rect);
@@ -97,7 +97,7 @@ void WolfScene::draw_background() const {
 }
 
 void WolfScene::draw_walls() const {
-  auto rects = std::vector<SDL_Rect>{};
+  auto rects = std::vector<SDL_FRect>{};
   rects.reserve(walls_.size());
 
   auto last_color = vector_map_.color(walls_[0].color_index, walls_[0].shadow_factor);

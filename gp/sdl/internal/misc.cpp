@@ -145,26 +145,18 @@ misc::Event::ScanCode to_scan_code(const SDL_Scancode sdl_scan_code) {
     return misc::Event::ScanCode::Apostrophe;
   case SDL_SCANCODE_APPLICATION:
     return misc::Event::ScanCode::Application;
-  case SDL_SCANCODE_AUDIOMUTE:
-    return misc::Event::ScanCode::AudioMute;
-  case SDL_SCANCODE_AUDIONEXT:
-    return misc::Event::ScanCode::AudioNext;
-  case SDL_SCANCODE_AUDIOPLAY:
-    return misc::Event::ScanCode::AudioPlay;
-  case SDL_SCANCODE_AUDIOPREV:
-    return misc::Event::ScanCode::AudioPrev;
-  case SDL_SCANCODE_AUDIOSTOP:
-    return misc::Event::ScanCode::AudioStop;
+  case SDL_SCANCODE_MEDIA_NEXT_TRACK:
+    return misc::Event::ScanCode::MediaNextTrack;
+  case SDL_SCANCODE_MEDIA_PLAY:
+    return misc::Event::ScanCode::MediaPlay;
+  case SDL_SCANCODE_MEDIA_PREVIOUS_TRACK:
+    return misc::Event::ScanCode::MediaPreviousTrack;
+  case SDL_SCANCODE_MEDIA_STOP:
+    return misc::Event::ScanCode::MediaStop;
   case SDL_SCANCODE_BACKSLASH:
     return misc::Event::ScanCode::Backslash;
   case SDL_SCANCODE_BACKSPACE:
     return misc::Event::ScanCode::Backspace;
-  case SDL_SCANCODE_BRIGHTNESSDOWN:
-    return misc::Event::ScanCode::BrightnessDown;
-  case SDL_SCANCODE_BRIGHTNESSUP:
-    return misc::Event::ScanCode::BrightnessUp;
-  case SDL_SCANCODE_CALCULATOR:
-    return misc::Event::ScanCode::Calculator;
   case SDL_SCANCODE_CANCEL:
     return misc::Event::ScanCode::Cancel;
   case SDL_SCANCODE_CAPSLOCK:
@@ -175,8 +167,6 @@ misc::Event::ScanCode to_scan_code(const SDL_Scancode sdl_scan_code) {
     return misc::Event::ScanCode::ClearAgain;
   case SDL_SCANCODE_COMMA:
     return misc::Event::ScanCode::Comma;
-  case SDL_SCANCODE_COMPUTER:
-    return misc::Event::ScanCode::Computer;
   case SDL_SCANCODE_COPY:
     return misc::Event::ScanCode::Copy;
   case SDL_SCANCODE_CRSEL:
@@ -191,11 +181,9 @@ misc::Event::ScanCode to_scan_code(const SDL_Scancode sdl_scan_code) {
     return misc::Event::ScanCode::DecimalSeparator;
   case SDL_SCANCODE_DELETE:
     return misc::Event::ScanCode::Delete;
-  case SDL_SCANCODE_DISPLAYSWITCH:
-    return misc::Event::ScanCode::DisplaySwitch;
   case SDL_SCANCODE_DOWN:
     return misc::Event::ScanCode::Down;
-  case SDL_SCANCODE_EJECT:
+  case SDL_SCANCODE_MEDIA_EJECT:
     return misc::Event::ScanCode::Eject;
   case SDL_SCANCODE_END:
     return misc::Event::ScanCode::End;
@@ -217,12 +205,6 @@ misc::Event::ScanCode to_scan_code(const SDL_Scancode sdl_scan_code) {
     return misc::Event::ScanCode::Home;
   case SDL_SCANCODE_INSERT:
     return misc::Event::ScanCode::Insert;
-  case SDL_SCANCODE_KBDILLUMDOWN:
-    return misc::Event::ScanCode::KeyboardIlluminationDown;
-  case SDL_SCANCODE_KBDILLUMTOGGLE:
-    return misc::Event::ScanCode::KeyboardIlluminationToggle;
-  case SDL_SCANCODE_KBDILLUMUP:
-    return misc::Event::ScanCode::KeyboardIlluminationUp;
   case SDL_SCANCODE_KP_0:
     return misc::Event::ScanCode::NumericKeypad0;
   case SDL_SCANCODE_KP_1:
@@ -357,9 +339,7 @@ misc::Event::ScanCode to_scan_code(const SDL_Scancode sdl_scan_code) {
     return misc::Event::ScanCode::LeftGui;
   case SDL_SCANCODE_LSHIFT:
     return misc::Event::ScanCode::LeftShift;
-  case SDL_SCANCODE_MAIL:
-    return misc::Event::ScanCode::Mail;
-  case SDL_SCANCODE_MEDIASELECT:
+  case SDL_SCANCODE_MEDIA_SELECT:
     return misc::Event::ScanCode::MediaSelect;
   case SDL_SCANCODE_MENU:
     return misc::Event::ScanCode::Menu;
@@ -437,8 +417,6 @@ misc::Event::ScanCode to_scan_code(const SDL_Scancode sdl_scan_code) {
     return misc::Event::ScanCode::VolumeDown;
   case SDL_SCANCODE_VOLUMEUP:
     return misc::Event::ScanCode::VolumeUp;
-  case SDL_SCANCODE_WWW:
-    return misc::Event::ScanCode::WWW;
   default:
     return misc::Event::ScanCode::None;
   }

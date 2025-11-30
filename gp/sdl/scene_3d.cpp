@@ -53,7 +53,7 @@ int Scene3D::width() const { return width_; }
 
 int Scene3D::height() const { return height_; }
 
-std::uint32_t Scene3D::timestamp() const { return ctx_->timestamp(); }
+std::uint64_t Scene3D::timestamp() const { return ctx_->timestamp(); }
 
 void Scene3D::swap_buffers() const { SDL_GL_SwapWindow(wnd_->wnd()); }
 
