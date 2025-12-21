@@ -18,7 +18,6 @@ struct ProgramSetup {
   std::string gamemaps{};
   int width{};
   int height{};
-  std::uint32_t fov{};
 };
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
@@ -35,9 +34,6 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
                      "Wolf GAMEMAPS filename");
   desc.add_options()("width", boost::program_options::value<int>()->default_value(1520), "Width of the window");
   desc.add_options()("height", boost::program_options::value<int>()->default_value(760), "Height of the window");
-  desc.add_options()("fov",
-                     boost::program_options::value<std::uint32_t>()->default_value(60u),
-                     "Field of view in degrees");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -53,15 +49,14 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["maphead"].as<std::string>(),
           vm["gamemaps"].as<std::string>(),
           vm["width"].as<int>(),
-          vm["height"].as<int>(),
-          vm["fov"].as<std::uint32_t>()};
+          vm["height"].as<int>()};
 }
 
 std::unique_ptr<gp::sdl::Scene2D> create_scene(const ProgramSetup &program_setup) {
   auto raw_map_from_wolf = wolf::RawMapFromWolf{program_setup.maphead, program_setup.gamemaps};
   auto raw_map = raw_map_from_wolf.create_map(0u);
 
-  auto scene = std::make_unique<wolf::GeometryTestScene>(std::move(raw_map), program_setup.fov);
+  auto scene = std::make_unique<wolf::GeometryTestScene>(std::move(raw_map));
   scene->init(program_setup.width, program_setup.height, "Wolf: Geometry Test");
   return scene;
 }
