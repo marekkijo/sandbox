@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -109,6 +110,7 @@ private:
   void check_uniform_location(const std::string &name);
 
   GLuint id_{};
+  mutable std::mutex uniform_locations_mutex_{};
   std::unordered_map<std::string, GLint> uniform_locations_{};
 };
 } // namespace gp::gl

@@ -65,6 +65,7 @@ GLint ShaderProgram::uniform_location(const std::string &name) {
 }
 
 void ShaderProgram::check_uniform_location(const std::string &name) {
+  const auto lock = std::lock_guard(uniform_locations_mutex_);
   if (uniform_locations_.count(name) == 0) {
     uniform_locations_[name] = glGetUniformLocation(id(), name.c_str());
     if (uniform_locations_[name] == -1) {
