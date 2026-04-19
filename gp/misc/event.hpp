@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <variant>
 
 namespace gp::misc {
 /**
@@ -357,11 +358,11 @@ public:
   };
 
   Event(const Type type, const std::uint64_t timestamp);
-  Event(const Event &other);
-  Event(Event &&other) noexcept;
-  Event &operator=(const Event &other);
-  Event &operator=(Event &&other) noexcept;
-  ~Event();
+  Event(const Event &other) = default;
+  Event(Event &&other) noexcept = default;
+  Event &operator=(const Event &other) = default;
+  Event &operator=(Event &&other) noexcept = default;
+  ~Event() = default;
   Type type() const;
   std::uint64_t timestamp() const;
   InitData &init();
@@ -380,12 +381,6 @@ public:
   const DragDropData &drag_drop() const;
 
 private:
-  void copy(const Event &other);
-  void move(Event &&other);
-  void construct_complex_members();
-  void destruct_complex_members();
-  void assign_all(const Event &other);
-
   /**
    * @brief The type of user input event.
    */
@@ -397,16 +392,16 @@ private:
   std::uint64_t timestamp_{};
 
   /**
-   * @brief Union representing various input event data.
+   * @brief Variant representing various input event data.
    */
-  union {
-    InitData init_;                /**< Init event */
-    ResizeData resize_;            /**< Resize event */
-    MouseButtonData mouse_button_; /**< Mouse button event */
-    MouseMoveData mouse_move_;     /**< Mouse move event */
-    MouseScrollData mouse_scroll_; /**< Mouse scroll event */
-    KeyData key_;                  /**< Key event */
-    DragDropData drag_drop_;       /**< Drag and drop event */
-  };
+  using EventData = std::variant<std::monostate,
+                                 InitData,
+                                 ResizeData,
+                                 MouseButtonData,
+                                 MouseMoveData,
+                                 MouseScrollData,
+                                 KeyData,
+                                 DragDropData>;
+  EventData data_;
 };
 } // namespace gp::misc
