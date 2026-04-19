@@ -3,7 +3,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
-#define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
 #include <span>
@@ -33,49 +32,46 @@ std::vector<std::uint32_t> extract_scalar_vector(const cgltf_accessor *const acc
   if (accessor->type != cgltf_type_scalar) {
     throw std::runtime_error("Accessor is not a scalar");
   }
+  const auto *const buf_start = static_cast<const std::byte *>(accessor->buffer_view->buffer->data) +
+                                 accessor->buffer_view->offset;
   if (accessor->component_type == cgltf_component_type_r_8u) {
     auto scalars = std::vector<std::uint8_t>(accessor->count);
-    void *src = reinterpret_cast<void *>(reinterpret_cast<std::byte *>(accessor->buffer_view->buffer->data) +
-                                         accessor->buffer_view->offset);
-    memcpy(scalars.data(), src, accessor->buffer_view->size);
+    memcpy(scalars.data(), buf_start, accessor->buffer_view->size);
     return std::vector<std::uint32_t>(scalars.begin(), scalars.end());
   }
   if (accessor->component_type == cgltf_component_type_r_16u) {
     auto scalars = std::vector<std::uint16_t>(accessor->count);
-    void *src = reinterpret_cast<void *>(reinterpret_cast<std::byte *>(accessor->buffer_view->buffer->data) +
-                                         accessor->buffer_view->offset);
-    memcpy(scalars.data(), src, accessor->buffer_view->size);
+    memcpy(scalars.data(), buf_start, accessor->buffer_view->size);
     return std::vector<std::uint32_t>(scalars.begin(), scalars.end());
   }
   if (accessor->component_type == cgltf_component_type_r_32u) {
     auto scalars = std::vector<std::uint32_t>(accessor->count);
-    void *src = reinterpret_cast<void *>(reinterpret_cast<std::byte *>(accessor->buffer_view->buffer->data) +
-                                         accessor->buffer_view->offset);
-    memcpy(scalars.data(), src, accessor->buffer_view->size);
+    memcpy(scalars.data(), buf_start, accessor->buffer_view->size);
     return scalars;
   }
   throw std::runtime_error("Unsupported component type");
 }
 } // namespace
 
+namespace loaders {
 Model::Model(const std::string &filename) {
   cgltf_options options{};
   cgltf_data *data = nullptr;
   cgltf_result result = cgltf_parse_file(&options, filename.c_str(), &data);
   if (result != cgltf_result_success) {
-    return;
+    throw std::runtime_error{"cgltf_parse_file failed for '" + filename + "' (error " + std::to_string(result) + ")"};
   }
 
   result = cgltf_load_buffers(&options, data, filename.c_str());
   if (result != cgltf_result_success) {
     cgltf_free(data);
-    return;
+    throw std::runtime_error{"cgltf_load_buffers failed for '" + filename + "' (error " + std::to_string(result) + ")"};
   }
 
   result = cgltf_validate(data);
   if (result != cgltf_result_success) {
     cgltf_free(data);
-    return;
+    throw std::runtime_error{"cgltf_validate failed for '" + filename + "' (error " + std::to_string(result) + ")"};
   }
 
   auto transformation_matrix = glm::mat4(1.0f);
@@ -120,15 +116,15 @@ void Model::process_mesh(const cgltf_mesh *const mesh, const glm::mat4 &transfor
       const auto size = attrib->data->count;
       if (attrib->type == cgltf_attribute_type_position) {
         auto vertices = std::vector<glm::vec3>(size);
-        void *src = reinterpret_cast<void *>(reinterpret_cast<std::byte *>(attrib->data->buffer_view->buffer->data) +
-                                             attrib->data->buffer_view->offset);
+        const auto *const src = static_cast<const std::byte *>(attrib->data->buffer_view->buffer->data) +
+                                 attrib->data->buffer_view->offset;
         memcpy(vertices.data(), src, attrib->data->buffer_view->size);
         vertices_.emplace_back(std::move(vertices));
       }
       if (attrib->type == cgltf_attribute_type_normal) {
         auto normals = std::vector<glm::vec3>(size);
-        void *src = reinterpret_cast<void *>(reinterpret_cast<std::byte *>(attrib->data->buffer_view->buffer->data) +
-                                             attrib->data->buffer_view->offset);
+        const auto *const src = static_cast<const std::byte *>(attrib->data->buffer_view->buffer->data) +
+                                 attrib->data->buffer_view->offset;
         memcpy(normals.data(), src, attrib->data->buffer_view->size);
         normals_.emplace_back(std::move(normals));
       }
@@ -138,3 +134,4 @@ void Model::process_mesh(const cgltf_mesh *const mesh, const glm::mat4 &transfor
     colors_.emplace_back(0.75f, 0.75f, 0.75f, 1.0f);
   }
 }
+} // namespace loaders

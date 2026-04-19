@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <iterator>
 #include <span>
+#include <stdexcept>
 
 namespace {
 glm::mat4 to_glm(const aiMatrix4x4 &mat) {
@@ -33,12 +34,13 @@ glm::mat4 to_glm(const aiMatrix4x4 &mat) {
 }
 } // namespace
 
+namespace loaders {
 Model::Model(const std::string &filename) {
   auto importer = Assimp::Importer();
   const auto scene =
       importer.ReadFile(filename, aiPostProcessSteps::aiProcess_Triangulate | aiPostProcessSteps::aiProcess_GenNormals);
   if (!scene) {
-    return;
+    throw std::runtime_error{"Assimp failed to load '" + filename + "': " + importer.GetErrorString()};
   }
 
   const auto model_format = get_model_format(importer);
@@ -137,3 +139,4 @@ void Model::process_mesh(const aiMesh *const mesh, const glm::mat4 &transformati
   }
   indices_.emplace_back(std::move(indices));
 }
+} // namespace loaders

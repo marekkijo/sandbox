@@ -45,8 +45,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  auto model = std::make_shared<const Model>(program_setup.filename);
-  auto model_scene = std::make_unique<ModelScene>(model);
+  auto model = std::make_shared<const loaders::Model>(program_setup.filename);
+  auto model_scene = std::make_unique<loaders::ModelScene>(model);
   model_scene->init(program_setup.width, program_setup.height, "loaders_assimp");
   return model_scene->exec();
 }

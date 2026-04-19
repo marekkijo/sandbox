@@ -3,6 +3,7 @@
 #include <fstream>
 #include <random>
 #include <sstream>
+#include <stdexcept>
 
 #ifdef __APPLE__
 # include <libgen.h>
@@ -41,6 +42,9 @@ std::string generate_random_string(const std::size_t length) {
 
 std::string load_txt_file(const std::string &filename) {
   auto txt_file = std::ifstream{filename};
+  if (!txt_file.is_open()) {
+    throw std::runtime_error{"Could not open file: " + filename};
+  }
   auto buffer = std::stringstream{};
   buffer << txt_file.rdbuf();
   return buffer.str();

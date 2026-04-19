@@ -8,6 +8,7 @@
 #include <rtc/rtc.hpp>
 
 #include <memory>
+#include <mutex>
 #include <unordered_set>
 
 namespace streaming {
@@ -48,6 +49,7 @@ private:
   void send_video_stream_infos(std::shared_ptr<Client> &client);
 
   rtc::WebSocketServer server_{};
+  mutable std::mutex clients_mutex_{};
   std::unordered_set<std::shared_ptr<Client>> temporary_store_{};
   std::unordered_map<std::string, std::shared_ptr<Client>> clients_{};
   std::unordered_map<std::string, StreamerInfo> streamers_{};

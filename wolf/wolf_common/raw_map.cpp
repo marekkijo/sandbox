@@ -27,8 +27,7 @@ std::uint16_t &RawMap::BlockType::operator[](const std::size_t index) {
   if (index == 2u) {
     return reinterpret_cast<std::underlying_type<Map::Extra>::type &>(extra);
   }
-  static auto dump = std::uint16_t{};
-  return dump;
+  throw std::out_of_range{"RawMap::BlockType::operator[]: index " + std::to_string(index) + " out of range"};
 }
 
 RawMap::RawMap(const int width, const int height, std::vector<BlockType> &&blocks)

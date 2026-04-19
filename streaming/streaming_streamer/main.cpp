@@ -72,9 +72,10 @@ int main(int argc, char *argv[]) {
                                                             avcodec_get_name(program_setup.codec_id)};
 
   auto encode_scene = std::make_unique<streaming::EncodeScene>(video_stream_info);
-  auto streamer = std::make_unique<streaming::Streamer>(program_setup.ip, program_setup.port, encode_scene->encoder());
+  auto streamer = std::make_shared<streaming::Streamer>(program_setup.ip, program_setup.port, encode_scene->encoder());
 
   streamer->set_event_callback([&encode_scene](const gp::misc::Event &event) { encode_scene->handle_event(event); });
+  streamer->start();
 
   return encode_scene->exec();
 }

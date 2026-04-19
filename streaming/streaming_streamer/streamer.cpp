@@ -9,20 +9,25 @@
 namespace streaming {
 Streamer::Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> encoder)
     : id_{std::string{STREAMER_ID} + ":" + gp::utils::generate_random_string(16u)}
-    , video_stream_info_{encoder->video_stream_info()} {
+    , video_stream_info_{encoder->video_stream_info()}
+    , connection_url_{std::string{"ws://"} + server_ip + ":" + std::to_string(server_port) + "/" + id_} {
   configuration_.iceServers.emplace_back("stun.l.google.com", 19302);
   configuration_.disableAutoNegotiation = true;
   configuration_.maxMessageSize = MAX_MESSAGE_SIZE;
 
   web_socket_ = std::make_shared<rtc::WebSocket>();
-  init_web_socket(web_socket_);
-  const auto url = std::string{"ws://"} + server_ip + ":" + std::to_string(server_port) + "/" + id_;
-  printf("Connection url: %s\n", url.c_str());
-  web_socket_->open(url);
+  printf("Connection url: %s\n", connection_url_.c_str());
 
   encoder->set_video_stream_callback([this](const std::byte *data, const std::size_t size, const bool eof) {
     video_stream_callback(data, size, eof);
   });
+}
+
+// start() must be called after the Streamer is owned by a shared_ptr so that
+// weak_from_this() returns a valid weak_ptr for use in callbacks.
+void Streamer::start() {
+  init_web_socket(web_socket_);
+  web_socket_->open(connection_url_);
 }
 
 void Streamer::set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback) {
@@ -30,14 +35,34 @@ void Streamer::set_event_callback(std::function<void(const gp::misc::Event &even
 }
 
 void Streamer::init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket) {
-  auto on_web_socket_open_function = std::function<void()>{std::bind(&Streamer::on_web_socket_open, this)};
-  auto on_web_socket_closed_function = std::function<void()>{std::bind(&Streamer::on_web_socket_closed, this)};
-  auto on_web_socket_error_function =
-      std::function<void(std::string error)>{std::bind(&Streamer::on_web_socket_error, this, std::placeholders::_1)};
+  std::weak_ptr<Streamer> weak_self = weak_from_this();
+  auto on_web_socket_open_function = std::function<void()>{[weak_self]() {
+    if (auto self = weak_self.lock()) {
+      self->on_web_socket_open();
+    }
+  }};
+  auto on_web_socket_closed_function = std::function<void()>{[weak_self]() {
+    if (auto self = weak_self.lock()) {
+      self->on_web_socket_closed();
+    }
+  }};
+  auto on_web_socket_error_function = std::function<void(std::string error)>{[weak_self](std::string error) {
+    if (auto self = weak_self.lock()) {
+      self->on_web_socket_error(std::move(error));
+    }
+  }};
   auto on_web_socket_binary_message_function = std::function<void(rtc::binary message)>{
-      std::bind(&Streamer::on_web_socket_binary_message, this, std::placeholders::_1)};
+      [weak_self](rtc::binary message) {
+        if (auto self = weak_self.lock()) {
+          self->on_web_socket_binary_message(std::move(message));
+        }
+      }};
   auto on_web_socket_string_message_function = std::function<void(std::string message)>{
-      std::bind(&Streamer::on_web_socket_string_message, this, std::placeholders::_1)};
+      [weak_self](std::string message) {
+        if (auto self = weak_self.lock()) {
+          self->on_web_socket_string_message(std::move(message));
+        }
+      }};
 
   web_socket->onOpen(on_web_socket_open_function);
   web_socket->onClosed(on_web_socket_closed_function);
@@ -157,23 +182,52 @@ std::shared_ptr<Streamer::Peer> Streamer::create_peer(const std::string &id) {
   peer->id = id;
   peer->connection = std::make_shared<rtc::PeerConnection>(configuration_);
 
+  std::weak_ptr<Streamer> weak_self = weak_from_this();
   auto on_peer_state_change_function = std::function<void(rtc::PeerConnection::State state)>{
-      std::bind(&Streamer::on_peer_state_change, this, std::placeholders::_1)};
-  auto on_peer_gathering_state_change_function = std::function<void(rtc::PeerConnection::GatheringState state)>{
-      std::bind(&Streamer::on_peer_gathering_state_change, this, std::placeholders::_1)};
+      [weak_self](rtc::PeerConnection::State state) {
+        if (auto self = weak_self.lock()) {
+          self->on_peer_state_change(state);
+        }
+      }};
+  auto on_peer_gathering_state_change_function =
+      std::function<void(rtc::PeerConnection::GatheringState state)>{[weak_self](
+                                                                          rtc::PeerConnection::GatheringState state) {
+        if (auto self = weak_self.lock()) {
+          self->on_peer_gathering_state_change(state);
+        }
+      }};
   peer->connection->onStateChange(on_peer_state_change_function);
   peer->connection->onGatheringStateChange(on_peer_gathering_state_change_function);
 
   peer->data_channel = peer->connection->createDataChannel(DATA_CHANNEL_ID);
 
-  auto on_data_channel_open_function = std::function<void()>{std::bind(&Streamer::on_data_channel_open, this)};
-  auto on_data_channel_closed_function = std::function<void()>{std::bind(&Streamer::on_data_channel_closed, this)};
-  auto on_data_channel_error_function =
-      std::function<void(std::string error)>{std::bind(&Streamer::on_data_channel_error, this, std::placeholders::_1)};
+  auto on_data_channel_open_function = std::function<void()>{[weak_self]() {
+    if (auto self = weak_self.lock()) {
+      self->on_data_channel_open();
+    }
+  }};
+  auto on_data_channel_closed_function = std::function<void()>{[weak_self]() {
+    if (auto self = weak_self.lock()) {
+      self->on_data_channel_closed();
+    }
+  }};
+  auto on_data_channel_error_function = std::function<void(std::string error)>{[weak_self](std::string error) {
+    if (auto self = weak_self.lock()) {
+      self->on_data_channel_error(std::move(error));
+    }
+  }};
   auto on_data_channel_binary_message_function = std::function<void(rtc::binary message)>{
-      std::bind(&Streamer::on_data_channel_binary_message, this, std::placeholders::_1)};
+      [weak_self](rtc::binary message) {
+        if (auto self = weak_self.lock()) {
+          self->on_data_channel_binary_message(std::move(message));
+        }
+      }};
   auto on_data_channel_string_message_function = std::function<void(std::string message)>{
-      std::bind(&Streamer::on_data_channel_string_message, this, std::placeholders::_1)};
+      [weak_self](std::string message) {
+        if (auto self = weak_self.lock()) {
+          self->on_data_channel_string_message(std::move(message));
+        }
+      }};
 
   peer->data_channel->onOpen(on_data_channel_open_function);
   peer->data_channel->onClosed(on_data_channel_closed_function);

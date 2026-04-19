@@ -1,4 +1,4 @@
-file(GLOB SRC_FILES *.cpp *.hpp)
+file(GLOB CONFIGURE_DEPENDS SRC_FILES *.cpp *.hpp)
 
 add_executable(loaders_assimp ${SRC_FILES})
 

@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace streaming {
-class Receiver {
+class Receiver : public std::enable_shared_from_this<Receiver> {
 public:
   Receiver(const Receiver &) = delete;
   Receiver &operator=(const Receiver &) = delete;

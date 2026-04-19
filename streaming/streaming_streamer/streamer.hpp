@@ -12,7 +12,7 @@
 #include <memory>
 
 namespace streaming {
-class Streamer {
+class Streamer : public std::enable_shared_from_this<Streamer> {
 public:
   Streamer(const Streamer &) = delete;
   Streamer &operator=(const Streamer &) = delete;
@@ -21,6 +21,7 @@ public:
 
   Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> encoder);
 
+  void start();
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
 
 private:
@@ -54,6 +55,7 @@ private:
 
   const std::string id_{};
   const VideoStreamInfo video_stream_info_{};
+  const std::string connection_url_{};
   bool connection_open_{false};
   rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};

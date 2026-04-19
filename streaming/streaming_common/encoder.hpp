@@ -29,7 +29,6 @@ private:
   void encode_frame(AVFrame *frame);
   void flip_frame();
   void rgb_to_yuv();
-  void destroy();
 
   std::function<void(const std::byte *data, const std::size_t size, const bool eof)> video_stream_callback_{};
 
@@ -37,10 +36,10 @@ private:
   FrameData rgb_frame_{};
 
   const AVCodec *codec_{};
-  AVCodecContext *context_{};
-  AVPacket *packet_{};
-  AVFrame *frame_{};
+  gp::ffmpeg::UniqueAVCodecContext context_{};
+  gp::ffmpeg::UniqueAVPacket packet_{};
+  gp::ffmpeg::UniqueAVFrame frame_{};
 
-  SwsContext *sws_context_{};
+  gp::ffmpeg::UniqueSwsContext sws_context_{};
 };
 } // namespace streaming

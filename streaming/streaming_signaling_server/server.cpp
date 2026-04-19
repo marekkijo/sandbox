@@ -18,6 +18,7 @@ void Server::on_client(std::shared_ptr<rtc::WebSocket> incoming) {
   if (auto remote_address = client->web_socket->remoteAddress()) {
     printf("Client connection received: %s\n", remote_address->c_str());
     init_client(client);
+    const auto lock = std::lock_guard{clients_mutex_};
     temporary_store_.insert(client);
   }
 }
@@ -42,7 +43,13 @@ void Server::init_client(std::shared_ptr<Client> &client) {
 
 void Server::on_client_open(std::weak_ptr<Client> weak_client) {
   auto client = weak_client.lock();
-  temporary_store_.erase(client);
+  if (!client) {
+    return;
+  }
+  {
+    const auto lock = std::lock_guard{clients_mutex_};
+    temporary_store_.erase(client);
+  }
 
   if (auto remote_address = client->web_socket->remoteAddress()) {
     printf("Client connection opened: %s\n", remote_address->c_str());
@@ -50,6 +57,7 @@ void Server::on_client_open(std::weak_ptr<Client> weak_client) {
     if (auto path = client->web_socket->path()) {
       client->info.parse(*path);
 
+      const auto lock = std::lock_guard{clients_mutex_};
       switch (client->info.type()) {
       case Client::Type::unknown:
         printf("Unknown client connected\n  ignoring... connection will be closed\n");
@@ -71,31 +79,40 @@ void Server::on_client_open(std::weak_ptr<Client> weak_client) {
 
 void Server::on_client_closed(std::weak_ptr<Client> weak_client) {
   auto type = Client::Type::unknown;
+  std::string id{};
 
-  auto client = weak_client.lock();
-  if (client) {
-    type = client->info.type();
+  {
+    auto client = weak_client.lock();
+    if (client) {
+      type = client->info.type();
+      id = client->info.id();
+    }
   }
 
+  const auto lock = std::lock_guard{clients_mutex_};
   switch (type) {
   case Client::Type::unknown:
     printf("Unknown client disconnected\n");
     break;
   case Client::Type::streamer:
-    printf("Streamer '%s' disconnected\n", client->info.id().c_str());
-    streamers_.erase(client->info.id());
-    clients_.erase(client->info.id());
+    printf("Streamer '%s' disconnected\n", id.c_str());
+    streamers_.erase(id);
+    clients_.erase(id);
     break;
   case Client::Type::receiver:
-    printf("Receiver '%s' disconnected\n", client->info.id().c_str());
-    receivers_.erase(client->info.id());
-    clients_.erase(client->info.id());
+    printf("Receiver '%s' disconnected\n", id.c_str());
+    receivers_.erase(id);
+    clients_.erase(id);
     break;
   }
 }
 
 void Server::on_client_error(std::weak_ptr<Client> weak_client, std::string error) const {
   auto client = weak_client.lock();
+  if (!client) {
+    printf("Client error (client already gone): %s\n", error.c_str());
+    return;
+  }
 
   switch (client->info.type()) {
   case Client::Type::unknown:
@@ -116,6 +133,9 @@ void Server::on_client_binary_message(std::weak_ptr<Client> /* weak_client */, r
 
 void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::string message) {
   auto client = weak_client.lock();
+  if (!client) {
+    return;
+  }
   auto json = nlohmann::json::parse(message);
 
   if (json.contains("video_stream_info")) {
@@ -141,7 +161,11 @@ void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::st
           {"type",              type},
           { "sdp",               sdp}
       };
-      clients_[id]->web_socket->send(response_json.dump());
+      const auto lock = std::lock_guard{clients_mutex_};
+      auto it = clients_.find(id);
+      if (it != clients_.end()) {
+        it->second->web_socket->send(response_json.dump());
+      }
       return;
     }
     if (type == "answer") {
@@ -150,7 +174,11 @@ void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::st
           {"type",              type},
           { "sdp",               sdp}
       };
-      clients_[id]->web_socket->send(response_json.dump());
+      const auto lock = std::lock_guard{clients_mutex_};
+      auto it = clients_.find(id);
+      if (it != clients_.end()) {
+        it->second->web_socket->send(response_json.dump());
+      }
       return;
     }
   }
@@ -159,6 +187,7 @@ void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::st
 }
 
 void Server::parse_video_stream_info(std::shared_ptr<Client> &client, const nlohmann::json &json_video_stream_info) {
+  const auto lock = std::lock_guard{clients_mutex_};
   auto &video_stream_info = streamers_[client->info.id()].video_stream_info;
   video_stream_info.width = json_video_stream_info.at("width");
   video_stream_info.height = json_video_stream_info.at("height");
@@ -184,41 +213,58 @@ void Server::parse_command(std::shared_ptr<Client> &client, const nlohmann::json
     const auto json = nlohmann::json{
         {"request_video_stream", request_video_stream_json}
     };
-    clients_[streamer]->web_socket->send(json.dump());
+    const auto lock = std::lock_guard{clients_mutex_};
+    auto it = clients_.find(streamer);
+    if (it != clients_.end()) {
+      it->second->web_socket->send(json.dump());
+    }
     return;
   }
   printf("Unknown command: %s\n", json_command.dump().c_str());
 }
 
 void Server::send_video_stream_infos_to_unpaired_receivers() {
-  for (const auto &receiver_pair : receivers_) {
-    const auto &receiver = receiver_pair.second;
-    if (receiver.paired) {
-      continue;
+  // Collect clients to notify under the lock, then send outside the lock to
+  // avoid holding clients_mutex_ while calling send_video_stream_infos (which
+  // also acquires clients_mutex_).
+  auto targets = std::vector<std::shared_ptr<Client>>{};
+  {
+    const auto lock = std::lock_guard{clients_mutex_};
+    for (const auto &receiver_pair : receivers_) {
+      const auto &receiver = receiver_pair.second;
+      if (receiver.paired) {
+        continue;
+      }
+      auto client_it = clients_.find(receiver.id);
+      if (client_it != clients_.end()) {
+        targets.push_back(client_it->second);
+      }
     }
-    auto client_it = clients_.find(receiver.id);
-    if (client_it != clients_.end()) {
-      send_video_stream_infos(client_it->second);
-    }
+  }
+  for (auto &client : targets) {
+    send_video_stream_infos(client);
   }
 }
 
 void Server::send_video_stream_infos(std::shared_ptr<Client> &client) {
   auto video_stream_infos_json = nlohmann::json::array();
-  for (const auto &streamer_pair : streamers_) {
-    const auto &streamer = streamer_pair.second;
-    if (streamer.paired) {
-      continue;
+  {
+    const auto lock = std::lock_guard{clients_mutex_};
+    for (const auto &streamer_pair : streamers_) {
+      const auto &streamer = streamer_pair.second;
+      if (streamer.paired) {
+        continue;
+      }
+      const auto video_stream_info_json = nlohmann::json{
+          {"streamer_id",                           streamer.id},
+          {      "width",      streamer.video_stream_info.width},
+          {     "height",     streamer.video_stream_info.height},
+          {        "fps",        streamer.video_stream_info.fps},
+          {   "codec_id",   streamer.video_stream_info.codec_id},
+          { "codec_name", streamer.video_stream_info.codec_name}
+      };
+      video_stream_infos_json.push_back(video_stream_info_json);
     }
-    const auto video_stream_info_json = nlohmann::json{
-        {"streamer_id",                           streamer.id},
-        {      "width",      streamer.video_stream_info.width},
-        {     "height",     streamer.video_stream_info.height},
-        {        "fps",        streamer.video_stream_info.fps},
-        {   "codec_id",   streamer.video_stream_info.codec_id},
-        { "codec_name", streamer.video_stream_info.codec_name}
-    };
-    video_stream_infos_json.push_back(video_stream_info_json);
   }
   const auto json = nlohmann::json{
       {"video_stream_infos", video_stream_infos_json}

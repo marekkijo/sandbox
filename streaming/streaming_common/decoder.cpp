@@ -12,23 +12,19 @@ void Decoder::init(const VideoStreamInfo &video_stream_info) {
 
   rgb_frame_ = std::make_shared<FrameData>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM);
   codec_ = avcodec_find_decoder(video_stream_info.codec_id);
-  context_ = codec_ ? avcodec_alloc_context3(codec_) : nullptr;
-  parser_ = codec_ ? av_parser_init(codec_->id) : nullptr;
-  packet_ = av_packet_alloc();
+  context_.reset(codec_ ? avcodec_alloc_context3(codec_) : nullptr);
+  parser_.reset(codec_ ? av_parser_init(codec_->id) : nullptr);
+  packet_.reset(av_packet_alloc());
   if (codec_ == nullptr) {
-    destroy();
     throw std::runtime_error{"avcodec_find_decoder failed"};
   }
-  if (context_ == nullptr) {
-    destroy();
+  if (!context_) {
     throw std::runtime_error{"avcodec_alloc_context3 failed"};
   }
-  if (parser_ == nullptr) {
-    destroy();
+  if (!parser_) {
     throw std::runtime_error{"av_parser_init failed"};
   }
-  if (packet_ == nullptr) {
-    destroy();
+  if (!packet_) {
     throw std::runtime_error{"av_packet_alloc failed"};
   }
 
@@ -36,14 +32,12 @@ void Decoder::init(const VideoStreamInfo &video_stream_info) {
   context_->height = video_stream_info.height;
   context_->thread_count = DECODE_THREAD_COUNT;
 
-  if (avcodec_open2(context_, codec_, nullptr) < 0) {
-    destroy();
+  if (avcodec_open2(context_.get(), codec_, nullptr) < 0) {
     throw std::runtime_error{"avcodec_open2 failed"};
   }
 
-  frame_ = av_frame_alloc();
-  if (frame_ == nullptr) {
-    destroy();
+  frame_.reset(av_frame_alloc());
+  if (!frame_) {
     throw std::runtime_error{"av_frame_alloc failed"};
   }
 
@@ -54,7 +48,7 @@ void Decoder::init(const VideoStreamInfo &video_stream_info) {
   }
 }
 
-Decoder::~Decoder() { destroy(); }
+Decoder::~Decoder() = default;
 
 std::shared_ptr<FrameData> Decoder::rgb_frame() {
   if (!rgb_frame_) {
@@ -74,7 +68,7 @@ Decoder::Status Decoder::decode() {
   }
 
   if (packet_sent_) {
-    auto result = avcodec_receive_frame(context_, frame_);
+    auto result = avcodec_receive_frame(context_.get(), frame_.get());
 
     if (result == AVERROR(EAGAIN)) {
       packet_sent_ = false;
@@ -88,8 +82,10 @@ Decoder::Status Decoder::decode() {
       return {Status::Code::ERROR};
     }
 
+    // context_ is guaranteed non-null here: destroy() returns EOS above
+    const auto frame_num = static_cast<int>(context_->frame_num);
     yuv_to_rgb();
-    return {Status::Code::OK, static_cast<int>(context_->frame_num)};
+    return {Status::Code::OK, frame_num};
   } else {
     if (upload()) {
       return {Status::Code::RETRY};
@@ -116,7 +112,12 @@ bool Decoder::incoming_data(const std::byte *data, const std::size_t size, const
   if (buffer_.empty()) {
     buffer_.reserve(size + NULL_PADDING.size());
   } else {
-    buffer_.erase(buffer_.begin() + static_cast<std::int64_t>(buffer_.size()) - NULL_PADDING.size(), buffer_.end());
+    // Only strip the trailing null-padding if it actually fits in the buffer.
+    if (buffer_.size() >= NULL_PADDING.size()) {
+      buffer_.erase(buffer_.begin() + static_cast<std::int64_t>(buffer_.size()) - NULL_PADDING.size(), buffer_.end());
+    } else {
+      buffer_.clear();
+    }
     buffer_.reserve(buffer_.size() + size + NULL_PADDING.size());
   }
 
@@ -133,70 +134,76 @@ void Decoder::signal_eof() { signaled_eof_ = true; }
 bool Decoder::upload() {
   consume_async_buffer();
 
-  const auto eof = buffer_.empty() && signaled_eof_;
-  while (!buffer_.empty() || eof) {
-    const auto size = buffer_.empty() ? 0u : (buffer_.size() - NULL_PADDING.size());
-    auto result = av_parser_parse2(parser_,
-                                   context_,
-                                   &packet_->data,
-                                   &packet_->size,
-                                   buffer_.data(),
-                                   static_cast<int>(size),
-                                   AV_NOPTS_VALUE,
-                                   AV_NOPTS_VALUE,
-                                   0);
+  // Iterative loop to avoid unbounded recursion on zero-size packets (e.g.
+  // parser header/padding packets that produce no output data).
+  while (true) {
+    const auto eof = buffer_.empty() && signaled_eof_;
+    while (!buffer_.empty() || eof) {
+      const auto size = buffer_.empty() ? 0u : (buffer_.size() - NULL_PADDING.size());
+      auto result = av_parser_parse2(parser_.get(),
+                                     context_.get(),
+                                     &packet_->data,
+                                     &packet_->size,
+                                     buffer_.data(),
+                                     static_cast<int>(size),
+                                     AV_NOPTS_VALUE,
+                                     AV_NOPTS_VALUE,
+                                     0);
 
-    auto used = result;
+      auto used = result;
 
-    if (packet_->size != 0) {
-      result = avcodec_send_packet(context_, packet_);
-      if (result == 0) {
+      if (packet_->size != 0) {
+        result = avcodec_send_packet(context_.get(), packet_.get());
+        if (result == 0) {
+          reduce_buffer(used);
+          packet_sent_ = true;
+          return true;
+        }
+        if (result == AVERROR(EAGAIN)) {
+          reduce_buffer(used);
+          packet_sent_ = true;
+          return true;
+        }
+        if (result == AVERROR_EOF) {
+          printf("AVERROR_EOF: the decoder has been flushed, and no new packets can be sent to it (also returned if more "
+                 "than 1 flush packet is sent)");
+          return false;
+        }
+        if (result == AVERROR_INVALIDDATA) {
+          printf("AVERROR_INVALIDDATA: invalid data found when processing input\n");
+          reduce_buffer(used);
+          return false;
+        }
+        if (result == AVERROR(EINVAL)) {
+          throw std::runtime_error("AVERROR(EINVAL): codec not opened, it is an encoder, or requires flush");
+        }
+        if (result == AVERROR(ENOMEM)) {
+          throw std::runtime_error("AVERROR(ENOMEM): failed to add packet to internal queue, or similar other errors: "
+                                   "legitimate decoding errors");
+        }
+        throw std::runtime_error("avcodec_send_packet filed with error: " + std::to_string(result));
+      } else if (eof) {
+        break;
+      } else {
+        // Parser consumed bytes but produced no packet (header/padding); reduce
+        // the buffer and try again in the same iteration instead of recursing.
         reduce_buffer(used);
+        continue;
+      }
+    }
+
+    if (signaled_eof_) {
+      auto result = avcodec_send_packet(context_.get(), nullptr);
+      if (result == 0 || result == AVERROR_EOF) {
         packet_sent_ = true;
         return true;
+      } else {
+        throw std::runtime_error("avcodec_send_packet EOF failed");
       }
-      if (result == AVERROR(EAGAIN)) {
-        reduce_buffer(used);
-        packet_sent_ = true;
-        return true;
-      }
-      if (result == AVERROR_EOF) {
-        printf("AVERROR_EOF: the decoder has been flushed, and no new packets can be sent to it (also returned if more "
-               "than 1 flush packet is sent)");
-        return false;
-      }
-      if (result == AVERROR_INVALIDDATA) {
-        printf("AVERROR_INVALIDDATA: invalid data found when processing input\n");
-        reduce_buffer(used);
-        return false;
-      }
-      if (result == AVERROR(EINVAL)) {
-        throw std::runtime_error("AVERROR(EINVAL): codec not opened, it is an encoder, or requires flush");
-      }
-      if (result == AVERROR(ENOMEM)) {
-        throw std::runtime_error("AVERROR(ENOMEM): failed to add packet to internal queue, or similar other errors: "
-                                 "legitimate decoding errors");
-      }
-      throw std::runtime_error("avcodec_send_packet filed with error: " + std::to_string(result));
-    } else if (eof) {
-      break;
-    } else {
-      reduce_buffer(used);
-      return upload();
     }
-  }
 
-  if (signaled_eof_) {
-    auto result = avcodec_send_packet(context_, nullptr);
-    if (result == 0 || result == AVERROR_EOF) {
-      packet_sent_ = true;
-      return true;
-    } else {
-      throw std::runtime_error("avcodec_send_packet EOF failed");
-    }
+    return false;
   }
-
-  return false;
 }
 
 void Decoder::reduce_buffer(int n) {
@@ -212,46 +219,41 @@ void Decoder::reduce_buffer(int n) {
 }
 
 void Decoder::destroy() {
-  if (sws_context_) {
-    sws_freeContext(sws_context_);
-    sws_context_ = nullptr;
-  }
-  if (frame_) {
-    av_frame_free(&frame_);
-    frame_ = nullptr;
-  }
-  if (packet_) {
-    av_packet_free(&packet_);
-    packet_ = nullptr;
-  }
-  if (parser_) {
-    av_parser_close(parser_);
-    parser_ = nullptr;
-  }
-  if (context_) {
-    avcodec_free_context(&context_);
-    context_ = nullptr;
-  }
+  sws_context_.reset();
+  frame_.reset();
+  packet_.reset();
+  parser_.reset();
+  context_.reset();
   codec_ = nullptr;
 }
 
 void Decoder::yuv_to_rgb() {
   const std::array<int, 1> in_linesize{CHANNELS_NUM * context_->width};
 
-  sws_context_ = sws_getCachedContext(sws_context_,
-                                      context_->width,
-                                      context_->height,
-                                      AV_PIX_FMT_YUV420P,
-                                      context_->width,
-                                      context_->height,
-                                      AV_PIX_FMT_RGB32,
-                                      0,
-                                      nullptr,
-                                      nullptr,
-                                      nullptr);
+  // sws_getCachedContext may return the existing context or a new one; manage
+  // the raw pointer manually and keep ownership in sws_context_.
+  auto *raw_sws = sws_context_.release();
+  raw_sws = sws_getCachedContext(raw_sws,
+                                 context_->width,
+                                 context_->height,
+                                 AV_PIX_FMT_YUV420P,
+                                 context_->width,
+                                 context_->height,
+                                 AV_PIX_FMT_RGB32,
+                                 0,
+                                 nullptr,
+                                 nullptr,
+                                 nullptr);
+  sws_context_.reset(raw_sws);
 
   auto rgb_frame_data = reinterpret_cast<std::uint8_t *>(rgb_frame_->data());
-  sws_scale(sws_context_, &frame_->data[0], frame_->linesize, 0, context_->height, &rgb_frame_data, in_linesize.data());
+  sws_scale(sws_context_.get(),
+            &frame_->data[0],
+            frame_->linesize,
+            0,
+            context_->height,
+            &rgb_frame_data,
+            in_linesize.data());
 }
 
 void Decoder::fill_async_buffer(const std::byte *data, const std::size_t size) {

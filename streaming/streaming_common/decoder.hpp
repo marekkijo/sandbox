@@ -78,10 +78,10 @@ private:
   std::shared_ptr<FrameData> rgb_frame_{};
 
   const AVCodec *codec_{};
-  AVCodecContext *context_{};
-  AVCodecParserContext *parser_{};
-  AVPacket *packet_{};
-  AVFrame *frame_{};
+  gp::ffmpeg::UniqueAVCodecContext context_{};
+  gp::ffmpeg::UniqueAVCodecParserContext parser_{};
+  gp::ffmpeg::UniqueAVPacket packet_{};
+  gp::ffmpeg::UniqueAVFrame frame_{};
 
   std::vector<std::uint8_t> buffer_{};
 
@@ -97,6 +97,6 @@ private:
    */
   std::atomic_bool signaled_eof_{};
 
-  SwsContext *sws_context_{};
+  gp::ffmpeg::UniqueSwsContext sws_context_{};
 };
 } // namespace streaming

@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+namespace loaders {
 ModelScene::ModelScene(std::shared_ptr<const Model> model)
     : model_{std::move(model)} {}
 
@@ -155,3 +156,5 @@ void ModelScene::upload_data() {
     sizes_.emplace_back(static_cast<GLsizei>(indices.size()));
   }
 }
+} // namespace loaders
+
