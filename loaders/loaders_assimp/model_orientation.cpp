@@ -76,77 +76,32 @@ Orientation get_orientation(const ModelFormat model_format, const aiMetadata *co
 }
 
 glm::mat4 get_orientation_matrix(const Orientation &orientation) {
-  if (orientation == Orientation{} /* Axis::y_plus, Axis::z_minus */) {
-    return glm::mat4(1.0);
-  }
-  if (orientation == Orientation{Axis::y_minus, Axis::z_plus}) {
-    return {1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_plus, Axis::z_plus}) {
-    return {-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_minus, Axis::z_minus}) {
-    return {-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::y_plus}) {
-    return {-1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::y_minus}) {
-    return {-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::y_minus}) {
-    return {1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::y_plus}) {
-    return {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::x_minus}) {
-    return {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::x_plus}) {
-    return {0, 0, -1, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::x_plus}) {
-    return {0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::x_minus}) {
-    return {0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::z_plus}) {
-    return {0, -1, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::z_minus}) {
-    return {0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::z_minus}) {
-    return {0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::z_plus}) {
-    return {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::y_minus}) {
-    return {0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::y_plus}) {
-    return {0, -1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::y_plus}) {
-    return {0, 1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::y_minus}) {
-    return {0, -1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_minus, Axis::x_plus}) {
-    return {0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_plus, Axis::x_minus}) {
-    return {0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_minus, Axis::x_minus}) {
-    return {0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_plus, Axis::x_plus}) {
-    return {0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  return glm::mat4(1.0);
+  const auto axis_to_vec = [](const Axis axis) -> glm::vec3 {
+    switch (axis) {
+    case Axis::x_minus:
+      return {-1.0f, 0.0f, 0.0f};
+    case Axis::x_plus:
+      return {1.0f, 0.0f, 0.0f};
+    case Axis::y_minus:
+      return {0.0f, -1.0f, 0.0f};
+    case Axis::y_plus:
+      return {0.0f, 1.0f, 0.0f};
+    case Axis::z_minus:
+      return {0.0f, 0.0f, -1.0f};
+    case Axis::z_plus:
+      return {0.0f, 0.0f, 1.0f};
+    }
+    return {0.0f, 0.0f, 0.0f};
+  };
+
+  const auto up = axis_to_vec(orientation.up);
+  const auto front = axis_to_vec(orientation.front);
+  const auto right = glm::cross(front, up);
+
+  return glm::mat4{
+      glm::vec4{right.x, up.x, -front.x, 0.0f},
+      glm::vec4{right.y, up.y, -front.y, 0.0f},
+      glm::vec4{right.z, up.z, -front.z, 0.0f},
+      glm::vec4{   0.0f, 0.0f,     0.0f, 1.0f}
+  };
 }
