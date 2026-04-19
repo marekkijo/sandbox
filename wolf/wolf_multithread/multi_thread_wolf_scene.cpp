@@ -155,8 +155,11 @@ MultiThreadWolfScene::MultiThreadWolfScene(std::unique_ptr<const RawMap> raw_map
 }
 
 MultiThreadWolfScene::~MultiThreadWolfScene() {
-  state_->join = true;
-  std::fill(state_->do_work.begin(), state_->do_work.end(), true);
+  {
+    const auto lock = std::lock_guard(state_->m);
+    state_->join = true;
+    std::fill(state_->do_work.begin(), state_->do_work.end(), true);
+  }
   state_->cv.notify_all();
   for (auto t_it = std::size_t{0u}; t_it < threads_.size(); t_it++) {
     threads_.at(t_it).join();
@@ -172,15 +175,18 @@ void MultiThreadWolfScene::prepare_walls() {
   const auto player_pos = player_state_.pos();
   const auto player_dir = player_state_.dir();
 
-  state_->player_pos = player_pos;
-  state_->player_dir = player_dir;
-  state_->cam_1 = glm::vec2{(cam_cos1 * player_dir.x - cam_sin1 * player_dir.y) + player_pos.x,
-                            (cam_sin1 * player_dir.x + cam_cos1 * player_dir.y) + player_pos.y};
-  state_->cam_2 = glm::vec2{(cam_cos2 * player_dir.x - cam_sin2 * player_dir.y) + player_pos.x,
-                            (cam_sin2 * player_dir.x + cam_cos2 * player_dir.y) + player_pos.y};
+  {
+    const auto lock = std::lock_guard(state_->m);
+    state_->player_pos = player_pos;
+    state_->player_dir = player_dir;
+    state_->cam_1 = glm::vec2{(cam_cos1 * player_dir.x - cam_sin1 * player_dir.y) + player_pos.x,
+                              (cam_sin1 * player_dir.x + cam_cos1 * player_dir.y) + player_pos.y};
+    state_->cam_2 = glm::vec2{(cam_cos2 * player_dir.x - cam_sin2 * player_dir.y) + player_pos.x,
+                              (cam_sin2 * player_dir.x + cam_cos2 * player_dir.y) + player_pos.y};
 
-  state_->done = 0u;
-  std::fill(state_->do_work.begin(), state_->do_work.end(), true);
+    state_->done = 0u;
+    std::fill(state_->do_work.begin(), state_->do_work.end(), true);
+  }
   state_->cv.notify_all();
 
   std::unique_lock lk(state_->m);
