@@ -177,6 +177,9 @@ void Server::parse_command(std::shared_ptr<Client> &client, const nlohmann::json
     const auto streamer = std::string{json_command.at("streamer")};
     const auto receiver = std::string{json_command.at("receiver")};
 
+    streamers_[streamer].paired = true;
+    receivers_[receiver].paired = true;
+
     const auto request_video_stream_json = nlohmann::json{
         {"streamer", streamer},
         {"receiver", receiver}
