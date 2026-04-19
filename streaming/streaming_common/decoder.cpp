@@ -115,8 +115,8 @@ bool Decoder::incoming_data(const std::byte *data, const std::size_t size, const
 
   if (buffer_.empty()) {
     buffer_.reserve(size + NULL_PADDING.size());
-  } else {
-    buffer_.erase(buffer_.begin() + static_cast<std::int64_t>(buffer_.size()) - NULL_PADDING.size(), buffer_.end());
+  } else if (buffer_.size() >= NULL_PADDING.size()) {
+    buffer_.erase(buffer_.begin() + static_cast<std::int64_t>(buffer_.size() - NULL_PADDING.size()), buffer_.end());
     buffer_.reserve(buffer_.size() + size + NULL_PADDING.size());
   }
 
