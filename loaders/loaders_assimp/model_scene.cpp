@@ -157,4 +157,3 @@ void ModelScene::upload_data() {
   }
 }
 } // namespace loaders
-
