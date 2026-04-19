@@ -9,16 +9,19 @@ Scene3D::Scene3D(std::shared_ptr<internal::SDLContext> ctx)
     : ctx_{ctx ? ctx : std::make_shared<internal::SDLContext>()} {}
 
 void Scene3D::init(const int width, const int height, const std::string &title, const bool async) {
-  width_ = width;
-  height_ = height;
-  title_ = title;
-
   if (async) {
     const auto lock_guard = std::lock_guard(init_mutex_);
+    width_ = width;
+    height_ = height;
+    title_ = title;
     init_done_ = true;
     init_cv_.notify_one();
     return;
   }
+
+  width_ = width;
+  height_ = height;
+  title_ = title;
 
   if (wnd_) {
     return;

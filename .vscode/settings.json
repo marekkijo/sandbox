@@ -1,4 +1,9 @@
 {
+  "chat.tools.terminal.autoApprove": {
+    "git add": true,
+    "git checkout": true,
+    "git commit": true
+  },
   "clangd.arguments": [
     "--clang-tidy"
   ],
