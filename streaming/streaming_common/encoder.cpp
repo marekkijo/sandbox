@@ -114,31 +114,33 @@ void Encoder::encode() {
 }
 
 void Encoder::encode_frame(AVFrame *frame) {
-  auto result = avcodec_send_frame(context_, frame);
-  if (result < 0) {
+  const auto send_result = avcodec_send_frame(context_, frame);
+  if (send_result < 0) {
     throw std::runtime_error{"avcodec_send_frame failed"};
   }
 
-  while (result == 0) {
-    result = avcodec_receive_packet(context_, packet_);
-    if (result == 0) {
-      if (video_stream_callback_) {
-        video_stream_callback_(reinterpret_cast<const std::byte *>(packet_->data),
-                               static_cast<std::size_t>(packet_->size),
-                               false);
-      }
-      av_packet_unref(packet_);
-    } else if (result == AVERROR(EAGAIN)) {
-      continue;
-    } else if (result == AVERROR_EOF) {
+  for (;;) {
+    const auto rc = avcodec_receive_packet(context_, packet_);
+    if (rc == AVERROR(EAGAIN)) {
+      break;
+    }
+    if (rc == AVERROR_EOF) {
       if (video_stream_callback_) {
         static constexpr std::array<uint8_t, 4> endcode{0, 0, 1, 0xb7};
         video_stream_callback_(reinterpret_cast<const std::byte *>(endcode.data()), sizeof(endcode), true);
       }
       av_packet_unref(packet_);
-    } else {
-      throw std::runtime_error{"avcodec_receive_packet failed: Unknown error"};
+      break;
     }
+    if (rc < 0) {
+      throw std::runtime_error{"avcodec_receive_packet failed"};
+    }
+    if (video_stream_callback_) {
+      video_stream_callback_(reinterpret_cast<const std::byte *>(packet_->data),
+                             static_cast<std::size_t>(packet_->size),
+                             false);
+    }
+    av_packet_unref(packet_);
   }
 }
 
