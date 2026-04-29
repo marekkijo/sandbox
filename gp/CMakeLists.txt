@@ -34,7 +34,8 @@ add_library(gp STATIC ${SRC_FILES})
 
 target_compile_features(gp PRIVATE cxx_std_23)
 
-target_include_directories(gp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_include_directories(
+  gp PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 target_include_directories(gp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(gp PUBLIC glm::glm)
