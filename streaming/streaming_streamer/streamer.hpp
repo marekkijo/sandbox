@@ -8,19 +8,23 @@
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>
 
+#include <atomic>
 #include <functional>
 #include <memory>
+#include <mutex>
+#include <string>
 
 namespace streaming {
-class Streamer {
+class Streamer : public std::enable_shared_from_this<Streamer> {
 public:
   Streamer(const Streamer &) = delete;
   Streamer &operator=(const Streamer &) = delete;
   Streamer(Streamer &&other) noexcept = delete;
   Streamer &operator=(Streamer &&other) noexcept = delete;
 
-  Streamer(const std::string &server_ip, const std::uint16_t server_port, std::shared_ptr<Encoder> encoder);
+  Streamer(const std::string &server_ip, const std::uint16_t server_port);
 
+  void start(std::shared_ptr<Encoder> encoder);
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
 
 private:
@@ -53,11 +57,13 @@ private:
   void parse_event(const nlohmann::json &json_event);
 
   const std::string id_{};
-  const VideoStreamInfo video_stream_info_{};
-  bool connection_open_{false};
+  std::string connection_url_{};
+  VideoStreamInfo video_stream_info_{};
+  std::atomic<bool> connection_open_{false};
   rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
   std::shared_ptr<Peer> peer_{};
+  mutable std::mutex mutex_{};
   std::function<void(const gp::misc::Event &event)> event_callback_{};
 };
 } // namespace streaming

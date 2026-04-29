@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   }
 
   auto decode_scene = std::make_unique<streaming::DecodeScene>();
-  auto receiver = std::make_unique<streaming::Receiver>(program_setup.ip, program_setup.port);
+  auto receiver = std::make_shared<streaming::Receiver>(program_setup.ip, program_setup.port);
 
   receiver->set_video_stream_info_callback(
       [&decode_scene](const streaming::VideoStreamInfo &video_stream_info) { decode_scene->init(video_stream_info); });

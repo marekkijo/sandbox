@@ -18,6 +18,7 @@ void Server::on_client(std::shared_ptr<rtc::WebSocket> incoming) {
   if (auto remote_address = client->web_socket->remoteAddress()) {
     printf("Client connection received: %s\n", remote_address->c_str());
     init_client(client);
+    std::lock_guard<std::mutex> lock(mutex_);
     temporary_store_.insert(client);
   }
 }
@@ -42,7 +43,14 @@ void Server::init_client(std::shared_ptr<Client> &client) {
 
 void Server::on_client_open(std::weak_ptr<Client> weak_client) {
   auto client = weak_client.lock();
-  temporary_store_.erase(client);
+  if (!client) {
+    return;
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    temporary_store_.erase(client);
+  }
 
   if (auto remote_address = client->web_socket->remoteAddress()) {
     printf("Client connection opened: %s\n", remote_address->c_str());
@@ -50,6 +58,7 @@ void Server::on_client_open(std::weak_ptr<Client> weak_client) {
     if (auto path = client->web_socket->path()) {
       client->info.parse(*path);
 
+      std::lock_guard<std::mutex> lock(mutex_);
       switch (client->info.type()) {
       case Client::Type::unknown:
         printf("Unknown client connected\n  ignoring... connection will be closed\n");
@@ -71,31 +80,37 @@ void Server::on_client_open(std::weak_ptr<Client> weak_client) {
 
 void Server::on_client_closed(std::weak_ptr<Client> weak_client) {
   auto type = Client::Type::unknown;
+  std::string id;
 
   auto client = weak_client.lock();
   if (client) {
     type = client->info.type();
+    id = client->info.id();
   }
 
+  std::lock_guard<std::mutex> lock(mutex_);
   switch (type) {
   case Client::Type::unknown:
     printf("Unknown client disconnected\n");
     break;
   case Client::Type::streamer:
-    printf("Streamer '%s' disconnected\n", client->info.id().c_str());
-    streamers_.erase(client->info.id());
-    clients_.erase(client->info.id());
+    printf("Streamer '%s' disconnected\n", id.c_str());
+    streamers_.erase(id);
+    clients_.erase(id);
     break;
   case Client::Type::receiver:
-    printf("Receiver '%s' disconnected\n", client->info.id().c_str());
-    receivers_.erase(client->info.id());
-    clients_.erase(client->info.id());
+    printf("Receiver '%s' disconnected\n", id.c_str());
+    receivers_.erase(id);
+    clients_.erase(id);
     break;
   }
 }
 
 void Server::on_client_error(std::weak_ptr<Client> weak_client, std::string error) const {
   auto client = weak_client.lock();
+  if (!client) {
+    return;
+  }
 
   switch (client->info.type()) {
   case Client::Type::unknown:
@@ -116,109 +131,173 @@ void Server::on_client_binary_message(std::weak_ptr<Client> /* weak_client */, r
 
 void Server::on_client_string_message(std::weak_ptr<Client> weak_client, std::string message) {
   auto client = weak_client.lock();
-  auto json = nlohmann::json::parse(message);
-
-  if (json.contains("video_stream_info")) {
-    parse_video_stream_info(client, json.at("video_stream_info"));
-
-    send_video_stream_infos_to_unpaired_receivers();
+  if (!client) {
     return;
   }
 
-  if (json.contains("command")) {
-    parse_command(client, json.at("command"));
-    return;
-  }
+  try {
+    auto json = nlohmann::json::parse(message);
 
-  if (json.contains("id") && json.contains("type") && json.contains("sdp")) {
-    std::string id = json.at("id");
-    std::string type = json.at("type");
-    std::string sdp = json.at("sdp");
-
-    if (type == "offer") {
-      auto response_json = nlohmann::json{
-          {  "id", client->info.id()},
-          {"type",              type},
-          { "sdp",               sdp}
-      };
-      clients_[id]->web_socket->send(response_json.dump());
+    if (json.contains("video_stream_info")) {
+      parse_video_stream_info(client, json.at("video_stream_info"));
+      send_video_stream_infos_to_unpaired_receivers();
       return;
     }
-    if (type == "answer") {
-      auto response_json = nlohmann::json{
-          {  "id", client->info.id()},
-          {"type",              type},
-          { "sdp",               sdp}
-      };
-      clients_[id]->web_socket->send(response_json.dump());
+
+    if (json.contains("command")) {
+      parse_command(client, json.at("command"));
       return;
     }
-  }
 
-  printf("Unknown message: %s\n", message.c_str());
+    if (json.contains("id") && json.contains("type") && json.contains("sdp")) {
+      std::string id = json.at("id");
+      std::string type = json.at("type");
+      std::string sdp = json.at("sdp");
+
+      if (type == "offer") {
+        std::shared_ptr<Client> target_client;
+        {
+          std::lock_guard<std::mutex> lock(mutex_);
+          auto it = clients_.find(id);
+          if (it != clients_.end()) {
+            target_client = it->second;
+          }
+        }
+        if (!target_client) {
+          printf("Unknown message: %s\n", message.c_str());
+          return;
+        }
+        auto response_json = nlohmann::json{
+            {  "id", client->info.id()},
+            {"type",              type},
+            { "sdp",               sdp}
+        };
+        target_client->web_socket->send(response_json.dump());
+        return;
+      }
+      if (type == "answer") {
+        std::shared_ptr<Client> target_client;
+        {
+          std::lock_guard<std::mutex> lock(mutex_);
+          auto it = clients_.find(id);
+          if (it != clients_.end()) {
+            target_client = it->second;
+          }
+        }
+        if (!target_client) {
+          printf("Unknown message: %s\n", message.c_str());
+          return;
+        }
+        auto response_json = nlohmann::json{
+            {  "id", client->info.id()},
+            {"type",              type},
+            { "sdp",               sdp}
+        };
+        target_client->web_socket->send(response_json.dump());
+        return;
+      }
+    }
+
+    printf("Unknown message: %s\n", message.c_str());
+  } catch (const std::exception &e) {
+    printf("Error processing message: %s\n", e.what());
+  }
 }
 
 void Server::parse_video_stream_info(std::shared_ptr<Client> &client, const nlohmann::json &json_video_stream_info) {
-  auto &video_stream_info = streamers_[client->info.id()].video_stream_info;
-  video_stream_info.width = json_video_stream_info.at("width");
-  video_stream_info.height = json_video_stream_info.at("height");
-  video_stream_info.fps = json_video_stream_info.at("fps");
-  video_stream_info.codec_id = json_video_stream_info.at("codec_id");
-  video_stream_info.codec_name = json_video_stream_info.at("codec_name");
+  try {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto &video_stream_info = streamers_[client->info.id()].video_stream_info;
+    video_stream_info.width = json_video_stream_info.at("width");
+    video_stream_info.height = json_video_stream_info.at("height");
+    video_stream_info.fps = json_video_stream_info.at("fps");
+    video_stream_info.codec_id = json_video_stream_info.at("codec_id");
+    video_stream_info.codec_name = json_video_stream_info.at("codec_name");
+  } catch (const std::exception &e) {
+    printf("Error parsing video stream info: %s\n", e.what());
+  }
 }
 
 void Server::parse_command(std::shared_ptr<Client> &client, const nlohmann::json &json_command) {
-  const auto type = std::string{json_command.at("type")};
-  if (type == "request_video_stream_infos") {
-    send_video_stream_infos(client);
-    return;
-  }
-  if (type == "request_video_stream") {
-    const auto streamer = std::string{json_command.at("streamer")};
-    const auto receiver = std::string{json_command.at("receiver")};
+  try {
+    const auto type = std::string{json_command.at("type")};
+    if (type == "request_video_stream_infos") {
+      send_video_stream_infos(client);
+      return;
+    }
+    if (type == "request_video_stream") {
+      const auto streamer = std::string{json_command.at("streamer")};
+      const auto receiver = std::string{json_command.at("receiver")};
 
-    const auto request_video_stream_json = nlohmann::json{
-        {"streamer", streamer},
-        {"receiver", receiver}
-    };
-    const auto json = nlohmann::json{
-        {"request_video_stream", request_video_stream_json}
-    };
-    clients_[streamer]->web_socket->send(json.dump());
-    return;
+      std::shared_ptr<Client> streamer_client;
+      {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = clients_.find(streamer);
+        if (it != clients_.end()) {
+          streamer_client = it->second;
+        }
+      }
+
+      if (!streamer_client) {
+        printf("Unknown message: %s\n", json_command.dump().c_str());
+        return;
+      }
+
+      const auto request_video_stream_json = nlohmann::json{
+          {"streamer", streamer},
+          {"receiver", receiver}
+      };
+      const auto json = nlohmann::json{
+          {"request_video_stream", request_video_stream_json}
+      };
+      streamer_client->web_socket->send(json.dump());
+      return;
+    }
+    printf("Unknown command: %s\n", json_command.dump().c_str());
+  } catch (const std::exception &e) {
+    printf("Error processing command: %s\n", e.what());
   }
-  printf("Unknown command: %s\n", json_command.dump().c_str());
 }
 
 void Server::send_video_stream_infos_to_unpaired_receivers() {
-  for (const auto &receiver_pair : receivers_) {
-    const auto &receiver = receiver_pair.second;
-    if (receiver.paired) {
-      continue;
+  std::vector<std::shared_ptr<Client>> clients_to_update;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    for (const auto &receiver_pair : receivers_) {
+      const auto &receiver = receiver_pair.second;
+      if (receiver.paired) {
+        continue;
+      }
+      auto client_it = clients_.find(receiver.id);
+      if (client_it != clients_.end()) {
+        clients_to_update.push_back(client_it->second);
+      }
     }
-    auto client_it = clients_.find(receiver.id);
-    if (client_it != clients_.end()) {
-      send_video_stream_infos(client_it->second);
-    }
+  }
+  for (auto &receiver_client : clients_to_update) {
+    send_video_stream_infos(receiver_client);
   }
 }
 
 void Server::send_video_stream_infos(std::shared_ptr<Client> &client) {
   auto video_stream_infos_json = nlohmann::json::array();
-  for (const auto &streamer_pair : streamers_) {
-    const auto &streamer = streamer_pair.second;
-    if (streamer.paired) {
-      continue;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    for (const auto &streamer_pair : streamers_) {
+      const auto &streamer = streamer_pair.second;
+      if (streamer.paired) {
+        continue;
+      }
+      const auto video_stream_info_json = nlohmann::json{
+          {"streamer_id",                           streamer.id},
+          {      "width",      streamer.video_stream_info.width},
+          {     "height",     streamer.video_stream_info.height},
+          {        "fps",        streamer.video_stream_info.fps},
+          {   "codec_id",   streamer.video_stream_info.codec_id},
+          { "codec_name", streamer.video_stream_info.codec_name}
+      };
+      video_stream_infos_json.push_back(video_stream_info_json);
     }
-    const auto video_stream_info_json = nlohmann::json{
-        {"streamer_id",                           streamer.id},
-        {      "width",      streamer.video_stream_info.width},
-        {     "height",     streamer.video_stream_info.height},
-        {        "fps",        streamer.video_stream_info.fps},
-        {   "codec_id",   streamer.video_stream_info.codec_id},
-        { "codec_name", streamer.video_stream_info.codec_name}
-    };
-    video_stream_infos_json.push_back(video_stream_info_json);
   }
   const auto json = nlohmann::json{
       {"video_stream_infos", video_stream_infos_json}
