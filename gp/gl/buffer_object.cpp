@@ -13,6 +13,22 @@ BufferObject::BufferObject(const GLenum target)
 
 BufferObject::~BufferObject() { glDeleteBuffers(1, &id_); }
 
+BufferObject::BufferObject(BufferObject &&other) noexcept
+    : id_{other.id_}
+    , target_{other.target_} {
+  other.id_ = 0;
+}
+
+BufferObject &BufferObject::operator=(BufferObject &&other) noexcept {
+  if (this != &other) {
+    glDeleteBuffers(1, &id_);
+    id_ = other.id_;
+    target_ = other.target_;
+    other.id_ = 0;
+  }
+  return *this;
+}
+
 GLuint BufferObject::id() const { return id_; }
 
 GLenum BufferObject::target() const { return target_; }

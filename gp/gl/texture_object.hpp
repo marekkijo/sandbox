@@ -21,6 +21,11 @@ public:
    */
   ~TextureObject();
 
+  TextureObject(const TextureObject &) = delete;
+  TextureObject &operator=(const TextureObject &) = delete;
+  TextureObject(TextureObject &&other) noexcept;
+  TextureObject &operator=(TextureObject &&other) noexcept;
+
   /**
    * @brief Returns the ID of the texture object.
    * @return The ID of the texture object.
@@ -128,6 +133,6 @@ public:
 
 private:
   GLuint id_{};
-  const GLenum target_{};
+  GLenum target_{};
 };
 } // namespace gp::gl

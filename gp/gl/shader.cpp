@@ -17,6 +17,20 @@ Shader::Shader(const GLenum type, const std::string &code, const bool do_not_com
 
 Shader::~Shader() { glDeleteShader(id()); }
 
+Shader::Shader(Shader &&other) noexcept
+    : id_{other.id_} {
+  other.id_ = 0;
+}
+
+Shader &Shader::operator=(Shader &&other) noexcept {
+  if (this != &other) {
+    glDeleteShader(id());
+    id_ = other.id_;
+    other.id_ = 0;
+  }
+  return *this;
+}
+
 GLuint Shader::id() const { return id_; }
 
 void Shader::source(const std::string &code, const bool do_not_compile) const {

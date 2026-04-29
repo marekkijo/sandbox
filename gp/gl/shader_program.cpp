@@ -14,6 +14,22 @@ ShaderProgram::ShaderProgram() {
 
 ShaderProgram::~ShaderProgram() { glDeleteProgram(id()); }
 
+ShaderProgram::ShaderProgram(ShaderProgram &&other) noexcept
+    : id_{other.id_}
+    , uniform_locations_{std::move(other.uniform_locations_)} {
+  other.id_ = 0;
+}
+
+ShaderProgram &ShaderProgram::operator=(ShaderProgram &&other) noexcept {
+  if (this != &other) {
+    glDeleteProgram(id());
+    id_ = other.id_;
+    uniform_locations_ = std::move(other.uniform_locations_);
+    other.id_ = 0;
+  }
+  return *this;
+}
+
 GLuint ShaderProgram::id() const { return id_; }
 
 void ShaderProgram::use() const { glUseProgram(id()); }

@@ -29,6 +29,11 @@ public:
    */
   ~Shader();
 
+  Shader(const Shader &) = delete;
+  Shader &operator=(const Shader &) = delete;
+  Shader(Shader &&other) noexcept;
+  Shader &operator=(Shader &&other) noexcept;
+
   /**
    * @brief Returns the ID of the shader object.
    * @return The ID of the shader object.
