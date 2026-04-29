@@ -28,14 +28,22 @@ Event::Event(Event &&other) noexcept
 }
 
 Event &Event::operator=(const Event &other) {
-  destruct_complex_members();
-  copy(other);
+  if (this != &other) {
+    destruct_complex_members();
+    type_ = other.type_;
+    timestamp_ = other.timestamp_;
+    copy(other);
+  }
   return *this;
 }
 
 Event &Event::operator=(Event &&other) noexcept {
-  destruct_complex_members();
-  move(std::move(other));
+  if (this != &other) {
+    destruct_complex_members();
+    type_ = other.type_;
+    timestamp_ = other.timestamp_;
+    move(std::move(other));
+  }
   return *this;
 }
 
