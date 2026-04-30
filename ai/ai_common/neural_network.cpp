@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <random>
+#include <stdexcept>
 
 namespace ai {
 namespace {
@@ -42,7 +43,12 @@ void NeuralNetwork::init_random(const float mid, const float spread) {
   }
 }
 
-void NeuralNetwork::set_input(const std::size_t index, const float value) { inputs_[index] = value; }
+void NeuralNetwork::set_input(const std::size_t index, const float value) {
+  if (index >= inputs_.size()) {
+    throw std::out_of_range{"NeuralNetwork::set_input: index out of range"};
+  }
+  inputs_[index] = value;
+}
 
 const std::vector<float> &NeuralNetwork::get_output() const { return activations_.back(); }
 

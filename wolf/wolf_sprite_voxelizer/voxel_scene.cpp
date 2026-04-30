@@ -127,11 +127,11 @@ void VoxelScene::voxelize_sprite() {
   // sprite_index_ += 8;
   // sprite_voxelizer_->voxelize(index, index + 4, index + 2, index + 6);
   sprite_voxelizer_->voxelize(sprite_index_++, true);
-  vipe_data();
+  wipe_data();
   upload_data();
 }
 
-void VoxelScene::vipe_data() {
+void VoxelScene::wipe_data() {
   vao_.reset();
   vertex_buffer_.reset();
   index_buffer_.reset();
