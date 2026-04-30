@@ -1,5 +1,7 @@
 #include "model_orientation.hpp"
 
+#include <unordered_map>
+
 namespace {
 bool operator==(const Orientation &lhs, const Orientation &rhs) { return lhs.up == rhs.up && lhs.front == rhs.front; }
 
@@ -76,77 +78,39 @@ Orientation get_orientation(const ModelFormat model_format, const aiMetadata *co
 }
 
 glm::mat4 get_orientation_matrix(const Orientation &orientation) {
-  if (orientation == Orientation{} /* Axis::y_plus, Axis::z_minus */) {
-    return glm::mat4(1.0);
+  // Encode {up, front} as a single integer key: up * 6 + front.
+  // Axis enum order: x_minus=0, y_minus=1, z_minus=2, x_plus=3, y_plus=4, z_plus=5
+  const auto key = [](const Orientation &o) { return static_cast<int>(o.up) * 6 + static_cast<int>(o.front); };
+  static const std::unordered_map<int, glm::mat4> table = {
+      { key({Axis::y_plus, Axis::z_minus}),                                     glm::mat4(1.0f)},
+      { key({Axis::y_minus, Axis::z_plus}),  {1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1}},
+      {  key({Axis::y_plus, Axis::z_plus}),  {-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1}},
+      {key({Axis::y_minus, Axis::z_minus}),  {-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}},
+      { key({Axis::z_minus, Axis::y_plus}), {-1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1}},
+      { key({Axis::z_plus, Axis::y_minus}),   {-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1}},
+      {key({Axis::z_minus, Axis::y_minus}),   {1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1}},
+      {  key({Axis::z_plus, Axis::y_plus}),   {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1}},
+      { key({Axis::z_plus, Axis::x_minus}),    {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1}},
+      { key({Axis::z_minus, Axis::x_plus}),  {0, 0, -1, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1}},
+      {  key({Axis::z_plus, Axis::x_plus}),  {0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1}},
+      {key({Axis::z_minus, Axis::x_minus}),  {0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1}},
+      { key({Axis::x_minus, Axis::z_plus}), {0, -1, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1}},
+      { key({Axis::x_plus, Axis::z_minus}),   {0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}},
+      {key({Axis::x_minus, Axis::z_minus}),   {0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}},
+      {  key({Axis::x_plus, Axis::z_plus}),   {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1}},
+      { key({Axis::x_plus, Axis::y_minus}),    {0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1}},
+      { key({Axis::x_minus, Axis::y_plus}),  {0, -1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 1}},
+      {  key({Axis::x_plus, Axis::y_plus}),  {0, 1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 1}},
+      {key({Axis::x_minus, Axis::y_minus}),  {0, -1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0, 0, 0, 1}},
+      { key({Axis::y_minus, Axis::x_plus}), {0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1}},
+      { key({Axis::y_plus, Axis::x_minus}),   {0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1}},
+      {key({Axis::y_minus, Axis::x_minus}),   {0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1}},
+      {  key({Axis::y_plus, Axis::x_plus}),   {0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1}},
+  };
+
+  const auto it = table.find(key(orientation));
+  if (it != table.end()) {
+    return it->second;
   }
-  if (orientation == Orientation{Axis::y_minus, Axis::z_plus}) {
-    return {1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_plus, Axis::z_plus}) {
-    return {-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_minus, Axis::z_minus}) {
-    return {-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::y_plus}) {
-    return {-1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::y_minus}) {
-    return {-1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::y_minus}) {
-    return {1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::y_plus}) {
-    return {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::x_minus}) {
-    return {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::x_plus}) {
-    return {0, 0, -1, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_plus, Axis::x_plus}) {
-    return {0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::z_minus, Axis::x_minus}) {
-    return {0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::z_plus}) {
-    return {0, -1, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::z_minus}) {
-    return {0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::z_minus}) {
-    return {0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::z_plus}) {
-    return {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::y_minus}) {
-    return {0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::y_plus}) {
-    return {0, -1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_plus, Axis::y_plus}) {
-    return {0, 1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::x_minus, Axis::y_minus}) {
-    return {0, -1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_minus, Axis::x_plus}) {
-    return {0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_plus, Axis::x_minus}) {
-    return {0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_minus, Axis::x_minus}) {
-    return {0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  if (orientation == Orientation{Axis::y_plus, Axis::x_plus}) {
-    return {0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1};
-  }
-  return glm::mat4(1.0);
+  return glm::mat4(1.0f);
 }
