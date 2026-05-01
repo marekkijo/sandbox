@@ -14,3 +14,6 @@ set_target_properties(
 file(GLOB_RECURSE SDL_TESTS_FILES CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/sdl_tests/*")
 add_test_target(sdl_tests FILES ${SDL_TESTS_FILES} DEPS utils gp)
+
+file(GLOB_RECURSE EVENT_TESTS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/event_tests/*")
+add_test_target(event_tests FILES ${EVENT_TESTS_FILES} DEPS gp)
