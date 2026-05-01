@@ -139,7 +139,8 @@ void Renderer::draw_text(const std::string &text, const int x, const int y) cons
   if (!TTF_Init()) {
     throw std::runtime_error("Couldn't initialize TTF: " + std::string(SDL_GetError()));
   }
-  const auto ttf_guard = std::unique_ptr<void, decltype(&TTF_Quit)>(reinterpret_cast<void *>(1), &TTF_Quit);
+  const auto ttf_guard =
+      std::unique_ptr<void, void (*)(void *)>(reinterpret_cast<void *>(1), [](void *) { TTF_Quit(); });
 
   const auto font =
       std::unique_ptr<TTF_Font, decltype(&TTF_CloseFont)>(TTF_OpenFont("data/Consolas.ttf", 24), &TTF_CloseFont);
