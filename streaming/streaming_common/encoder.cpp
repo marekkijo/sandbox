@@ -4,6 +4,7 @@
 
 #include <array>
 #include <stdexcept>
+#include <string>
 
 namespace streaming {
 Encoder::Encoder(const VideoStreamInfo &video_stream_info)
@@ -114,33 +115,47 @@ void Encoder::encode() {
 }
 
 void Encoder::encode_frame(AVFrame *frame) {
-  const auto send_result = avcodec_send_frame(context_, frame);
-  if (send_result < 0) {
-    throw std::runtime_error{"avcodec_send_frame failed"};
-  }
-
   for (;;) {
-    const auto rc = avcodec_receive_packet(context_, packet_);
-    if (rc == AVERROR(EAGAIN)) {
-      break;
+    const auto send_result = avcodec_send_frame(context_, frame);
+    if (send_result == AVERROR_EOF) {
+      return;
     }
-    if (rc == AVERROR_EOF) {
-      if (video_stream_callback_) {
-        static constexpr std::array<uint8_t, 4> endcode{0, 0, 1, 0xb7};
-        video_stream_callback_(reinterpret_cast<const std::byte *>(endcode.data()), sizeof(endcode), true);
+    if (send_result < 0 && send_result != AVERROR(EAGAIN)) {
+      char errbuf[AV_ERROR_MAX_STRING_SIZE]{};
+      av_strerror(send_result, errbuf, sizeof(errbuf));
+      throw std::runtime_error{std::string{"avcodec_send_frame failed: "} + errbuf};
+    }
+
+    bool drained = false;
+    while (!drained) {
+      const auto rc = avcodec_receive_packet(context_, packet_);
+      if (rc == AVERROR(EAGAIN)) {
+        drained = true;
+      } else if (rc == AVERROR_EOF) {
+        if (video_stream_callback_) {
+          static constexpr std::array<uint8_t, 4> endcode{0, 0, 1, 0xb7};
+          video_stream_callback_(reinterpret_cast<const std::byte *>(endcode.data()), sizeof(endcode), true);
+        }
+        av_packet_unref(packet_);
+        return;
+      } else if (rc < 0) {
+        char errbuf[AV_ERROR_MAX_STRING_SIZE]{};
+        av_strerror(rc, errbuf, sizeof(errbuf));
+        throw std::runtime_error{std::string{"avcodec_receive_packet failed: "} + errbuf};
+      } else {
+        if (video_stream_callback_) {
+          video_stream_callback_(reinterpret_cast<const std::byte *>(packet_->data),
+                                 static_cast<std::size_t>(packet_->size),
+                                 false);
+        }
+        av_packet_unref(packet_);
       }
-      av_packet_unref(packet_);
-      break;
     }
-    if (rc < 0) {
-      throw std::runtime_error{"avcodec_receive_packet failed"};
+
+    if (send_result == 0) {
+      return;
     }
-    if (video_stream_callback_) {
-      video_stream_callback_(reinterpret_cast<const std::byte *>(packet_->data),
-                             static_cast<std::size_t>(packet_->size),
-                             false);
-    }
-    av_packet_unref(packet_);
+    // send_result == AVERROR(EAGAIN): drained, retry send
   }
 }
 
