@@ -1,6 +1,7 @@
 #include "event.hpp"
 
 #include <stdexcept>
+#include <utility>
 
 namespace gp::misc {
 bool Event::MouseMoveData::left_is_down() const { return mouse_button_mask & MouseButtonMask::Left; }
@@ -28,14 +29,20 @@ Event::Event(Event &&other) noexcept
 }
 
 Event &Event::operator=(const Event &other) {
-  destruct_complex_members();
-  copy(other);
+  if (this != &other) {
+    Event temp(other);
+    *this = std::move(temp);
+  }
   return *this;
 }
 
 Event &Event::operator=(Event &&other) noexcept {
-  destruct_complex_members();
-  move(std::move(other));
+  if (this != &other) {
+    destruct_complex_members();
+    type_ = other.type_;
+    timestamp_ = other.timestamp_;
+    move(std::move(other));
+  }
   return *this;
 }
 
@@ -145,7 +152,7 @@ const Event::DragDropData &Event::drag_drop() const {
 
 void Event::copy(const Event &other) {
   assign_all(other);
-  switch (type()) {
+  switch (other.type()) {
   case Type::DragDrop:
     new (&drag_drop_.filepath) std::string(other.drag_drop().filepath);
     break;
@@ -156,7 +163,7 @@ void Event::copy(const Event &other) {
 
 void Event::move(Event &&other) {
   assign_all(other);
-  switch (type()) {
+  switch (other.type()) {
   case Type::DragDrop:
     new (&drag_drop_.filepath) std::string(std::move(other.drag_drop().filepath));
     break;
@@ -186,7 +193,7 @@ void Event::destruct_complex_members() {
 }
 
 void Event::assign_all(const Event &other) {
-  switch (type()) {
+  switch (other.type()) {
   case Type::None:
     break;
   case Type::Init:
