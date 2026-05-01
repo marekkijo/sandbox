@@ -13,6 +13,22 @@ TextureObject::TextureObject(const GLenum target)
 
 TextureObject::~TextureObject() { glDeleteTextures(1, &id_); }
 
+TextureObject::TextureObject(TextureObject &&other) noexcept
+    : id_{other.id_}
+    , target_{other.target_} {
+  other.id_ = 0;
+}
+
+TextureObject &TextureObject::operator=(TextureObject &&other) noexcept {
+  if (this != &other) {
+    glDeleteTextures(1, &id_);
+    id_ = other.id_;
+    target_ = other.target_;
+    other.id_ = 0;
+  }
+  return *this;
+}
+
 GLuint TextureObject::id() const { return id_; }
 
 GLenum TextureObject::target() const { return target_; }

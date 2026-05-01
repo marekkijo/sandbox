@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 namespace gp::gl {
 VertexArrayObjects::VertexArrayObjects(const std::size_t n)
@@ -13,6 +14,17 @@ VertexArrayObjects::VertexArrayObjects(const std::size_t n)
 }
 
 VertexArrayObjects::~VertexArrayObjects() { glDeleteVertexArrays(static_cast<GLsizei>(ids_.size()), ids_.data()); }
+
+VertexArrayObjects::VertexArrayObjects(VertexArrayObjects &&other) noexcept
+    : ids_(std::move(other.ids_)) {}
+
+VertexArrayObjects &VertexArrayObjects::operator=(VertexArrayObjects &&other) noexcept {
+  if (this != &other) {
+    glDeleteVertexArrays(static_cast<GLsizei>(ids_.size()), ids_.data());
+    ids_ = std::move(other.ids_);
+  }
+  return *this;
+}
 
 GLuint VertexArrayObjects::id(const std::size_t index) const { return ids_[index]; }
 

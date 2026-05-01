@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 namespace gp::gl {
 TextureObjects::TextureObjects(const std::size_t n, const GLenum target)
@@ -14,6 +15,19 @@ TextureObjects::TextureObjects(const std::size_t n, const GLenum target)
 }
 
 TextureObjects::~TextureObjects() { glDeleteTextures(static_cast<GLsizei>(ids_.size()), ids_.data()); }
+
+TextureObjects::TextureObjects(TextureObjects &&other) noexcept
+    : ids_(std::move(other.ids_))
+    , target_(other.target_) {}
+
+TextureObjects &TextureObjects::operator=(TextureObjects &&other) noexcept {
+  if (this != &other) {
+    glDeleteTextures(static_cast<GLsizei>(ids_.size()), ids_.data());
+    ids_ = std::move(other.ids_);
+    target_ = other.target_;
+  }
+  return *this;
+}
 
 GLuint TextureObjects::id(const std::size_t index) const { return ids_[index]; }
 

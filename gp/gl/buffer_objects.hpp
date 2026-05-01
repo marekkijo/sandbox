@@ -18,10 +18,12 @@ public:
    */
   BufferObjects(const std::size_t n, const GLenum target);
 
-  /**
-   * @brief Destroys the BufferObjects instance and releases all associated buffer objects.
-   */
   ~BufferObjects();
+
+  BufferObjects(BufferObjects &&other) noexcept;
+  BufferObjects &operator=(BufferObjects &&other) noexcept;
+  BufferObjects(const BufferObjects &) = delete;
+  BufferObjects &operator=(const BufferObjects &) = delete;
 
   /**
    * @brief Returns the ID of the buffer object at the specified index.
@@ -115,6 +117,6 @@ public:
 
 private:
   std::vector<GLuint> ids_{};
-  const GLenum target_{};
+  GLenum target_{};
 };
 } // namespace gp::gl

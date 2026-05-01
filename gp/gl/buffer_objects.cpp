@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 namespace gp::gl {
 BufferObjects::BufferObjects(const std::size_t n, const GLenum target)
@@ -14,6 +15,19 @@ BufferObjects::BufferObjects(const std::size_t n, const GLenum target)
 }
 
 BufferObjects::~BufferObjects() { glDeleteBuffers(static_cast<GLsizei>(ids_.size()), ids_.data()); }
+
+BufferObjects::BufferObjects(BufferObjects &&other) noexcept
+    : ids_(std::move(other.ids_))
+    , target_(other.target_) {}
+
+BufferObjects &BufferObjects::operator=(BufferObjects &&other) noexcept {
+  if (this != &other) {
+    glDeleteBuffers(static_cast<GLsizei>(ids_.size()), ids_.data());
+    ids_ = std::move(other.ids_);
+    target_ = other.target_;
+  }
+  return *this;
+}
 
 GLuint BufferObjects::id(const std::size_t index) const { return ids_[index]; }
 

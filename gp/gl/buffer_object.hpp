@@ -19,6 +19,11 @@ public:
    */
   ~BufferObject();
 
+  BufferObject(const BufferObject &) = delete;
+  BufferObject &operator=(const BufferObject &) = delete;
+  BufferObject(BufferObject &&other) noexcept;
+  BufferObject &operator=(BufferObject &&other) noexcept;
+
   /**
    * @brief Returns the ID of the buffer object.
    * @return The ID of the buffer object.
@@ -109,6 +114,6 @@ public:
 
 private:
   GLuint id_{};
-  const GLenum target_{};
+  GLenum target_{};
 };
 } // namespace gp::gl
