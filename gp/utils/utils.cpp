@@ -13,6 +13,9 @@
 
 namespace gp::utils {
 std::vector<std::string> split_by(const std::string &src, const std::string &delimiter) {
+  if (delimiter.empty()) {
+    throw std::invalid_argument{"split_by: delimiter must not be empty"};
+  }
   auto tokens = std::vector<std::string>{};
   auto pos = std::string::npos;
   auto ppos = std::size_t{0u};
