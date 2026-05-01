@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <stdexcept>
 
 namespace gp::sdl {
@@ -138,17 +139,25 @@ void Renderer::draw_text(const std::string &text, const int x, const int y) cons
   if (!TTF_Init()) {
     throw std::runtime_error("Couldn't initialize TTF: " + std::string(SDL_GetError()));
   }
+  const auto ttf_guard =
+      std::unique_ptr<void, void (*)(void *)>(reinterpret_cast<void *>(1), [](void *) { TTF_Quit(); });
 
-  const auto font = TTF_OpenFont("data/Consolas.ttf", 24);
+  const auto font =
+      std::unique_ptr<TTF_Font, decltype(&TTF_CloseFont)>(TTF_OpenFont("data/Consolas.ttf", 24), &TTF_CloseFont);
   if (!font) {
     throw std::runtime_error("Could not load font: " + std::string(SDL_GetError()));
   }
-  const auto surface = TTF_RenderText_Solid(font, text.c_str(), 0, color);
+
+  const auto surface = std::unique_ptr<SDL_Surface, decltype(&SDL_DestroySurface)>(
+      TTF_RenderText_Solid(font.get(), text.c_str(), 0, color),
+      &SDL_DestroySurface);
   if (!surface) {
     throw std::runtime_error("Could not render text: " + std::string(SDL_GetError()));
   }
 
-  const auto texture = SDL_CreateTextureFromSurface(r_->r(), surface);
+  const auto texture =
+      std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>(SDL_CreateTextureFromSurface(r_->r(), surface.get()),
+                                                                  &SDL_DestroyTexture);
   if (!texture) {
     throw std::runtime_error("Could not create texture: " + std::string(SDL_GetError()));
   }
@@ -159,12 +168,6 @@ void Renderer::draw_text(const std::string &text, const int x, const int y) cons
   rect.w = static_cast<float>(surface->w);
   rect.h = static_cast<float>(surface->h);
 
-  SDL_RenderTexture(r_->r(), texture, nullptr, &rect);
-
-  TTF_CloseFont(font);
-  SDL_DestroySurface(surface);
-  SDL_DestroyTexture(texture);
-
-  TTF_Quit();
+  SDL_RenderTexture(r_->r(), texture.get(), nullptr, &rect);
 }
 } // namespace gp::sdl
