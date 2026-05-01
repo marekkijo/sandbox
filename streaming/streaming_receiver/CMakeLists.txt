@@ -1,4 +1,4 @@
-file(GLOB SRC_FILES *.cpp *.hpp)
+file(GLOB SRC_FILES CONFIGURE_DEPENDS *.cpp *.hpp)
 
 add_executable(streaming_receiver ${SRC_FILES})
 
