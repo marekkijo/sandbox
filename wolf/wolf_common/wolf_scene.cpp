@@ -14,8 +14,8 @@ WolfScene::WolfScene(std::unique_ptr<const RawMap> raw_map,
     , last_timestamp_ms_{timestamp()}
     , walls_(number_of_rays)
     , ray_rots_(number_of_rays) {
-  if (number_of_rays == 0u) {
-    throw std::invalid_argument{"WolfScene: number_of_rays must be greater than 0"};
+  if (number_of_rays < 2u) {
+    throw std::invalid_argument{"WolfScene: number_of_rays must be at least 2"};
   }
   const auto fov_in_rad = glm::radians(static_cast<float>(fov_in_degrees));
 

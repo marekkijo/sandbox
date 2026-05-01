@@ -1,6 +1,7 @@
 #include "raw_map.hpp"
 
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 
 namespace wolf {
