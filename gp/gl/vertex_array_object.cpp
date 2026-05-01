@@ -12,6 +12,20 @@ VertexArrayObject::VertexArrayObject() {
 
 VertexArrayObject::~VertexArrayObject() { glDeleteVertexArrays(1, &id_); }
 
+VertexArrayObject::VertexArrayObject(VertexArrayObject &&other) noexcept
+    : id_{other.id_} {
+  other.id_ = 0;
+}
+
+VertexArrayObject &VertexArrayObject::operator=(VertexArrayObject &&other) noexcept {
+  if (this != &other) {
+    glDeleteVertexArrays(1, &id_);
+    id_ = other.id_;
+    other.id_ = 0;
+  }
+  return *this;
+}
+
 GLuint VertexArrayObject::id() const { return id_; }
 
 void VertexArrayObject::bind() const { glBindVertexArray(id()); }

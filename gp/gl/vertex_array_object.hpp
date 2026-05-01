@@ -22,6 +22,11 @@ public:
    */
   ~VertexArrayObject();
 
+  VertexArrayObject(const VertexArrayObject &) = delete;
+  VertexArrayObject &operator=(const VertexArrayObject &) = delete;
+  VertexArrayObject(VertexArrayObject &&other) noexcept;
+  VertexArrayObject &operator=(VertexArrayObject &&other) noexcept;
+
   /**
    * @brief Returns the ID of the VertexArrayObject.
    * @return The ID of the VertexArrayObject.
