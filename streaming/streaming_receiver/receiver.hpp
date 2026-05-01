@@ -7,14 +7,16 @@
 #include <nlohmann/json.hpp>
 #include <rtc/rtc.hpp>
 
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
 namespace streaming {
-class Receiver {
+class Receiver : public std::enable_shared_from_this<Receiver> {
 public:
   Receiver(const Receiver &) = delete;
   Receiver &operator=(const Receiver &) = delete;
@@ -70,12 +72,13 @@ private:
 
   const std::string receiver_id_{};
   const std::string id_{};
-  bool connection_open_{false};
+  std::atomic<bool> connection_open_{false};
   rtc::Configuration configuration_{};
   std::string connection_url_;
   std::shared_ptr<rtc::WebSocket> web_socket_{};
   std::shared_ptr<Peer> peer_{};
   std::vector<StreamerInfo> streamer_infos_{};
+  mutable std::mutex mutex_{};
 
   std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback_{};
   std::function<void(const std::byte *data, const std::size_t size)> incoming_video_stream_data_callback_{};

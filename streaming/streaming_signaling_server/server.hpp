@@ -8,6 +8,7 @@
 #include <rtc/rtc.hpp>
 
 #include <memory>
+#include <mutex>
 #include <unordered_set>
 
 namespace streaming {
@@ -52,5 +53,6 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Client>> clients_{};
   std::unordered_map<std::string, StreamerInfo> streamers_{};
   std::unordered_map<std::string, ReceiverInfo> receivers_{};
+  mutable std::mutex mutex_{};
 };
 } // namespace streaming
