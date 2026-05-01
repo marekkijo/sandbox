@@ -4,8 +4,8 @@ add_library(streaming_common STATIC ${SRC_FILES})
 
 target_compile_features(streaming_common PRIVATE cxx_std_23)
 
-target_include_directories(streaming_common
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_include_directories(
+  streaming_common PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 
 target_link_libraries(streaming_common PUBLIC gp)
 

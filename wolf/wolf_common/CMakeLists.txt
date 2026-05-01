@@ -4,7 +4,8 @@ add_library(wolf_common STATIC ${SRC_FILES})
 
 target_compile_features(wolf_common PRIVATE cxx_std_23)
 
-target_include_directories(wolf_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_include_directories(
+  wolf_common PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 
 target_link_libraries(wolf_common PUBLIC gp)
 
