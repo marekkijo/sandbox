@@ -30,7 +30,7 @@ private:
   void redraw();
 
   void voxelize_sprite();
-  void vipe_data();
+  void wipe_data();
   void upload_data();
 
   std::shared_ptr<SpriteVoxelizer> sprite_voxelizer_{};
