@@ -3,8 +3,6 @@
 #include <unordered_map>
 
 namespace {
-bool operator==(const Orientation &lhs, const Orientation &rhs) { return lhs.up == rhs.up && lhs.front == rhs.front; }
-
 Axis to_axis(const std::int32_t data_axis, const std::int32_t data_sign) {
   if (data_sign == -1) {
     if (data_axis == 0) {
