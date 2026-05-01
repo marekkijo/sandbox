@@ -13,7 +13,7 @@ extern "C" {
 namespace gp::ffmpeg {
 // Custom deleters for FFmpeg RAII wrappers
 struct AVCodecContextDeleter {
-  void operator()(AVCodecContext *ctx) const {
+  void operator()(AVCodecContext *ctx) const noexcept {
     if (ctx) {
       avcodec_free_context(&ctx);
     }
@@ -21,7 +21,7 @@ struct AVCodecContextDeleter {
 };
 
 struct AVCodecParserContextDeleter {
-  void operator()(AVCodecParserContext *parser) const {
+  void operator()(AVCodecParserContext *parser) const noexcept {
     if (parser) {
       av_parser_close(parser);
     }
@@ -29,7 +29,7 @@ struct AVCodecParserContextDeleter {
 };
 
 struct AVPacketDeleter {
-  void operator()(AVPacket *packet) const {
+  void operator()(AVPacket *packet) const noexcept {
     if (packet) {
       av_packet_free(&packet);
     }
@@ -37,7 +37,7 @@ struct AVPacketDeleter {
 };
 
 struct AVFrameDeleter {
-  void operator()(AVFrame *frame) const {
+  void operator()(AVFrame *frame) const noexcept {
     if (frame) {
       av_frame_free(&frame);
     }
@@ -45,7 +45,7 @@ struct AVFrameDeleter {
 };
 
 struct SwsContextDeleter {
-  void operator()(SwsContext *ctx) const {
+  void operator()(SwsContext *ctx) const noexcept {
     if (ctx) {
       sws_freeContext(ctx);
     }
