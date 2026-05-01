@@ -48,7 +48,7 @@ target_link_libraries(
 
 if(NOT EMSCRIPTEN)
   target_include_directories(gp PUBLIC ${FFMPEG_INCLUDE_DIRS})
-  target_link_directories(gp PUBLIC ${FFMPEG_LIBRARY_DIRS})
+  target_link_directories(gp PRIVATE ${FFMPEG_LIBRARY_DIRS})
   target_link_libraries(gp PUBLIC ${FFMPEG_LIBRARIES})
   target_link_libraries(gp PUBLIC glad::glad)
 endif()
