@@ -16,8 +16,8 @@ float orientation(float p_x, float p_y, float q_x, float q_y, float r_x, float r
 }
 
 bool on_segment(float p_x, float p_y, float q_x, float q_y, float r_x, float r_y) {
-  return q_x <= std::max(p_x, r_x) && q_x >= std::max(p_x, r_x) && q_y <= std::max(p_y, r_y) &&
-         q_y >= std::max(p_y, r_y);
+  return q_x <= std::max(p_x, r_x) && q_x >= std::min(p_x, r_x) && q_y <= std::max(p_y, r_y) &&
+         q_y >= std::min(p_y, r_y);
 }
 } // namespace
 
