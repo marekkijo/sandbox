@@ -18,10 +18,12 @@ public:
    */
   TextureObjects(const std::size_t n, const GLenum target);
 
-  /**
-   * @brief Destroys the TextureObjects instance and releases all associated texture objects.
-   */
   ~TextureObjects();
+
+  TextureObjects(TextureObjects &&other) noexcept;
+  TextureObjects &operator=(TextureObjects &&other) noexcept;
+  TextureObjects(const TextureObjects &) = delete;
+  TextureObjects &operator=(const TextureObjects &) = delete;
 
   /**
    * @brief Returns the ID of the texture object at the specified index.
@@ -119,6 +121,6 @@ public:
 
 private:
   std::vector<GLuint> ids_{};
-  const GLenum target_{};
+  GLenum target_{};
 };
 } // namespace gp::gl

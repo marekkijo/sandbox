@@ -20,10 +20,12 @@ public:
    */
   explicit VertexArrayObjects(const std::size_t n);
 
-  /**
-   * @brief Destructor for the VertexArrayObjects class.
-   */
   ~VertexArrayObjects();
+
+  VertexArrayObjects(VertexArrayObjects &&other) noexcept;
+  VertexArrayObjects &operator=(VertexArrayObjects &&other) noexcept;
+  VertexArrayObjects(const VertexArrayObjects &) = delete;
+  VertexArrayObjects &operator=(const VertexArrayObjects &) = delete;
 
   /**
    * @brief Returns the ID of the vertex array object at the specified index.

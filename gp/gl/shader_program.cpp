@@ -3,6 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <stdexcept>
+#include <utility>
 
 namespace gp::gl {
 ShaderProgram::ShaderProgram() {
