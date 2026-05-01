@@ -40,11 +40,19 @@ target_include_directories(gp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(gp PUBLIC glm::glm)
 target_link_libraries(gp PUBLIC nlohmann_json::nlohmann_json)
 target_link_libraries(gp PUBLIC SDL3::SDL3)
-if(TARGET SDL3_ttf::SDL3_ttf-shared)
-  target_link_libraries(gp PUBLIC SDL3_ttf::SDL3_ttf-shared)
+if(TARGET SDL3_ttf::SDL3_ttf)
+  set(SDL3_TTF_TARGET SDL3_ttf::SDL3_ttf)
+elseif(TARGET SDL3_ttf::SDL3_ttf-shared)
+  set(SDL3_TTF_TARGET SDL3_ttf::SDL3_ttf-shared)
+elseif(TARGET SDL3_ttf::SDL3_ttf-static)
+  set(SDL3_TTF_TARGET SDL3_ttf::SDL3_ttf-static)
 else()
-  target_link_libraries(gp PUBLIC SDL3_ttf::SDL3_ttf-static)
+  message(
+    FATAL_ERROR
+      "SDL3_ttf was found, but no supported imported target is available. Expected one of: SDL3_ttf::SDL3_ttf, SDL3_ttf::SDL3_ttf-shared, or SDL3_ttf::SDL3_ttf-static."
+  )
 endif()
+target_link_libraries(gp PUBLIC ${SDL3_TTF_TARGET})
 
 if(NOT EMSCRIPTEN)
   target_include_directories(gp PUBLIC ${FFMPEG_INCLUDE_DIRS})
