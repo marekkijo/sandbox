@@ -1,6 +1,7 @@
 #include <gp/misc/event.hpp>
 
 #include <gtest/gtest.h>
+#include <utility>
 
 namespace {
 using gp::misc::Event;
