@@ -33,6 +33,7 @@ glm::mat4 to_glm(const aiMatrix4x4 &mat) {
 }
 } // namespace
 
+namespace loaders {
 Model::Model(const std::string &filename) {
   auto importer = Assimp::Importer();
   const auto scene =
@@ -137,3 +138,5 @@ void Model::process_mesh(const aiMesh *const mesh, const glm::mat4 &transformati
   }
   indices_.emplace_back(std::move(indices));
 }
+
+} // namespace loaders

@@ -3,12 +3,12 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
-#define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
 #include <span>
 #include <stdexcept>
 
+namespace loaders {
 namespace {
 glm::mat4 to_glm(const cgltf_float mat[16]) {
   return {mat[0],
@@ -138,3 +138,5 @@ void Model::process_mesh(const cgltf_mesh *const mesh, const glm::mat4 &transfor
     colors_.emplace_back(0.75f, 0.75f, 0.75f, 1.0f);
   }
 }
+
+} // namespace loaders

@@ -8,6 +8,7 @@
 #include <tuple>
 #include <vector>
 
+namespace loaders {
 class Model {
 public:
   Model(const Model &) = delete;
@@ -35,3 +36,4 @@ private:
   std::vector<glm::vec4> colors_{};
   std::set<std::string> meshes_{};
 };
+} // namespace loaders

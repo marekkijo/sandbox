@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <memory>
 
+namespace loaders {
 class ModelScene : public gp::sdl::Scene3D {
 public:
   explicit ModelScene(std::shared_ptr<const Model> model);
@@ -48,3 +49,4 @@ private:
 
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
 };
+} // namespace loaders
