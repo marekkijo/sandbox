@@ -6,12 +6,12 @@
 #include <glm/glm.hpp>
 
 enum class Axis {
-  x_minus,
-  y_minus,
-  z_minus,
-  x_plus,
-  y_plus,
-  z_plus
+  x_minus = 0,
+  y_minus = 1,
+  z_minus = 2,
+  x_plus = 3,
+  y_plus = 4,
+  z_plus = 5
 };
 
 struct Orientation {
