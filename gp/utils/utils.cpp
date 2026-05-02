@@ -3,6 +3,7 @@
 #include <fstream>
 #include <random>
 #include <sstream>
+#include <stdexcept>
 
 #ifdef __APPLE__
 # include <libgen.h>
@@ -12,14 +13,17 @@
 
 namespace gp::utils {
 std::vector<std::string> split_by(const std::string &src, const std::string &delimiter) {
+  if (delimiter.empty()) {
+    throw std::invalid_argument{"split_by: delimiter must not be empty"};
+  }
   auto tokens = std::vector<std::string>{};
   auto pos = std::string::npos;
   auto ppos = std::size_t{0u};
   while ((pos = src.find(delimiter, ppos)) != std::string::npos) {
-    tokens.emplace_back(src.substr(ppos, pos));
-    ppos += tokens.back().length() + 1;
+    tokens.emplace_back(src.substr(ppos, pos - ppos));
+    ppos += tokens.back().length() + delimiter.length();
   }
-  tokens.emplace_back(src.substr(ppos, src.length() - 1));
+  tokens.emplace_back(src.substr(ppos));
   return tokens;
 }
 
@@ -41,6 +45,9 @@ std::string generate_random_string(const std::size_t length) {
 
 std::string load_txt_file(const std::string &filename) {
   auto txt_file = std::ifstream{filename};
+  if (!txt_file.is_open()) {
+    throw std::runtime_error{"Could not open file: " + filename};
+  }
   auto buffer = std::stringstream{};
   buffer << txt_file.rdbuf();
   return buffer.str();
