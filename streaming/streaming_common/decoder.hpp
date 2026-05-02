@@ -68,7 +68,6 @@ public:
 private:
   [[nodiscard]] bool upload();
   void reduce_buffer(int n);
-  void destroy();
   void yuv_to_rgb();
   void fill_async_buffer(const std::byte *data, const std::size_t size);
   void consume_async_buffer();
@@ -78,10 +77,10 @@ private:
   std::shared_ptr<FrameData> rgb_frame_{};
 
   const AVCodec *codec_{};
-  AVCodecContext *context_{};
-  AVCodecParserContext *parser_{};
-  AVPacket *packet_{};
-  AVFrame *frame_{};
+  gp::ffmpeg::UniqueAVCodecContext context_{};
+  gp::ffmpeg::UniqueAVCodecParserContext parser_{};
+  gp::ffmpeg::UniqueAVPacket packet_{};
+  gp::ffmpeg::UniqueAVFrame frame_{};
 
   std::vector<std::uint8_t> buffer_{};
 
