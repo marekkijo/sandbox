@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <iterator>
 #include <span>
+#include <stdexcept>
 
 namespace {
 glm::mat4 to_glm(const aiMatrix4x4 &mat) {
@@ -39,7 +40,7 @@ Model::Model(const std::string &filename) {
   const auto scene =
       importer.ReadFile(filename, aiPostProcessSteps::aiProcess_Triangulate | aiPostProcessSteps::aiProcess_GenNormals);
   if (!scene) {
-    return;
+    throw std::runtime_error{"Assimp failed to load '" + filename + "': " + importer.GetErrorString()};
   }
 
   const auto model_format = get_model_format(importer);
