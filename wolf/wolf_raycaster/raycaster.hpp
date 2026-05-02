@@ -2,10 +2,13 @@
 
 #include "wolf_common/player_state.hpp"
 #include "wolf_common/raw_map.hpp"
+#include "wolf_common/wolf_map_info.hpp"
 
 namespace wolf {
 struct RayInfo {
   float dist{};
+  Map::Walls wall{Map::Walls::nothing};
+  bool x_facing{};
 };
 
 class Raycaster {
@@ -24,7 +27,13 @@ private:
   float fov_;
   std::vector<RayInfo> rays_{};
 
-  glm::vec2 find_collision(const float ray_angle) const;
+  struct CollisionResult {
+    glm::vec2 pos{};
+    Map::Walls wall{Map::Walls::nothing};
+    bool x_facing{};
+  };
+
+  CollisionResult find_collision(const float ray_angle) const;
   float project_to_camera_plane(const glm::vec2 &pos) const;
 };
 } // namespace wolf
