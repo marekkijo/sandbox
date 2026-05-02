@@ -73,7 +73,9 @@ Encoder::Encoder(const VideoStreamInfo &video_stream_info)
 
 Encoder::~Encoder() {
   if (context_) {
-    encode_frame(nullptr);
+    try {
+      encode_frame(nullptr);
+    } catch (...) {}
   }
 }
 
