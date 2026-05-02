@@ -88,9 +88,10 @@ void RaycasterScene::draw_walls() const {
     const auto orient_factor = ray.x_facing ? orientation_shadow : 1.0f;
 
     // Proximity shading: walls darken as you approach them.
-    // Discretised into steps to reduce colour banding between adjacent strips.
-    const auto raw_proximity = 1.0f - std::min(max_proximity_shadow, height_multiplier);
-    const auto proximity_factor = static_cast<float>(static_cast<int>(raw_proximity / step_size)) * step_size;
+    // Quantize the shadow amount so that the full [0.25, 1.0] brightness range is reachable.
+    const auto raw_shadow = std::min(max_proximity_shadow, height_multiplier);
+    const auto quantized_shadow = static_cast<float>(static_cast<int>(raw_shadow / step_size)) * step_size;
+    const auto proximity_factor = 1.0f - quantized_shadow;
 
     const auto combined = orient_factor * proximity_factor;
     const auto color = glm::uvec3{static_cast<std::uint32_t>(std::round(static_cast<float>(base_color.r) * combined)),
