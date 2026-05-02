@@ -100,7 +100,7 @@ void Encoder::encode() {
   flip_frame();
   rgb_to_yuv();
 
-  encode_frame(frame_);
+  encode_frame(frame_.get());
 
   frame_->pts++;
 }
