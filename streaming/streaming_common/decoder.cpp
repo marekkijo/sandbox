@@ -118,7 +118,7 @@ bool Decoder::incoming_data(const std::byte *data, const std::size_t size, const
     buffer_.reserve(size + NULL_PADDING.size());
   } else {
     if (buffer_.size() >= NULL_PADDING.size()) {
-      buffer_.erase(buffer_.begin() + static_cast<std::int64_t>(buffer_.size()) - NULL_PADDING.size(), buffer_.end());
+      buffer_.erase(buffer_.end() - NULL_PADDING.size(), buffer_.end());
     }
     buffer_.reserve(buffer_.size() + size + NULL_PADDING.size());
   }
@@ -185,6 +185,9 @@ bool Decoder::upload() {
       }
       throw std::runtime_error("avcodec_send_packet filed with error: " + std::to_string(result));
     } else if (eof) {
+      break;
+    } else if (used == 0) {
+      // Parser consumed nothing and produced no packet — need more input data.
       break;
     } else {
       reduce_buffer(used);
