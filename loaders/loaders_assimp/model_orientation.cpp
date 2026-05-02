@@ -77,7 +77,6 @@ Orientation get_orientation(const ModelFormat model_format, const aiMetadata *co
 
 glm::mat4 get_orientation_matrix(const Orientation &orientation) {
   // Encode {up, front} as a single integer key: up * 6 + front.
-  // Axis enum order: x_minus=0, y_minus=1, z_minus=2, x_plus=3, y_plus=4, z_plus=5
   const auto key = [](const Orientation &o) { return static_cast<int>(o.up) * 6 + static_cast<int>(o.front); };
   static const std::unordered_map<int, glm::mat4> table = {
       { key({Axis::y_plus, Axis::z_minus}),                                     glm::mat4(1.0f)},
