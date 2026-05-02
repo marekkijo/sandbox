@@ -9,6 +9,7 @@ struct RayInfo {
   float dist{};
   Map::Walls wall{Map::Walls::nothing};
   bool x_facing{};
+  float tex_u{};
 };
 
 class Raycaster {
@@ -31,6 +32,7 @@ private:
     glm::vec2 pos{};
     Map::Walls wall{Map::Walls::nothing};
     bool x_facing{};
+    float tex_u{};
   };
 
   CollisionResult find_collision(const float ray_angle) const;
