@@ -57,6 +57,8 @@ public:
 
   void draw_text(const std::string &text, const int x, const int y) const;
 
+  SDL_Renderer *sdl_renderer() const;
+
   static constexpr auto default_segments = 8u;
 
 private:

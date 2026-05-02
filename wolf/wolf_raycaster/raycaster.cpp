@@ -28,6 +28,7 @@ void Raycaster::cast_rays() {
     rays_[r_it].dist = project_to_camera_plane(collision.pos);
     rays_[r_it].wall = collision.wall;
     rays_[r_it].x_facing = collision.x_facing;
+    rays_[r_it].tex_u = collision.tex_u;
   }
 }
 
@@ -44,11 +45,13 @@ Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) cons
   auto result = scan_end;
   auto result_wall = Map::Walls::nothing;
   auto result_x_facing = false;
+  auto result_tex_u = 0.0f;
   auto found = false;
   auto min_dist = line_length_;
 
-  const auto intersection_check = [this, &player_pos, &scan_end, &min_dist, &result, &result_wall, &result_x_facing](
-                                      const glm::ivec2 &wall_pos) -> bool {
+  const auto intersection_check =
+      [this, &player_pos, &scan_end, &min_dist, &result, &result_wall, &result_x_facing, &result_tex_u](
+          const glm::ivec2 &wall_pos) -> bool {
     if (!raw_map_.is_wall(wall_pos)) {
       return false;
     }
@@ -72,6 +75,10 @@ Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) cons
       const auto dy = std::min(std::abs(line_start.y - static_cast<float>(wall_pos.y)),
                                std::abs(line_start.y - static_cast<float>(wall_pos.y + 1)));
       result_x_facing = dx < dy;
+      // Texture u-coordinate: fractional part of the component that varies along the face.
+      const auto raw_u =
+          result_x_facing ? (line_start.y - std::floor(line_start.y)) : (line_start.x - std::floor(line_start.x));
+      result_tex_u = raw_u < 0.0f ? raw_u + 1.0f : raw_u;
     }
 
     return true;
@@ -102,7 +109,7 @@ Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) cons
     }
   }
 
-  return {result, result_wall, result_x_facing};
+  return {result, result_wall, result_x_facing, result_tex_u};
 }
 
 float Raycaster::project_to_camera_plane(const glm::vec2 &pos) const {

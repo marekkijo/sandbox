@@ -1,6 +1,7 @@
 #include "raycaster_scene.hpp"
 
 #include "wolf_common/raw_map_from_wolf.hpp"
+#include "wolf_common/vswap_file.hpp"
 
 #include <cstddef>
 #include <gp/utils/utils.hpp>
@@ -13,6 +14,7 @@
 
 constexpr auto MAPHEAD = "data/MAPHEAD.WL6";
 constexpr auto GAMEMAPS = "data/GAMEMAPS.WL6";
+constexpr auto VSWAP = "data/VSWAP.WL6";
 
 struct ProgramSetup {
   bool exit{};
@@ -81,8 +83,10 @@ int main(int argc, char *argv[]) {
 
   auto raw_map_from_wolf = wolf::RawMapFromWolf{MAPHEAD, GAMEMAPS};
   auto raw_map = raw_map_from_wolf.create_map(program_setup.map_index);
+  auto vswap_file = std::make_shared<const wolf::VswapFile>(VSWAP);
 
-  auto scene = std::make_unique<wolf::RaycasterScene>(std::move(raw_map), program_setup.fov, program_setup.num_rays);
+  auto scene =
+      std::make_unique<wolf::RaycasterScene>(std::move(raw_map), vswap_file, program_setup.fov, program_setup.num_rays);
 
   scene->init(program_setup.width, program_setup.height, "Wolf: Raycaster");
 
