@@ -49,7 +49,10 @@ void RaycasterScene::loop(const gp::misc::Event &event) {
         show_textures_ = !show_textures_;
         break;
       case gp::misc::Event::ScanCode::G:
-        show_shading_ = !show_shading_;
+        show_proximity_shading_ = !show_proximity_shading_;
+        break;
+      case gp::misc::Event::ScanCode::L:
+        show_orientation_shading_ = !show_orientation_shading_;
         break;
       case gp::misc::Event::ScanCode::M:
         show_map_ = !show_map_;
@@ -140,12 +143,13 @@ void RaycasterScene::draw_walls() const {
     const auto wall_strip = SDL_FRect{ray_index * strip_width, wall_top, strip_width, projected_height};
 
     if (show_textures_) {
-      // VSWAP stores textures in pairs per wall type: even index = N/S (light), odd = E/W (dark).
+      // Orientation: pick E/W (dark) variant when enabled, otherwise always use N/S (light).
       const auto wall_val = static_cast<std::size_t>(ray.wall);
-      const auto tex_idx = (wall_val - 1) * 2 + (ray.x_facing ? 1u : 0u);
+      const auto tex_face = show_orientation_shading_ ? (ray.x_facing ? 1u : 0u) : 0u;
+      const auto tex_idx = (wall_val - 1) * 2 + tex_face;
 
       const auto proximity_shade = [&]() -> std::uint8_t {
-        if (!show_shading_) {
+        if (!show_proximity_shading_) {
           return 255u;
         }
         const auto raw = 1.0f - std::min(max_proximity_shadow, height_multiplier);
@@ -167,11 +171,10 @@ void RaycasterScene::draw_walls() const {
         r().fill_rect(wall_strip);
       }
     } else {
-      // Solid color matching the map overlay: use wall_color() + orientation shadow for E/W faces.
+      // Solid color: orientation and proximity shading are independent multipliers.
       const auto base_color = MapUtils::wall_color(ray.wall);
-      auto shadow = 1.0f;
-      if (show_shading_) {
-        shadow = ray.x_facing ? MapUtils::orientation_shadow_factor : 1.0f;
+      auto shadow = show_orientation_shading_ ? (ray.x_facing ? MapUtils::orientation_shadow_factor : 1.0f) : 1.0f;
+      if (show_proximity_shading_) {
         const auto raw = 1.0f - std::min(max_proximity_shadow, height_multiplier);
         const auto stepped = static_cast<float>(static_cast<int>(raw / step_size)) * step_size;
         shadow *= stepped;
@@ -189,8 +192,8 @@ void RaycasterScene::draw_help_overlay() const {
   constexpr auto ch = 8; // SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
   constexpr auto line_h = ch + 4;
   constexpr auto padding = 6;
-  constexpr auto num_lines = 4;
-  constexpr auto max_chars = 18;
+  constexpr auto num_lines = 5;
+  constexpr auto max_chars = 22;
 
   float prev_sx{}, prev_sy{};
   SDL_GetRenderScale(sdl_r_, &prev_sx, &prev_sy);
@@ -211,13 +214,15 @@ void RaycasterScene::draw_help_overlay() const {
   SDL_SetRenderDrawColor(sdl_r_, 220, 220, 220, 255);
   const auto tx = bg_x + padding;
   auto ty = bg_y + padding;
-  SDL_RenderDebugText(sdl_r_, tx, ty, show_textures_ ? "T: Textures [on ]" : "T: Textures [off]");
+  SDL_RenderDebugText(sdl_r_, tx, ty, show_textures_ ? "T: Textures      [on ]" : "T: Textures      [off]");
   ty += line_h;
-  SDL_RenderDebugText(sdl_r_, tx, ty, show_shading_ ? "G: Shading  [on ]" : "G: Shading  [off]");
+  SDL_RenderDebugText(sdl_r_, tx, ty, show_proximity_shading_ ? "G: Prox shading  [on ]" : "G: Prox shading  [off]");
   ty += line_h;
-  SDL_RenderDebugText(sdl_r_, tx, ty, show_map_ ? "M: Map      [on ]" : "M: Map      [off]");
+  SDL_RenderDebugText(sdl_r_, tx, ty, show_orientation_shading_ ? "L: Orient shade  [on ]" : "L: Orient shade  [off]");
   ty += line_h;
-  SDL_RenderDebugText(sdl_r_, tx, ty, map_player_oriented_ ? "O: Map [player-up]" : "O: Map [north-up ]");
+  SDL_RenderDebugText(sdl_r_, tx, ty, show_map_ ? "M: Map           [on ]" : "M: Map           [off]");
+  ty += line_h;
+  SDL_RenderDebugText(sdl_r_, tx, ty, map_player_oriented_ ? "O: Map    [player-up]" : "O: Map     [north-up]");
 
   SDL_SetRenderScale(sdl_r_, prev_sx, prev_sy);
 }

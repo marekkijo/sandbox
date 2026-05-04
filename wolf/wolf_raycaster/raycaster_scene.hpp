@@ -44,7 +44,8 @@ private:
   std::uint32_t last_timestamp_ms_{0u};
 
   bool show_textures_{true};
-  bool show_shading_{true};
+  bool show_proximity_shading_{true};
+  bool show_orientation_shading_{true};
   bool show_map_{true};
   bool map_player_oriented_{false};
 
