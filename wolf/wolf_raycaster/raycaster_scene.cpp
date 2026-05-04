@@ -105,7 +105,7 @@ void RaycasterScene::draw_walls() const {
     }
 
     // Source column from the 64×64 texture based on the hit u-coordinate.
-    const auto tex_col = static_cast<int>(ray.tex_u * 64.0f);
+    const auto tex_col = std::clamp(static_cast<int>(ray.tex_u * 64.0f), 0, 63);
     const auto src = SDL_FRect{static_cast<float>(tex_col), 0.0f, 1.0f, 64.0f};
 
     // Proximity shading via texture colour mod (discretised to reduce banding).
