@@ -1,8 +1,12 @@
 #include "raycaster_scene.hpp"
 
+#include "wolf_common/map_utils.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+
+#include <glm/vec3.hpp>
 
 namespace wolf {
 RaycasterScene::RaycasterScene(std::unique_ptr<const RawMap> raw_map,
@@ -101,6 +105,8 @@ void RaycasterScene::redraw() {
     map_renderer_.redraw();
   }
 
+  draw_help_overlay();
+
   r().present();
 }
 
@@ -162,18 +168,60 @@ void RaycasterScene::draw_walls() const {
         r().fill_rect(wall_strip);
       }
     } else {
-      // Solid color from VectorMap, with optional orientation + proximity shading.
-      const auto wall_val = static_cast<std::size_t>(ray.wall);
-      auto shadow = show_shading_ ? (ray.x_facing ? orientation_shadow_factor : 1.0f) : 1.0f;
+      // Solid color matching the map overlay: use wall_color() + orientation shadow for E/W faces.
+      const auto base_color = MapUtils::wall_color(ray.wall);
+      auto shadow = 1.0f;
       if (show_shading_) {
+        shadow = ray.x_facing ? orientation_shadow_factor : 1.0f;
         const auto raw = 1.0f - std::min(max_proximity_shadow, height_multiplier);
         const auto stepped = static_cast<float>(static_cast<int>(raw / step_size)) * step_size;
         shadow *= stepped;
+      } else {
+        shadow = ray.x_facing ? orientation_shadow_factor : 1.0f;
       }
-      const auto color = vector_map_.color(wall_val - 1, shadow);
-      r().set_color(color);
+      r().set_color(glm::uvec3{static_cast<unsigned>(std::round(base_color.r * shadow)),
+                               static_cast<unsigned>(std::round(base_color.g * shadow)),
+                               static_cast<unsigned>(std::round(base_color.b * shadow))});
       r().fill_rect(wall_strip);
     }
   }
+}
+
+void RaycasterScene::draw_help_overlay() const {
+  constexpr auto scale = 2.0f;
+  constexpr auto ch = 8; // SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
+  constexpr auto line_h = ch + 4;
+  constexpr auto padding = 6;
+  constexpr auto num_lines = 4;
+  constexpr auto max_chars = 18;
+
+  float prev_sx{}, prev_sy{};
+  SDL_GetRenderScale(sdl_r_, &prev_sx, &prev_sy);
+  SDL_SetRenderScale(sdl_r_, scale, scale);
+
+  const auto log_h = static_cast<float>(height_) / scale;
+  const auto bg_w = static_cast<float>(max_chars * ch + padding * 2);
+  const auto bg_h = static_cast<float>(num_lines * line_h - 4 + padding * 2);
+  const auto bg_x = static_cast<float>(padding);
+  const auto bg_y = log_h - bg_h - static_cast<float>(padding);
+
+  SDL_SetRenderDrawBlendMode(sdl_r_, SDL_BLENDMODE_BLEND);
+  SDL_SetRenderDrawColor(sdl_r_, 0, 0, 0, 180);
+  const SDL_FRect bg{bg_x, bg_y, bg_w, bg_h};
+  SDL_RenderFillRect(sdl_r_, &bg);
+  SDL_SetRenderDrawBlendMode(sdl_r_, SDL_BLENDMODE_NONE);
+
+  SDL_SetRenderDrawColor(sdl_r_, 220, 220, 220, 255);
+  const auto tx = bg_x + padding;
+  auto ty = bg_y + padding;
+  SDL_RenderDebugText(sdl_r_, tx, ty, show_textures_ ? "T: Textures [on ]" : "T: Textures [off]");
+  ty += line_h;
+  SDL_RenderDebugText(sdl_r_, tx, ty, show_shading_ ? "G: Shading  [on ]" : "G: Shading  [off]");
+  ty += line_h;
+  SDL_RenderDebugText(sdl_r_, tx, ty, show_map_ ? "M: Map      [on ]" : "M: Map      [off]");
+  ty += line_h;
+  SDL_RenderDebugText(sdl_r_, tx, ty, map_player_oriented_ ? "O: Map [player-up]" : "O: Map [north-up ]");
+
+  SDL_SetRenderScale(sdl_r_, prev_sx, prev_sy);
 }
 } // namespace wolf
