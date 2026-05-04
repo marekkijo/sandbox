@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace wolf {
 RaycasterScene::RaycasterScene(std::unique_ptr<const RawMap> raw_map,
@@ -51,7 +52,13 @@ void RaycasterScene::init_wall_textures() {
   wall_textures_.reserve(walls.size());
   for (const auto &tex_data : walls) {
     auto *tex = SDL_CreateTexture(sdl_r_, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 64, 64);
-    SDL_UpdateTexture(tex, nullptr, tex_data.data(), 64 * 4);
+    if (!tex) {
+      throw std::runtime_error(std::string("SDL_CreateTexture failed: ") + SDL_GetError());
+    }
+    if (!SDL_UpdateTexture(tex, nullptr, tex_data.data(), 64 * 4)) {
+      SDL_DestroyTexture(tex);
+      throw std::runtime_error(std::string("SDL_UpdateTexture failed: ") + SDL_GetError());
+    }
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
     wall_textures_.emplace_back(tex, SDL_DestroyTexture);
   }
