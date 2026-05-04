@@ -125,7 +125,6 @@ void RaycasterScene::draw_walls() const {
   constexpr auto num_steps = 8;
   constexpr auto max_proximity_shadow = 0.75f;
   constexpr auto step_size = max_proximity_shadow / num_steps;
-  constexpr auto orientation_shadow_factor = 0.625f;
 
   const auto &rays = raycaster_.rays();
   const auto strip_width = static_cast<float>(width_) / static_cast<float>(rays.size());
@@ -141,7 +140,7 @@ void RaycasterScene::draw_walls() const {
     const auto wall_strip = SDL_FRect{ray_index * strip_width, wall_top, strip_width, projected_height};
 
     if (show_textures_) {
-      // VSWAP stores textures in pairs per wall type: even index = N/S (dark), odd = E/W (light).
+      // VSWAP stores textures in pairs per wall type: even index = N/S (light), odd = E/W (dark).
       const auto wall_val = static_cast<std::size_t>(ray.wall);
       const auto tex_idx = (wall_val - 1) * 2 + (ray.x_facing ? 1u : 0u);
 
@@ -172,12 +171,10 @@ void RaycasterScene::draw_walls() const {
       const auto base_color = MapUtils::wall_color(ray.wall);
       auto shadow = 1.0f;
       if (show_shading_) {
-        shadow = ray.x_facing ? orientation_shadow_factor : 1.0f;
+        shadow = ray.x_facing ? MapUtils::orientation_shadow_factor : 1.0f;
         const auto raw = 1.0f - std::min(max_proximity_shadow, height_multiplier);
         const auto stepped = static_cast<float>(static_cast<int>(raw / step_size)) * step_size;
         shadow *= stepped;
-      } else {
-        shadow = ray.x_facing ? orientation_shadow_factor : 1.0f;
       }
       r().set_color(glm::uvec3{static_cast<unsigned>(std::round(base_color.r * shadow)),
                                static_cast<unsigned>(std::round(base_color.g * shadow)),
