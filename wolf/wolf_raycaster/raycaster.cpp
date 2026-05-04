@@ -50,7 +50,7 @@ Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) cons
   auto min_dist = line_length_;
 
   const auto intersection_check =
-      [this, &player_pos, &scan_end, &min_dist, &result, &result_wall, &result_x_facing, &result_tex_u](
+      [this, &player_pos, &scan_end, &ray_dir, &min_dist, &result, &result_wall, &result_x_facing, &result_tex_u](
           const glm::ivec2 &wall_pos) -> bool {
     if (!raw_map_.is_wall(wall_pos)) {
       return false;
@@ -75,10 +75,13 @@ Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) cons
       const auto dy = std::min(std::abs(line_start.y - static_cast<float>(wall_pos.y)),
                                std::abs(line_start.y - static_cast<float>(wall_pos.y + 1)));
       result_x_facing = dx < dy;
-      // Texture u-coordinate: fractional part of the component that varies along the face.
+      // Texture u-coordinate: fractional part of the component that varies along the face,
+      // flipped based on ray direction so the texture reads consistently left-to-right from
+      // the viewer's perspective regardless of which face is hit.
       const auto raw_u =
           result_x_facing ? (line_start.y - std::floor(line_start.y)) : (line_start.x - std::floor(line_start.x));
-      result_tex_u = raw_u < 0.0f ? raw_u + 1.0f : raw_u;
+      const auto flip = (result_x_facing && ray_dir.x < 0.0f) || (!result_x_facing && ray_dir.y < 0.0f);
+      result_tex_u = flip ? (1.0f - raw_u) : raw_u;
     }
 
     return true;
