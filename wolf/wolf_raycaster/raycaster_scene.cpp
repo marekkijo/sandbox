@@ -48,6 +48,9 @@ void RaycasterScene::resize(const int width, const int height) {
 }
 
 void RaycasterScene::init_wall_textures() {
+  if (!vswap_file_) {
+    throw std::runtime_error("VswapFile is null: cannot initialize wall textures");
+  }
   const auto &walls = vswap_file_->walls();
   wall_textures_.reserve(walls.size());
   for (const auto &tex_data : walls) {
