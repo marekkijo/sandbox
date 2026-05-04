@@ -31,6 +31,7 @@ private:
   void init_wall_textures();
   void draw_background() const;
   void draw_walls() const;
+  void draw_help_overlay() const;
 
   const std::unique_ptr<const RawMap> raw_map_{};
   std::shared_ptr<const VswapFile> vswap_file_{};
@@ -44,7 +45,7 @@ private:
 
   bool show_textures_{true};
   bool show_shading_{true};
-  bool show_map_{false};
+  bool show_map_{true};
   bool map_player_oriented_{false};
 
   SDL_Renderer *sdl_r_{};
