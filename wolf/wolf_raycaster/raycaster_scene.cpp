@@ -106,9 +106,9 @@ void RaycasterScene::draw_walls() const {
     const auto wall_top = (static_cast<float>(height_) - projected_height) / 2.0f;
     const auto wall_strip = SDL_FRect{ray_index * strip_width, wall_top, strip_width, projected_height};
 
-    // Select texture: direct index from wall type (one texture per wall id).
+    // VSWAP stores textures in pairs per wall type: even index = N/S (dark), odd = E/W (light).
     const auto wall_val = static_cast<std::size_t>(ray.wall);
-    const auto tex_idx = wall_val - 1;
+    const auto tex_idx = (wall_val - 1) * 2 + (ray.x_facing ? 1u : 0u);
 
     if (tex_idx >= wall_textures_.size()) {
       continue;
@@ -119,12 +119,9 @@ void RaycasterScene::draw_walls() const {
     const auto src = SDL_FRect{static_cast<float>(tex_col), 0.0f, 1.0f, 64.0f};
 
     // Proximity shading via texture colour mod (discretised to reduce banding).
-    // E/W (x-facing) walls use the same orientation shadow factor as the vector map.
-    constexpr auto orientation_shadow_factor = 0.625f;
-    const auto orientation_factor = ray.x_facing ? orientation_shadow_factor : 1.0f;
     const auto raw_proximity = 1.0f - std::min(max_proximity_shadow, height_multiplier);
     const auto proximity_factor = static_cast<float>(static_cast<int>(raw_proximity / step_size)) * step_size;
-    const auto shade = static_cast<std::uint8_t>(std::round(proximity_factor * orientation_factor * 255.0f));
+    const auto shade = static_cast<std::uint8_t>(std::round(proximity_factor * 255.0f));
 
     auto *tex = wall_textures_[tex_idx].get();
     SDL_SetTextureColorMod(tex, shade, shade, shade);
