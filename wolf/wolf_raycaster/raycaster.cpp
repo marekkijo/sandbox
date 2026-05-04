@@ -4,6 +4,8 @@
 #include <glm/geometric.hpp>
 #include <gp/utils/utils.hpp>
 
+#include <algorithm>
+#include <cmath>
 #include <numbers>
 
 namespace wolf {
@@ -22,12 +24,14 @@ void Raycaster::cast_rays() {
   const auto scan_start = player_state_.orientation() - (fov_ / 2.0f);
   for (std::size_t r_it = 0; r_it < rays_.size(); r_it++) {
     const auto ray_angle = scan_start + ray_angle_step * static_cast<float>(r_it);
-    auto collision_pos = find_collision(ray_angle);
-    rays_[r_it].dist = project_to_camera_plane(collision_pos);
+    auto collision = find_collision(ray_angle);
+    rays_[r_it].dist = project_to_camera_plane(collision.pos);
+    rays_[r_it].wall = collision.wall;
+    rays_[r_it].x_facing = collision.x_facing;
   }
 }
 
-glm::vec2 Raycaster::find_collision(const float ray_angle) const {
+Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) const {
   const auto max_depth = std::max(raw_map_.width(), raw_map_.height());
   const auto ray_dir = gp::utils::orientation_to_dir(ray_angle);
   const auto player_block_pos = player_state_.block_pos();
@@ -38,11 +42,13 @@ glm::vec2 Raycaster::find_collision(const float ray_angle) const {
   const auto player_pos = player_state_.pos();
   const auto scan_end = player_pos + ray_dir * line_length_;
   auto result = scan_end;
+  auto result_wall = Map::Walls::nothing;
+  auto result_x_facing = false;
   auto found = false;
   auto min_dist = line_length_;
 
-  const auto intersection_check =
-      [this, &player_pos, &scan_end, &min_dist, &result](const glm::ivec2 &wall_pos) -> bool {
+  const auto intersection_check = [this, &player_pos, &scan_end, &min_dist, &result, &result_wall, &result_x_facing](
+                                      const glm::ivec2 &wall_pos) -> bool {
     if (!raw_map_.is_wall(wall_pos)) {
       return false;
     }
@@ -58,6 +64,14 @@ glm::vec2 Raycaster::find_collision(const float ray_angle) const {
     if (dist < min_dist) {
       min_dist = dist;
       result = line_start;
+      result_wall = raw_map_.block(wall_pos).wall;
+      // Determine face orientation: compare closeness to x-boundary vs y-boundary.
+      // x-facing = hit the left or right face of the block (x is constant).
+      const auto dx = std::min(std::abs(line_start.x - static_cast<float>(wall_pos.x)),
+                               std::abs(line_start.x - static_cast<float>(wall_pos.x + 1)));
+      const auto dy = std::min(std::abs(line_start.y - static_cast<float>(wall_pos.y)),
+                               std::abs(line_start.y - static_cast<float>(wall_pos.y + 1)));
+      result_x_facing = dx < dy;
     }
 
     return true;
@@ -88,7 +102,7 @@ glm::vec2 Raycaster::find_collision(const float ray_angle) const {
     }
   }
 
-  return result;
+  return {result, result_wall, result_x_facing};
 }
 
 float Raycaster::project_to_camera_plane(const glm::vec2 &pos) const {
