@@ -11,7 +11,8 @@ RaycasterScene::RaycasterScene(std::unique_ptr<const RawMap> raw_map,
                                const int num_rays)
     : raw_map_{std::move(raw_map)}
     , vswap_file_{std::move(vswap_file)}
-    , raycaster_{*raw_map_, player_state_, fov_in_degrees, num_rays} {}
+    , raycaster_{*raw_map_, player_state_, fov_in_degrees, num_rays}
+    , map_renderer_{vector_map_, player_state_, static_cast<std::uint32_t>(fov_in_degrees)} {}
 
 void RaycasterScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -19,10 +20,12 @@ void RaycasterScene::loop(const gp::misc::Event &event) {
     last_timestamp_ms_ = event.timestamp();
     player_state_.set_keyboard_state(keyboard_state());
     sdl_r_ = renderer()->sdl_renderer();
+    map_renderer_.set_renderer(renderer());
     init_wall_textures();
     resize(event.init().width, event.init().height);
     break;
   case gp::misc::Event::Type::Quit:
+    map_renderer_.set_renderer(nullptr);
     player_state_.set_keyboard_state(nullptr);
     break;
   case gp::misc::Event::Type::Resize:
@@ -35,6 +38,27 @@ void RaycasterScene::loop(const gp::misc::Event &event) {
     last_timestamp_ms_ = event.timestamp();
     redraw();
   } break;
+  case gp::misc::Event::Type::Key:
+    if (event.key().action == gp::misc::Event::Action::Pressed) {
+      switch (event.key().scan_code) {
+      case gp::misc::Event::ScanCode::T:
+        show_textures_ = !show_textures_;
+        break;
+      case gp::misc::Event::ScanCode::G:
+        show_shading_ = !show_shading_;
+        break;
+      case gp::misc::Event::ScanCode::M:
+        show_map_ = !show_map_;
+        break;
+      case gp::misc::Event::ScanCode::O:
+        map_renderer_.set_player_oriented(!map_player_oriented_);
+        map_player_oriented_ = !map_player_oriented_;
+        break;
+      default:
+        break;
+      }
+    }
+    break;
   default:
     break;
   }
@@ -43,6 +67,7 @@ void RaycasterScene::loop(const gp::misc::Event &event) {
 void RaycasterScene::resize(const int width, const int height) {
   width_ = width;
   height_ = height;
+  map_renderer_.resize(width, height);
 }
 
 void RaycasterScene::init_wall_textures() {
@@ -72,6 +97,10 @@ void RaycasterScene::redraw() {
   draw_background();
   draw_walls();
 
+  if (show_map_) {
+    map_renderer_.redraw();
+  }
+
   r().present();
 }
 
@@ -90,6 +119,7 @@ void RaycasterScene::draw_walls() const {
   constexpr auto num_steps = 8;
   constexpr auto max_proximity_shadow = 0.75f;
   constexpr auto step_size = max_proximity_shadow / num_steps;
+  constexpr auto orientation_shadow_factor = 0.625f;
 
   const auto &rays = raycaster_.rays();
   const auto strip_width = static_cast<float>(width_) / static_cast<float>(rays.size());
@@ -104,26 +134,44 @@ void RaycasterScene::draw_walls() const {
     const auto wall_top = (static_cast<float>(height_) - projected_height) / 2.0f;
     const auto wall_strip = SDL_FRect{ray_index * strip_width, wall_top, strip_width, projected_height};
 
-    // Proximity shading factor (discretised to reduce banding).
-    const auto raw_proximity = 1.0f - std::min(max_proximity_shadow, height_multiplier);
-    const auto proximity_factor = static_cast<float>(static_cast<int>(raw_proximity / step_size)) * step_size;
-    const auto shade = static_cast<std::uint8_t>(std::round(proximity_factor * 255.0f));
+    if (show_textures_) {
+      // VSWAP stores textures in pairs per wall type: even index = N/S (dark), odd = E/W (light).
+      const auto wall_val = static_cast<std::size_t>(ray.wall);
+      const auto tex_idx = (wall_val - 1) * 2 + (ray.x_facing ? 1u : 0u);
 
-    // VSWAP stores textures in pairs per wall type: even index = N/S (dark), odd = E/W (light).
-    const auto wall_val = static_cast<std::size_t>(ray.wall);
-    const auto tex_idx = (wall_val - 1) * 2 + (ray.x_facing ? 1u : 0u);
+      const auto proximity_shade = [&]() -> std::uint8_t {
+        if (!show_shading_) {
+          return 255u;
+        }
+        const auto raw = 1.0f - std::min(max_proximity_shadow, height_multiplier);
+        const auto stepped = static_cast<float>(static_cast<int>(raw / step_size)) * step_size;
+        return static_cast<std::uint8_t>(std::round(stepped * 255.0f));
+      }();
 
-    if (tex_idx < wall_textures_.size()) {
-      // Source column from the 64×64 texture based on the hit u-coordinate.
-      const auto tex_col = std::clamp(static_cast<int>(ray.tex_u * 64.0f), 0, 63);
-      const auto src = SDL_FRect{static_cast<float>(tex_col), 0.0f, 1.0f, 64.0f};
+      if (tex_idx < wall_textures_.size()) {
+        // Source column from the 64×64 texture based on the hit u-coordinate.
+        const auto tex_col = std::clamp(static_cast<int>(ray.tex_u * 64.0f), 0, 63);
+        const auto src = SDL_FRect{static_cast<float>(tex_col), 0.0f, 1.0f, 64.0f};
 
-      auto *tex = wall_textures_[tex_idx].get();
-      SDL_SetTextureColorMod(tex, shade, shade, shade);
-      SDL_RenderTexture(sdl_r_, tex, &src, &wall_strip);
+        auto *tex = wall_textures_[tex_idx].get();
+        SDL_SetTextureColorMod(tex, proximity_shade, proximity_shade, proximity_shade);
+        SDL_RenderTexture(sdl_r_, tex, &src, &wall_strip);
+      } else {
+        // Fallback for wall types without a VSWAP texture pair (e.g. doors, elevator).
+        r().set_color(proximity_shade, proximity_shade, proximity_shade);
+        r().fill_rect(wall_strip);
+      }
     } else {
-      // Fallback for wall types without a VSWAP texture pair (e.g. doors, elevator).
-      r().set_color(shade, shade, shade);
+      // Solid color from VectorMap, with optional orientation + proximity shading.
+      const auto wall_val = static_cast<std::size_t>(ray.wall);
+      auto shadow = show_shading_ ? (ray.x_facing ? orientation_shadow_factor : 1.0f) : 1.0f;
+      if (show_shading_) {
+        const auto raw = 1.0f - std::min(max_proximity_shadow, height_multiplier);
+        const auto stepped = static_cast<float>(static_cast<int>(raw / step_size)) * step_size;
+        shadow *= stepped;
+      }
+      const auto color = vector_map_.color(wall_val - 1, shadow);
+      r().set_color(color);
       r().fill_rect(wall_strip);
     }
   }

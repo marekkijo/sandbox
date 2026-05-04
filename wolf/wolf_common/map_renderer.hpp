@@ -19,6 +19,7 @@ public:
               const bool player_oriented = false);
 
   void set_renderer(std::shared_ptr<const gp::sdl::Renderer> renderer);
+  void set_player_oriented(const bool player_oriented);
   void resize(const int width, const int height);
   void redraw();
 
@@ -32,7 +33,7 @@ private:
   const VectorMap &vector_map_;
   const PlayerState &player_state_;
   const float fov_in_rad_{};
-  const bool player_oriented_{};
+  bool player_oriented_{};
 
   std::shared_ptr<const gp::sdl::Renderer> r_{};
 

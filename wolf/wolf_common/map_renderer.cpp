@@ -16,6 +16,8 @@ MapRenderer::MapRenderer(const VectorMap &vector_map,
 
 void MapRenderer::set_renderer(std::shared_ptr<const gp::sdl::Renderer> renderer) { r_ = std::move(renderer); }
 
+void MapRenderer::set_player_oriented(const bool player_oriented) { player_oriented_ = player_oriented; }
+
 void MapRenderer::resize(const int width, const int height) {
   scale_ = std::min(width, height) / vector_map_.diagonal_length();
   screen_center_translation_ = glm::vec3{static_cast<float>(width) / 2.0f, static_cast<float>(height) / 2.0f, 0.0f};
