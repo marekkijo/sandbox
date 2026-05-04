@@ -170,4 +170,6 @@ void Renderer::draw_text(const std::string &text, const int x, const int y) cons
 
   SDL_RenderTexture(r_->r(), texture.get(), nullptr, &rect);
 }
+
+SDL_Renderer *Renderer::sdl_renderer() const { return r_->r(); }
 } // namespace gp::sdl
