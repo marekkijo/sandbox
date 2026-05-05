@@ -30,7 +30,9 @@ constexpr std::array k_levels = {
 };
 constexpr auto max_level = static_cast<int>(k_levels.size()) - 1;
 
-int level_count(const int dim, const int level) { return std::max(1, dim * k_levels[level].num / k_levels[level].den); }
+int level_count(const int dim, const int level) {
+  return std::max(1, static_cast<int>(static_cast<std::int64_t>(dim) * k_levels[level].num / k_levels[level].den));
+}
 } // anonymous namespace
 
 namespace wolf {
@@ -41,7 +43,11 @@ RaycasterScene::RaycasterScene(std::unique_ptr<const RawMap> raw_map,
     : raw_map_{std::move(raw_map)}
     , vswap_file_{std::move(vswap_file)}
     , raycaster_{*raw_map_, player_state_, fov_in_degrees, 1}
-    , map_renderer_{vector_map_, player_state_, static_cast<std::uint32_t>(fov_in_degrees)} {}
+    , map_renderer_{vector_map_, player_state_, static_cast<std::uint32_t>(fov_in_degrees)} {
+  if (!vswap_file_) {
+    throw std::invalid_argument("vswap_file must not be null");
+  }
+}
 
 void RaycasterScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -124,7 +130,7 @@ void RaycasterScene::resize(const int width, const int height) {
 void RaycasterScene::rebuild_vscreen() {
   const auto vw = level_count(width_, rays_level_);
   const auto vh = level_count(height_, h_lines_level_);
-  pixel_buf_.assign(static_cast<std::size_t>(vw * vh), 0u);
+  pixel_buf_.assign(static_cast<std::size_t>(vw) * static_cast<std::size_t>(vh), 0u);
   auto *tex = SDL_CreateTexture(sdl_r_, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, vw, vh);
   if (!tex) {
     throw std::runtime_error(std::string("SDL_CreateTexture failed: ") + SDL_GetError());
@@ -162,7 +168,7 @@ void RaycasterScene::draw_virtual_screen() {
 
   // Wall pixels
   const auto &rays = raycaster_.rays();
-  const auto &wall_data = vswap_file_->walls();
+  const auto *wall_data = show_textures_ ? &vswap_file_->walls() : nullptr;
 
   for (int rx = 0; rx < vw; ++rx) {
     if (rx >= static_cast<int>(rays.size())) {
@@ -196,7 +202,7 @@ void RaycasterScene::draw_virtual_screen() {
       const auto tex_idx = (wall_val - 1u) * 2u + tex_face;
       const auto tex_col = std::clamp(static_cast<int>(ray.tex_u * 64.0f), 0, 63);
 
-      if (tex_idx < wall_data.size()) {
+      if (tex_idx < wall_data->size()) {
         for (int vy = vy_min; vy <= vy_max; ++vy) {
           const auto screen_y = (float(vy) + 0.5f) * cell_h_f;
           if (screen_y < wall_top || screen_y >= wall_bot) {
@@ -204,7 +210,7 @@ void RaycasterScene::draw_virtual_screen() {
           }
           const auto t = (screen_y - wall_top) / proj_h;
           const auto tex_row = std::clamp(static_cast<int>(t * 64.0f), 0, 63);
-          const auto &texel = wall_data[tex_idx][static_cast<std::size_t>(tex_row * 64 + tex_col)];
+          const auto &texel = (*wall_data)[tex_idx][static_cast<std::size_t>(tex_row * 64 + tex_col)];
           auto px = std::uint32_t(texel.r) | (std::uint32_t(texel.g) << 8u) | (std::uint32_t(texel.b) << 16u) |
                     (0xFFu << 24u);
           if (proximity_shade < 255u) {
