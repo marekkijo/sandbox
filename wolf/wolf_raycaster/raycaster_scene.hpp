@@ -27,9 +27,8 @@ private:
   void resize(const int width, const int height);
   void redraw();
 
-  void init_wall_textures();
-  void draw_background() const;
-  void draw_walls() const;
+  void rebuild_vscreen();
+  void draw_virtual_screen();
   void draw_help_overlay() const;
 
   const std::unique_ptr<const RawMap> raw_map_{};
@@ -48,10 +47,11 @@ private:
   bool show_map_{true};
   bool map_player_oriented_{false};
 
-  int rays_level_{2};
-  int h_lines_level_{2};
+  int rays_level_{4};
+  int h_lines_level_{4};
 
   SDL_Renderer *sdl_r_{};
-  std::vector<std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>> wall_textures_;
+  std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> vscreen_tex_{nullptr, SDL_DestroyTexture};
+  std::vector<std::uint32_t> pixel_buf_{};
 };
 } // namespace wolf
