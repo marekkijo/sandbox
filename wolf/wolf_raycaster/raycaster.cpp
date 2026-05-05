@@ -36,11 +36,16 @@ Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) cons
   const auto max_depth = std::max(raw_map_.width(), raw_map_.height());
   const auto ray_dir = gp::utils::orientation_to_dir(ray_angle);
   const auto player_block_pos = player_state_.block_pos();
+  // When the player is outside the map (noclip) there are no walls to hit —
+  // return scan_end so the ray renders as open space.
+  const auto player_pos = player_state_.pos();
+  if (!raw_map_.is_within_bounds(player_block_pos.x, player_block_pos.y)) {
+    return {player_pos + ray_dir * line_length_, Map::Walls::nothing, false, 0.0f};
+  }
   const auto search_dir = glm::ivec2{
       ray_dir.x > 0.0f ? 1 : -1,
       ray_dir.y > 0.0f ? 1 : -1,
   };
-  const auto player_pos = player_state_.pos();
   const auto scan_end = player_pos + ray_dir * line_length_;
   auto result = scan_end;
   auto result_wall = Map::Walls::nothing;
