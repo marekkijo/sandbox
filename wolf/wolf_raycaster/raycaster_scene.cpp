@@ -153,6 +153,9 @@ void RaycasterScene::draw_walls() const {
 
   const auto &rays = raycaster_.rays();
   const auto strip_width = static_cast<float>(width_) / static_cast<float>(rays.size());
+  const auto quantize = num_h_lines_ > 0 && num_h_lines_ < height_;
+  const auto cell_h = quantize ? static_cast<float>(height_) / static_cast<float>(num_h_lines_) : 1.0f;
+
   for (std::size_t ray_index = 0; ray_index < rays.size(); ++ray_index) {
     const auto &ray = rays[ray_index];
     if (ray.wall == Map::Walls::nothing) {
@@ -165,10 +168,9 @@ void RaycasterScene::draw_walls() const {
 
     auto actual_top = wall_top;
     auto actual_height = projected_height;
-    if (num_h_lines_ > 0 && num_h_lines_ < height_) {
-      const auto cell_h = static_cast<float>(height_) / static_cast<float>(num_h_lines_);
-      actual_height = std::max(cell_h, std::round(projected_height / cell_h) * cell_h);
-      actual_top = (static_cast<float>(height_) - actual_height) / 2.0f;
+    if (quantize) {
+      actual_top = std::floor(wall_top / cell_h) * cell_h;
+      actual_height = std::ceil((wall_top + projected_height) / cell_h) * cell_h - actual_top;
     }
 
     const auto wall_strip = SDL_FRect{ray_index * strip_width, actual_top, strip_width, actual_height};
@@ -190,12 +192,26 @@ void RaycasterScene::draw_walls() const {
 
       if (tex_idx < wall_textures_.size()) {
         // Source column from the 64×64 texture based on the hit u-coordinate.
-        const auto tex_col = std::clamp(static_cast<int>(ray.tex_u * 64.0f), 0, 63);
-        const auto src = SDL_FRect{static_cast<float>(tex_col), 0.0f, 1.0f, 64.0f};
+        const auto tex_col = static_cast<float>(std::clamp(static_cast<int>(ray.tex_u * 64.0f), 0, 63));
 
         auto *tex = wall_textures_[tex_idx].get();
         SDL_SetTextureColorMod(tex, proximity_shade, proximity_shade, proximity_shade);
-        SDL_RenderTexture(sdl_r_, tex, &src, &wall_strip);
+
+        if (quantize) {
+          // Render one texel per virtual cell so every cell shows a single solid colour.
+          const auto first_cell = static_cast<int>(std::round(actual_top / cell_h));
+          const auto last_cell = static_cast<int>(std::round((actual_top + actual_height) / cell_h)) - 1;
+          for (auto cell = first_cell; cell <= last_cell; ++cell) {
+            const auto cell_y = static_cast<float>(cell) * cell_h;
+            const auto t = std::clamp((cell_y + 0.5f * cell_h - wall_top) / projected_height, 0.0f, 1.0f);
+            const auto src = SDL_FRect{tex_col, t * 64.0f, 1.0f, 1.0f};
+            const auto dst = SDL_FRect{ray_index * strip_width, cell_y, strip_width, cell_h};
+            SDL_RenderTexture(sdl_r_, tex, &src, &dst);
+          }
+        } else {
+          const auto src = SDL_FRect{tex_col, 0.0f, 1.0f, 64.0f};
+          SDL_RenderTexture(sdl_r_, tex, &src, &wall_strip);
+        }
       } else {
         // Fallback for wall types without a VSWAP texture pair (e.g. doors, elevator).
         r().set_color(proximity_shade, proximity_shade, proximity_shade);
