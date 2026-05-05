@@ -35,12 +35,20 @@ void Raycaster::cast_rays() {
 Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) const {
   const auto max_depth = std::max(raw_map_.width(), raw_map_.height());
   const auto ray_dir = gp::utils::orientation_to_dir(ray_angle);
+  const auto player_pos = player_state_.pos();
+  // block_pos() clamps to map bounds; compute unclamped version to detect when
+  // the player is outside the map (e.g. via noclip) and skip raycasting so the
+  // view renders as open space rather than hitting the boundary walls.
+  const auto actual_block_pos =
+      glm::ivec2{static_cast<int>(std::floor(player_pos.x)), static_cast<int>(std::floor(player_pos.y))};
+  if (!raw_map_.is_within_bounds(actual_block_pos)) {
+    return {player_pos + ray_dir * line_length_, Map::Walls::nothing, false, 0.0f};
+  }
   const auto player_block_pos = player_state_.block_pos();
   const auto search_dir = glm::ivec2{
       ray_dir.x > 0.0f ? 1 : -1,
       ray_dir.y > 0.0f ? 1 : -1,
   };
-  const auto player_pos = player_state_.pos();
   const auto scan_end = player_pos + ray_dir * line_length_;
   auto result = scan_end;
   auto result_wall = Map::Walls::nothing;
