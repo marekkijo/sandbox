@@ -13,7 +13,6 @@
 struct ProgramSetup {
   bool exit{};
 
-  std::string asciimap{};
   std::string maphead{};
   std::string gamemaps{};
   int width{};
@@ -23,9 +22,6 @@ struct ProgramSetup {
 ProgramSetup process_args(const int argc, const char *const argv[]) {
   boost::program_options::options_description desc("Wolf options");
   desc.add_options()("help", "This help message");
-  desc.add_options()("asciimap",
-                     boost::program_options::value<std::string>()->default_value("data/map1.map"),
-                     "Ascii map filename");
   desc.add_options()("maphead",
                      boost::program_options::value<std::string>()->default_value("data/MAPHEAD.WL6"),
                      "Wolf MAPHEAD filename");
@@ -45,7 +41,6 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   }
 
   return {false,
-          vm["asciimap"].as<std::string>(),
           vm["maphead"].as<std::string>(),
           vm["gamemaps"].as<std::string>(),
           vm["width"].as<int>(),

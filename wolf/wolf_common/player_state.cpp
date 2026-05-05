@@ -60,11 +60,6 @@ float PlayerState::deduce_orientation(const RawMap &raw_map) const {
   return 0.0f;
 }
 
-void PlayerState::animate_move_noclip(const std::uint64_t time_elapsed_ms) {
-  const auto move_delta = get_move_delta(time_elapsed_ms);
-  pos_ += move_delta;
-}
-
 void PlayerState::animate_move(const std::uint64_t time_elapsed_ms) {
   const auto move_delta = get_move_delta(time_elapsed_ms);
   if (move_delta == glm::vec2{}) {

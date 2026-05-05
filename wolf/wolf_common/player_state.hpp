@@ -35,7 +35,6 @@ private:
   std::shared_ptr<gp::misc::KeyboardState> keyboard_state_{dummy_keyboard_state_};
 
   float deduce_orientation(const RawMap &raw_map) const;
-  void animate_move_noclip(const std::uint64_t time_elapsed_ms);
   void animate_move(const std::uint64_t time_elapsed_ms);
   void animate_rot(const std::uint64_t time_elapsed_ms);
 
