@@ -50,7 +50,7 @@ private:
   bool map_player_oriented_{false};
 
   int num_rays_{};
-  int num_h_lines_{0};
+  int num_h_lines_{120};
 
   SDL_Renderer *sdl_r_{};
   std::vector<std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>> wall_textures_;

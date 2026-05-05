@@ -204,7 +204,10 @@ void RaycasterScene::draw_walls() const {
           for (auto cell = first_cell; cell <= last_cell; ++cell) {
             const auto cell_y = static_cast<float>(cell) * cell_h;
             const auto t = std::clamp((cell_y + 0.5f * cell_h - wall_top) / projected_height, 0.0f, 1.0f);
-            const auto src = SDL_FRect{tex_col, t * 64.0f, 1.0f, 1.0f};
+            // Floor to an integer texel row so the 1×1 source rect covers exactly one texel
+            // and SDL's upscale maps every destination row to the same single colour.
+            const auto tex_y = std::floor(t * 64.0f);
+            const auto src = SDL_FRect{tex_col, tex_y, 1.0f, 1.0f};
             const auto dst = SDL_FRect{ray_index * strip_width, cell_y, strip_width, cell_h};
             SDL_RenderTexture(sdl_r_, tex, &src, &dst);
           }
