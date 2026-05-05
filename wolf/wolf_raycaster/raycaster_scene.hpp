@@ -19,8 +19,7 @@ class RaycasterScene : public gp::sdl::Scene2D {
 public:
   RaycasterScene(std::unique_ptr<const RawMap> raw_map,
                  std::shared_ptr<const VswapFile> vswap_file,
-                 const int fov_in_degrees,
-                 const int num_rays);
+                 const int fov_in_degrees);
 
 private:
   void loop(const gp::misc::Event &event) override;
@@ -49,8 +48,8 @@ private:
   bool show_map_{true};
   bool map_player_oriented_{false};
 
-  int num_rays_{};
-  int num_h_lines_{120};
+  int rays_level_{2};
+  int h_lines_level_{2};
 
   SDL_Renderer *sdl_r_{};
   std::vector<std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>> wall_textures_;

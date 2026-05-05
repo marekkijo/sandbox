@@ -10,15 +10,15 @@
 #include <glm/vec3.hpp>
 
 namespace wolf {
+constexpr auto max_level = 6;
+
 RaycasterScene::RaycasterScene(std::unique_ptr<const RawMap> raw_map,
                                std::shared_ptr<const VswapFile> vswap_file,
-                               const int fov_in_degrees,
-                               const int num_rays)
+                               const int fov_in_degrees)
     : raw_map_{std::move(raw_map)}
     , vswap_file_{std::move(vswap_file)}
-    , raycaster_{*raw_map_, player_state_, fov_in_degrees, num_rays}
-    , map_renderer_{vector_map_, player_state_, static_cast<std::uint32_t>(fov_in_degrees)}
-    , num_rays_{num_rays} {}
+    , raycaster_{*raw_map_, player_state_, fov_in_degrees, 1}
+    , map_renderer_{vector_map_, player_state_, static_cast<std::uint32_t>(fov_in_degrees)} {}
 
 void RaycasterScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -64,23 +64,18 @@ void RaycasterScene::loop(const gp::misc::Event &event) {
         map_player_oriented_ = !map_player_oriented_;
         break;
       case gp::misc::Event::ScanCode::LeftBracket:
-        num_rays_ = std::max(1, num_rays_ / 2);
-        raycaster_.set_num_rays(num_rays_);
+        rays_level_ = std::min(max_level, rays_level_ + 1);
+        raycaster_.set_num_rays(std::max(1, width_ >> rays_level_));
         break;
       case gp::misc::Event::ScanCode::RightBracket:
-        num_rays_ = std::min(4096, num_rays_ * 2);
-        raycaster_.set_num_rays(num_rays_);
+        rays_level_ = std::max(0, rays_level_ - 1);
+        raycaster_.set_num_rays(std::max(1, width_ >> rays_level_));
         break;
       case gp::misc::Event::ScanCode::Minus:
-        num_h_lines_ = (num_h_lines_ == 0) ? std::max(1, height_ / 2) : std::max(1, num_h_lines_ / 2);
+        h_lines_level_ = std::min(max_level, h_lines_level_ + 1);
         break;
       case gp::misc::Event::ScanCode::Equals:
-        if (num_h_lines_ > 0) {
-          num_h_lines_ *= 2;
-          if (num_h_lines_ >= height_) {
-            num_h_lines_ = 0;
-          }
-        }
+        h_lines_level_ = std::max(0, h_lines_level_ - 1);
         break;
       default:
         break;
@@ -96,6 +91,7 @@ void RaycasterScene::resize(const int width, const int height) {
   width_ = width;
   height_ = height;
   map_renderer_.resize(width, height);
+  raycaster_.set_num_rays(std::max(1, width_ >> rays_level_));
 }
 
 void RaycasterScene::init_wall_textures() {
@@ -153,8 +149,9 @@ void RaycasterScene::draw_walls() const {
 
   const auto &rays = raycaster_.rays();
   const auto strip_width = static_cast<float>(width_) / static_cast<float>(rays.size());
-  const auto quantize = num_h_lines_ > 0 && num_h_lines_ < height_;
-  const auto cell_h = quantize ? static_cast<float>(height_) / static_cast<float>(num_h_lines_) : 1.0f;
+  const auto quantize = h_lines_level_ > 0;
+  const auto num_h_lines = height_ >> h_lines_level_;
+  const auto cell_h = quantize ? static_cast<float>(height_) / static_cast<float>(num_h_lines) : 1.0f;
 
   for (std::size_t ray_index = 0; ray_index < rays.size(); ++ray_index) {
     const auto &ray = rays[ray_index];
@@ -274,14 +271,17 @@ void RaycasterScene::draw_help_overlay() const {
   ty += line_h;
   SDL_RenderDebugText(sdl_r_, tx, ty, map_player_oriented_ ? "O: Map    [player-up]" : "O: Map     [north-up]");
   ty += line_h;
-  SDL_RenderDebugText(sdl_r_, tx, ty, std::format("[/]: Rays       [{:4}]", num_rays_).c_str());
+  const auto level_label = [](const int level) -> std::string {
+    if (level == 0) {
+      return "full";
+    }
+    return std::format("{:>4}", std::format("1/{}", 1 << level));
+  };
+  SDL_RenderDebugText(sdl_r_, tx, ty, std::format("[/]: Rays       [{}]", level_label(rays_level_)).c_str());
   ty += line_h;
-  if (num_h_lines_ == 0) {
-    SDL_RenderDebugText(sdl_r_, tx, ty, "-/=: H-lines    [full]");
-  } else {
-    SDL_RenderDebugText(sdl_r_, tx, ty, std::format("-/=: H-lines    [{:4}]", num_h_lines_).c_str());
-  }
+  SDL_RenderDebugText(sdl_r_, tx, ty, std::format("-/=: H-lines    [{}]", level_label(h_lines_level_)).c_str());
 
   SDL_SetRenderScale(sdl_r_, prev_sx, prev_sy);
 }
+
 } // namespace wolf
