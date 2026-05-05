@@ -33,20 +33,14 @@ void Raycaster::cast_rays() {
 }
 
 Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) const {
+  const auto max_depth = std::max(raw_map_.width(), raw_map_.height());
   const auto ray_dir = gp::utils::orientation_to_dir(ray_angle);
-  const auto player_pos = player_state_.pos();
-  // Use unclamped block position so the spiral search starts from the player's
-  // real location — clamping causes the spiral to anchor at the map edge when
-  // outside, making every ray immediately hit the outer boundary walls.
-  const auto player_block_pos =
-      glm::ivec2{static_cast<int>(std::floor(player_pos.x)), static_cast<int>(std::floor(player_pos.y))};
-  // max_depth must cover the full ray length (line_length_) plus however far
-  // outside the map the player may be, so cap it at line_length_ + 1.
-  const auto max_depth = static_cast<int>(line_length_) + 1;
+  const auto player_block_pos = player_state_.block_pos();
   const auto search_dir = glm::ivec2{
       ray_dir.x > 0.0f ? 1 : -1,
       ray_dir.y > 0.0f ? 1 : -1,
   };
+  const auto player_pos = player_state_.pos();
   const auto scan_end = player_pos + ray_dir * line_length_;
   auto result = scan_end;
   auto result_wall = Map::Walls::nothing;
@@ -99,12 +93,7 @@ Raycaster::CollisionResult Raycaster::find_collision(const float ray_angle) cons
     const auto max_y = player_block_pos.y + search_dir.y * depth;
     const auto min_y = player_block_pos.y;
 
-    // Break once the expanding frontier has gone past the map on both axes.
-    // Using the far edge (max_x / max_y) and search direction avoids a false
-    // early-exit when the anchor (player_block_pos) is outside the map.
-    const auto x_past = search_dir.x > 0 ? (max_x >= raw_map_.width()) : (max_x < 0);
-    const auto y_past = search_dir.y > 0 ? (max_y >= raw_map_.height()) : (max_y < 0);
-    if (x_past && y_past) {
+    if (!raw_map_.is_within_bounds(max_x, min_y) && !raw_map_.is_within_bounds(min_x, max_y)) {
       break;
     }
 
