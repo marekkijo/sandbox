@@ -190,6 +190,8 @@ void RaycasterScene::draw_virtual_screen() {
 
     if (show_textures_) {
       const auto wall_val = static_cast<std::size_t>(ray.wall);
+      // VSWAP stores wall textures in consecutive pairs per wall type:
+      // chunk (N-1)*2 = N/S (bright) face, chunk (N-1)*2+1 = E/W (dark) face.
       const auto tex_face = show_orientation_shading_ ? (ray.x_facing ? 1u : 0u) : 0u;
       const auto tex_idx = (wall_val - 1u) * 2u + tex_face;
       const auto tex_col = std::clamp(static_cast<int>(ray.tex_u * 64.0f), 0, 63);
@@ -250,7 +252,9 @@ void RaycasterScene::draw_virtual_screen() {
   // Upload to streaming texture and render
   void *tex_pixels = nullptr;
   int pitch = 0;
-  SDL_LockTexture(vscreen_tex_.get(), nullptr, &tex_pixels, &pitch);
+  if (!SDL_LockTexture(vscreen_tex_.get(), nullptr, &tex_pixels, &pitch)) {
+    return;
+  }
   for (int y = 0; y < vh; ++y) {
     std::copy_n(pixel_buf_.data() + y * vw,
                 vw,
