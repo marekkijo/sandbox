@@ -15,8 +15,6 @@ Raycaster::Raycaster(const RawMap &raw_map, const PlayerState &player_state, int
     , fov_(fov_in_degrees * std::numbers::pi / 180.0f)
     , rays_(num_rays) {}
 
-int Raycaster::num_rays() const { return static_cast<int>(rays_.size()); }
-
 void Raycaster::set_num_rays(int n) { rays_.resize(static_cast<std::size_t>(std::max(1, n))); }
 
 const std::vector<RayInfo> &Raycaster::rays() const { return rays_; }

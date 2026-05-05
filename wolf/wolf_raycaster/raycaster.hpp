@@ -16,7 +16,6 @@ class Raycaster {
 public:
   Raycaster(const RawMap &raw_map, const PlayerState &player_state, int fov_in_degrees, int num_rays);
 
-  int num_rays() const;
   void set_num_rays(int n);
   const std::vector<RayInfo> &rays() const;
   void cast_rays();
