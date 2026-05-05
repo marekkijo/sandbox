@@ -29,8 +29,14 @@ void PlayerState::set_keyboard_state(std::shared_ptr<gp::misc::KeyboardState> ke
   keyboard_state_ = std::move(keyboard_state);
 }
 
+void PlayerState::set_noclip(bool noclip) { noclip_ = noclip; }
+
 void PlayerState::animate(const std::uint64_t time_elapsed_ms) {
-  animate_move(time_elapsed_ms);
+  if (noclip_) {
+    animate_move_noclip(time_elapsed_ms);
+  } else {
+    animate_move(time_elapsed_ms);
+  }
   animate_rot(time_elapsed_ms);
 }
 
@@ -58,6 +64,11 @@ float PlayerState::deduce_orientation(const RawMap &raw_map) const {
     return std::numbers::pi;
   }
   return 0.0f;
+}
+
+void PlayerState::animate_move_noclip(const std::uint64_t time_elapsed_ms) {
+  const auto move_delta = get_move_delta(time_elapsed_ms);
+  pos_ += move_delta;
 }
 
 void PlayerState::animate_move(const std::uint64_t time_elapsed_ms) {

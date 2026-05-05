@@ -15,6 +15,7 @@ public:
   explicit PlayerState(const RawMap &raw_map, const float move_speed = 3.0f, const float rot_speed = 1.5f);
 
   void set_keyboard_state(std::shared_ptr<gp::misc::KeyboardState> keyboard_state);
+  void set_noclip(bool noclip);
   void animate(const std::uint64_t time_elapsed_ms);
 
   float orientation() const;
@@ -33,8 +34,10 @@ private:
 
   std::shared_ptr<gp::misc::KeyboardState> dummy_keyboard_state_{std::make_shared<gp::misc::KeyboardState>()};
   std::shared_ptr<gp::misc::KeyboardState> keyboard_state_{dummy_keyboard_state_};
+  bool noclip_{false};
 
   float deduce_orientation(const RawMap &raw_map) const;
+  void animate_move_noclip(const std::uint64_t time_elapsed_ms);
   void animate_move(const std::uint64_t time_elapsed_ms);
   void animate_rot(const std::uint64_t time_elapsed_ms);
 

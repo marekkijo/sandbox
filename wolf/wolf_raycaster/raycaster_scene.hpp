@@ -46,6 +46,7 @@ private:
   bool show_orientation_shading_{true};
   bool show_map_{true};
   bool map_player_oriented_{false};
+  bool noclip_{false};
 
   int rays_level_{4};
   int h_lines_level_{4};

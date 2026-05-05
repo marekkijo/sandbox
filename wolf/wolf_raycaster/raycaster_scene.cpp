@@ -91,6 +91,10 @@ void RaycasterScene::loop(const gp::misc::Event &event) {
         map_renderer_.set_player_oriented(!map_player_oriented_);
         map_player_oriented_ = !map_player_oriented_;
         break;
+      case gp::misc::Event::ScanCode::N:
+        noclip_ = !noclip_;
+        player_state_.set_noclip(noclip_);
+        break;
       case gp::misc::Event::ScanCode::LeftBracket:
         rays_level_ = std::min(max_level, rays_level_ + 1);
         rebuild_vscreen();
@@ -275,7 +279,7 @@ void RaycasterScene::draw_help_overlay() const {
   constexpr auto ch = 8; // SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
   constexpr auto line_h = ch + 4;
   constexpr auto padding = 6;
-  constexpr auto num_lines = 7;
+  constexpr auto num_lines = 8;
   constexpr auto max_chars = 22;
 
   float prev_sx{}, prev_sy{};
@@ -305,7 +309,9 @@ void RaycasterScene::draw_help_overlay() const {
   ty += line_h;
   SDL_RenderDebugText(sdl_r_, tx, ty, show_map_ ? "M: Map           [on ]" : "M: Map           [off]");
   ty += line_h;
-  SDL_RenderDebugText(sdl_r_, tx, ty, map_player_oriented_ ? "O: Map    [player-up]" : "O: Map     [north-up]");
+  SDL_RenderDebugText(sdl_r_, tx, ty, map_player_oriented_ ? "O: Map     [player-up]" : "O: Map      [north-up]");
+  ty += line_h;
+  SDL_RenderDebugText(sdl_r_, tx, ty, noclip_ ? "N: Noclip        [on ]" : "N: Noclip        [off]");
   ty += line_h;
   SDL_RenderDebugText(sdl_r_, tx, ty, std::format("-/=: H-lines    [{}]", k_levels[h_lines_level_].label).c_str());
   ty += line_h;
