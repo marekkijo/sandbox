@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <format>
 #include <stdexcept>
 
 #include <glm/vec3.hpp>
@@ -16,7 +17,8 @@ RaycasterScene::RaycasterScene(std::unique_ptr<const RawMap> raw_map,
     : raw_map_{std::move(raw_map)}
     , vswap_file_{std::move(vswap_file)}
     , raycaster_{*raw_map_, player_state_, fov_in_degrees, num_rays}
-    , map_renderer_{vector_map_, player_state_, static_cast<std::uint32_t>(fov_in_degrees)} {}
+    , map_renderer_{vector_map_, player_state_, static_cast<std::uint32_t>(fov_in_degrees)}
+    , num_rays_{num_rays} {}
 
 void RaycasterScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -61,6 +63,25 @@ void RaycasterScene::loop(const gp::misc::Event &event) {
         map_renderer_.set_player_oriented(!map_player_oriented_);
         map_player_oriented_ = !map_player_oriented_;
         break;
+      case gp::misc::Event::ScanCode::LeftBracket:
+        num_rays_ = std::max(1, num_rays_ / 2);
+        raycaster_.set_num_rays(num_rays_);
+        break;
+      case gp::misc::Event::ScanCode::RightBracket:
+        num_rays_ = std::min(4096, num_rays_ * 2);
+        raycaster_.set_num_rays(num_rays_);
+        break;
+      case gp::misc::Event::ScanCode::Minus:
+        num_h_lines_ = (num_h_lines_ == 0) ? std::max(1, height_ / 2) : std::max(1, num_h_lines_ / 2);
+        break;
+      case gp::misc::Event::ScanCode::Equals:
+        if (num_h_lines_ > 0) {
+          num_h_lines_ *= 2;
+          if (num_h_lines_ >= height_) {
+            num_h_lines_ = 0;
+          }
+        }
+        break;
       default:
         break;
       }
@@ -93,6 +114,7 @@ void RaycasterScene::init_wall_textures() {
       throw std::runtime_error(std::string("SDL_UpdateTexture failed: ") + SDL_GetError());
     }
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
+    SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST);
     wall_textures_.emplace_back(tex, SDL_DestroyTexture);
   }
 }
@@ -140,7 +162,16 @@ void RaycasterScene::draw_walls() const {
     const auto height_multiplier = ray.dist > 0.0f ? 1.0f / ray.dist : 1.0f;
     const auto projected_height = height_multiplier * static_cast<float>(height_);
     const auto wall_top = (static_cast<float>(height_) - projected_height) / 2.0f;
-    const auto wall_strip = SDL_FRect{ray_index * strip_width, wall_top, strip_width, projected_height};
+
+    auto actual_top = wall_top;
+    auto actual_height = projected_height;
+    if (num_h_lines_ > 0 && num_h_lines_ < height_) {
+      const auto cell_h = static_cast<float>(height_) / static_cast<float>(num_h_lines_);
+      actual_height = std::max(cell_h, std::round(projected_height / cell_h) * cell_h);
+      actual_top = (static_cast<float>(height_) - actual_height) / 2.0f;
+    }
+
+    const auto wall_strip = SDL_FRect{ray_index * strip_width, actual_top, strip_width, actual_height};
 
     if (show_textures_) {
       // Orientation: pick E/W (dark) variant when enabled, otherwise always use N/S (light).
@@ -192,7 +223,7 @@ void RaycasterScene::draw_help_overlay() const {
   constexpr auto ch = 8; // SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
   constexpr auto line_h = ch + 4;
   constexpr auto padding = 6;
-  constexpr auto num_lines = 5;
+  constexpr auto num_lines = 7;
   constexpr auto max_chars = 22;
 
   float prev_sx{}, prev_sy{};
@@ -223,6 +254,14 @@ void RaycasterScene::draw_help_overlay() const {
   SDL_RenderDebugText(sdl_r_, tx, ty, show_map_ ? "M: Map           [on ]" : "M: Map           [off]");
   ty += line_h;
   SDL_RenderDebugText(sdl_r_, tx, ty, map_player_oriented_ ? "O: Map    [player-up]" : "O: Map     [north-up]");
+  ty += line_h;
+  SDL_RenderDebugText(sdl_r_, tx, ty, std::format("[/]: Rays       [{:4}]", num_rays_).c_str());
+  ty += line_h;
+  if (num_h_lines_ == 0) {
+    SDL_RenderDebugText(sdl_r_, tx, ty, "-/=: H-lines    [full]");
+  } else {
+    SDL_RenderDebugText(sdl_r_, tx, ty, std::format("-/=: H-lines    [{:4}]", num_h_lines_).c_str());
+  }
 
   SDL_SetRenderScale(sdl_r_, prev_sx, prev_sy);
 }
