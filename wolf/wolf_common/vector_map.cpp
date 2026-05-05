@@ -29,8 +29,6 @@ float VectorMap::height() const { return height_; }
 float VectorMap::diagonal_length() const { return diagonal_length_; }
 
 void VectorMap::generate_vector_map(const RawMap &raw_map) {
-  constexpr auto orientation_shadow_factor{0.625f};
-
   for (int h = 0; h < raw_map.height(); h++) {
     for (int w = 0; w < raw_map.width(); w++) {
       if (raw_map.is_wall(w, h)) {
@@ -46,15 +44,15 @@ void VectorMap::generate_vector_map(const RawMap &raw_map) {
         }
         if (raw_map.is_within_bounds(w - 1, h) && !raw_map.is_wall(w - 1, h)) {
           vectors_.emplace_back(glm::vec2{w, h + 1}, glm::vec2{w, h});
-          colors_.push_back(glm::uvec3{std::round(_wall_color.r * orientation_shadow_factor),
-                                       std::round(_wall_color.g * orientation_shadow_factor),
-                                       std::round(_wall_color.b * orientation_shadow_factor)});
+          colors_.push_back(glm::uvec3{std::round(_wall_color.r * MapUtils::orientation_shadow_factor),
+                                       std::round(_wall_color.g * MapUtils::orientation_shadow_factor),
+                                       std::round(_wall_color.b * MapUtils::orientation_shadow_factor)});
         }
         if (raw_map.is_within_bounds(w + 1, h) && !raw_map.is_wall(w + 1, h)) {
           vectors_.emplace_back(glm::vec2{w + 1, h}, glm::vec2{w + 1, h + 1});
-          colors_.push_back(glm::uvec3{std::round(_wall_color.r * orientation_shadow_factor),
-                                       std::round(_wall_color.g * orientation_shadow_factor),
-                                       std::round(_wall_color.b * orientation_shadow_factor)});
+          colors_.push_back(glm::uvec3{std::round(_wall_color.r * MapUtils::orientation_shadow_factor),
+                                       std::round(_wall_color.g * MapUtils::orientation_shadow_factor),
+                                       std::round(_wall_color.b * MapUtils::orientation_shadow_factor)});
         }
       }
     }
