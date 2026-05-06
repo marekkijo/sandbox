@@ -98,6 +98,12 @@ Decoder::Status Decoder::decode() {
     yuv_to_rgb();
     const auto t2 = Clock::now();
     last_timings_.yuv_to_rgb_us = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
+    // upload_us is only valid for the first frame decoded from each uploaded packet;
+    // clear it so subsequent frames from the same packet don't inherit a stale value.
+    if (!upload_timing_fresh_) {
+      last_timings_.upload_us = std::chrono::microseconds::zero();
+    }
+    upload_timing_fresh_ = false;
     return {Status::Code::OK, static_cast<int>(context_->frame_num)};
   } else {
     using Clock = std::chrono::steady_clock;
@@ -107,6 +113,7 @@ Decoder::Status Decoder::decode() {
     const auto t1 = Clock::now();
     if (uploaded) {
       last_timings_.upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+      upload_timing_fresh_ = true;
       return {Status::Code::RETRY};
     }
     return {Status::Code::NODATA};

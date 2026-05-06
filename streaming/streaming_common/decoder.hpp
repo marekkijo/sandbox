@@ -104,6 +104,10 @@ private:
    */
   bool packet_sent_{false};
   /**
+   * True immediately after upload(); cleared after the first OK frame reads upload_us.
+   */
+  bool upload_timing_fresh_{false};
+  /**
    * EOF signaled from the outside - no more data accepted.
    */
   std::atomic_bool signaled_eof_{};

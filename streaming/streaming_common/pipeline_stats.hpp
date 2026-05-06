@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <cinttypes>
 #include <cstdint>
 #include <cstdio>
 #include <limits>
@@ -8,7 +9,7 @@
 namespace streaming {
 
 struct StageStats {
-  std::chrono::microseconds min{std::numeric_limits<int64_t>::max()};
+  std::chrono::microseconds min{std::numeric_limits<std::chrono::microseconds::rep>::max()};
   std::chrono::microseconds max{std::chrono::microseconds::zero()};
   std::chrono::microseconds sum{std::chrono::microseconds::zero()};
   uint32_t count{0};
@@ -27,7 +28,7 @@ struct StageStats {
   std::chrono::microseconds avg() const noexcept { return count > 0 ? sum / count : std::chrono::microseconds::zero(); }
 
   void reset() noexcept {
-    min = std::chrono::microseconds{std::numeric_limits<int64_t>::max()};
+    min = std::chrono::microseconds{std::numeric_limits<std::chrono::microseconds::rep>::max()};
     max = std::chrono::microseconds::zero();
     sum = std::chrono::microseconds::zero();
     count = 0;
@@ -69,16 +70,16 @@ private:
     print_stage("  rgb->yuv    ", rgb_to_yuv_);
     print_stage("  encode      ", encode_);
     const auto total = render_.avg() + capture_.avg() + flip_.avg() + rgb_to_yuv_.avg() + encode_.avg();
-    printf("  total (avg) : %6lld us\n", static_cast<long long>(total.count()));
+    printf("  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
     printf("----------------------------------------------\n");
   }
 
   static void print_stage(const char *name, const StageStats &s) {
-    printf("%s min=%6lld  avg=%6lld  max=%6lld us\n",
+    printf("%s min=%6" PRId64 "  avg=%6" PRId64 "  max=%6" PRId64 " us\n",
            name,
-           static_cast<long long>(s.count > 0 ? s.min.count() : 0),
-           static_cast<long long>(s.avg().count()),
-           static_cast<long long>(s.max.count()));
+           static_cast<int64_t>(s.count > 0 ? s.min.count() : 0),
+           static_cast<int64_t>(s.avg().count()),
+           static_cast<int64_t>(s.max.count()));
   }
 
   void reset() noexcept {
@@ -131,16 +132,16 @@ private:
     print_stage("  tex upload  ", texture_upload_);
     print_stage("  display     ", display_);
     const auto total = upload_.avg() + receive_.avg() + yuv_to_rgb_.avg() + texture_upload_.avg() + display_.avg();
-    printf("  total (avg) : %6lld us\n", static_cast<long long>(total.count()));
+    printf("  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
     printf("----------------------------------------------\n");
   }
 
   static void print_stage(const char *name, const StageStats &s) {
-    printf("%s min=%6lld  avg=%6lld  max=%6lld us\n",
+    printf("%s min=%6" PRId64 "  avg=%6" PRId64 "  max=%6" PRId64 " us\n",
            name,
-           static_cast<long long>(s.count > 0 ? s.min.count() : 0),
-           static_cast<long long>(s.avg().count()),
-           static_cast<long long>(s.max.count()));
+           static_cast<int64_t>(s.count > 0 ? s.min.count() : 0),
+           static_cast<int64_t>(s.avg().count()),
+           static_cast<int64_t>(s.max.count()));
   }
 
   void reset() noexcept {
