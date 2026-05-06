@@ -54,6 +54,7 @@ private:
   void init_scene();
 
   std::shared_ptr<Encoder> encoder_;
+  const VideoStreamInfo video_stream_info_;
   const int ms_per_frame_{};
   std::uint64_t last_timestamp_ms_{};
 

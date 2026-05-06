@@ -23,6 +23,7 @@ constexpr auto make_array(Ts &&...args) {
 
 EncodeScene::EncodeScene(const VideoStreamInfo &video_stream_info)
     : encoder_(std::make_shared<Encoder>(video_stream_info))
+    , video_stream_info_(video_stream_info)
     , ms_per_frame_(1000 / video_stream_info.fps) {
   Scene3D::init(video_stream_info.width, video_stream_info.height, "Streamer...");
 }
@@ -55,6 +56,9 @@ void EncodeScene::loop(const gp::misc::Event &event) {
       last_timestamp_ms_ = event.timestamp();
     }
   } break;
+  case gp::misc::Event::Type::Resize:
+    glViewport(0, 0, video_stream_info_.width, video_stream_info_.height);
+    break;
   case gp::misc::Event::Type::MouseButton:
     if (event.mouse_button().button == gp::misc::Event::MouseButton::Right &&
         event.mouse_button().action == gp::misc::Event::Action::Released) {
@@ -115,9 +119,6 @@ void EncodeScene::finalize() {
   indices_buffer_.reset();
   vertex_buffer_.reset();
   vao_.reset();
-  for (auto &pbo : pbos_) {
-    pbo.reset();
-  }
   video_frame_.reset();
   encoder_.reset();
 }
@@ -182,7 +183,7 @@ void EncodeScene::encode() {
 
   // Issue async readback for this frame — returns immediately; GPU writes into PBO concurrently
   pbo_[write_idx]->bind();
-  glReadPixels(0, 0, width(), height(), format, GL_UNSIGNED_BYTE, nullptr);
+  glReadPixels(0, 0, video_stream_info_.width, video_stream_info_.height, format, GL_UNSIGNED_BYTE, nullptr);
   pbo_[write_idx]->unbind();
 
   auto mapped_ok = false;

@@ -182,6 +182,7 @@ void DecodeScene::init_scene() {
   constexpr auto fmt = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
   frame_texture_
       ->set_image(0, fmt, video_stream_info_.width, video_stream_info_.height, 0, fmt, GL_UNSIGNED_BYTE, nullptr);
+  shader_program_ = gp::gl::create_shader_program("shaders/texture_screen");
   shader_program_->use();
   shader_program_->set_uniform("tex", 0);
 }
