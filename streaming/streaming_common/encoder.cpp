@@ -3,6 +3,7 @@
 #include "streaming_common/constants.hpp"
 
 #include <array>
+#include <chrono>
 #include <stdexcept>
 #include <string>
 
@@ -99,10 +100,19 @@ void Encoder::encode() {
     throw std::runtime_error{"av_frame_make_writable failed"};
   }
 
-  flip_frame();
-  rgb_to_yuv();
+  using Clock = std::chrono::steady_clock;
 
+  const auto t0 = Clock::now();
+  flip_frame();
+  const auto t1 = Clock::now();
+  rgb_to_yuv();
+  const auto t2 = Clock::now();
   encode_frame(frame_.get());
+  const auto t3 = Clock::now();
+
+  last_timings_.flip_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+  last_timings_.rgb_to_yuv_us = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
+  last_timings_.encode_us = std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2);
 
   frame_->pts++;
 }

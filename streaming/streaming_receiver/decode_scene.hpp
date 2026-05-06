@@ -2,6 +2,7 @@
 
 #include "streaming_common/decoder.hpp"
 #include "streaming_common/frame_data.hpp"
+#include "streaming_common/pipeline_stats.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/gl/buffer_object.hpp>
@@ -52,5 +53,8 @@ private:
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
 
   std::function<void(const gp::misc::Event &event)> event_callback_{};
+
+  DecodeStats::Frame pending_decode_frame_{};
+  DecodeStats decode_stats_{};
 };
 } // namespace streaming

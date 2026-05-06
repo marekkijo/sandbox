@@ -2,6 +2,7 @@
 
 #include "streaming_common/encoder.hpp"
 #include "streaming_common/frame_data.hpp"
+#include "streaming_common/pipeline_stats.hpp"
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/gl/buffer_object.hpp>
@@ -11,6 +12,7 @@
 
 #include <glm/glm.hpp>
 
+#include <chrono>
 #include <cstdint>
 #include <fstream>
 #include <memory>
@@ -52,5 +54,8 @@ private:
   std::unique_ptr<gp::gl::BufferObject> vertex_buffer_{};
   std::unique_ptr<gp::gl::BufferObject> indices_buffer_{};
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
+
+  std::chrono::microseconds last_render_us_{};
+  EncodeStats encode_stats_{};
 };
 } // namespace streaming

@@ -7,6 +7,7 @@
 
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -39,6 +40,12 @@ public:
     int frame_num;
   };
 
+  struct Timings {
+    std::chrono::microseconds upload_us{};
+    std::chrono::microseconds receive_us{};
+    std::chrono::microseconds yuv_to_rgb_us{};
+  };
+
   Decoder() = default;
 
   ~Decoder();
@@ -51,6 +58,9 @@ public:
   void init(const VideoStreamInfo &video_stream_info);
 
   std::shared_ptr<FrameData> rgb_frame();
+
+  const Timings &last_timings() const noexcept { return last_timings_; }
+
   /**
    * Prepares another frame available through @ref rgb_frame().
    */
@@ -86,6 +96,8 @@ private:
 
   std::vector<std::uint8_t> async_buffer_{};
   std::mutex async_buffer_mutex_{};
+
+  Timings last_timings_{};
 
   /**
    * Packet was sent by avcodec_send_packet - expected to receive frames first.

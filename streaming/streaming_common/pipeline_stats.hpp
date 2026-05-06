@@ -1,0 +1,163 @@
+#pragma once
+
+#include <chrono>
+#include <cstdint>
+#include <cstdio>
+#include <limits>
+
+namespace streaming {
+
+struct StageStats {
+  std::chrono::microseconds min{std::numeric_limits<int64_t>::max()};
+  std::chrono::microseconds max{std::chrono::microseconds::zero()};
+  std::chrono::microseconds sum{std::chrono::microseconds::zero()};
+  uint32_t count{0};
+
+  void record(std::chrono::microseconds d) noexcept {
+    if (d < min) {
+      min = d;
+    }
+    if (d > max) {
+      max = d;
+    }
+    sum += d;
+    ++count;
+  }
+
+  std::chrono::microseconds avg() const noexcept { return count > 0 ? sum / count : std::chrono::microseconds::zero(); }
+
+  void reset() noexcept {
+    min = std::chrono::microseconds{std::numeric_limits<int64_t>::max()};
+    max = std::chrono::microseconds::zero();
+    sum = std::chrono::microseconds::zero();
+    count = 0;
+  }
+};
+
+constexpr uint32_t PIPELINE_STATS_REPORT_INTERVAL = 100u;
+
+class EncodeStats {
+public:
+  struct Frame {
+    std::chrono::microseconds render_us{};
+    std::chrono::microseconds capture_us{};
+    std::chrono::microseconds flip_us{};
+    std::chrono::microseconds rgb_to_yuv_us{};
+    std::chrono::microseconds encode_us{};
+  };
+
+  void record(const Frame &f) noexcept {
+    render_.record(f.render_us);
+    capture_.record(f.capture_us);
+    flip_.record(f.flip_us);
+    rgb_to_yuv_.record(f.rgb_to_yuv_us);
+    encode_.record(f.encode_us);
+    ++frame_count_;
+
+    if (frame_count_ >= PIPELINE_STATS_REPORT_INTERVAL) {
+      report();
+      reset();
+    }
+  }
+
+private:
+  void report() const {
+    printf("\n--- Encode pipeline stats (over %u frames) ---\n", frame_count_);
+    print_stage("  render      ", render_);
+    print_stage("  capture     ", capture_);
+    print_stage("  flip        ", flip_);
+    print_stage("  rgb->yuv    ", rgb_to_yuv_);
+    print_stage("  encode      ", encode_);
+    const auto total = render_.avg() + capture_.avg() + flip_.avg() + rgb_to_yuv_.avg() + encode_.avg();
+    printf("  total (avg) : %6lld us\n", static_cast<long long>(total.count()));
+    printf("----------------------------------------------\n");
+  }
+
+  static void print_stage(const char *name, const StageStats &s) {
+    printf("%s min=%6lld  avg=%6lld  max=%6lld us\n",
+           name,
+           static_cast<long long>(s.count > 0 ? s.min.count() : 0),
+           static_cast<long long>(s.avg().count()),
+           static_cast<long long>(s.max.count()));
+  }
+
+  void reset() noexcept {
+    render_.reset();
+    capture_.reset();
+    flip_.reset();
+    rgb_to_yuv_.reset();
+    encode_.reset();
+    frame_count_ = 0;
+  }
+
+  StageStats render_{};
+  StageStats capture_{};
+  StageStats flip_{};
+  StageStats rgb_to_yuv_{};
+  StageStats encode_{};
+  uint32_t frame_count_{0};
+};
+
+class DecodeStats {
+public:
+  struct Frame {
+    std::chrono::microseconds upload_us{};
+    std::chrono::microseconds receive_us{};
+    std::chrono::microseconds yuv_to_rgb_us{};
+    std::chrono::microseconds texture_upload_us{};
+    std::chrono::microseconds display_us{};
+  };
+
+  void record(const Frame &f) noexcept {
+    upload_.record(f.upload_us);
+    receive_.record(f.receive_us);
+    yuv_to_rgb_.record(f.yuv_to_rgb_us);
+    texture_upload_.record(f.texture_upload_us);
+    display_.record(f.display_us);
+    ++frame_count_;
+
+    if (frame_count_ >= PIPELINE_STATS_REPORT_INTERVAL) {
+      report();
+      reset();
+    }
+  }
+
+private:
+  void report() const {
+    printf("\n--- Decode pipeline stats (over %u frames) ---\n", frame_count_);
+    print_stage("  upload      ", upload_);
+    print_stage("  receive     ", receive_);
+    print_stage("  yuv->rgb    ", yuv_to_rgb_);
+    print_stage("  tex upload  ", texture_upload_);
+    print_stage("  display     ", display_);
+    const auto total = upload_.avg() + receive_.avg() + yuv_to_rgb_.avg() + texture_upload_.avg() + display_.avg();
+    printf("  total (avg) : %6lld us\n", static_cast<long long>(total.count()));
+    printf("----------------------------------------------\n");
+  }
+
+  static void print_stage(const char *name, const StageStats &s) {
+    printf("%s min=%6lld  avg=%6lld  max=%6lld us\n",
+           name,
+           static_cast<long long>(s.count > 0 ? s.min.count() : 0),
+           static_cast<long long>(s.avg().count()),
+           static_cast<long long>(s.max.count()));
+  }
+
+  void reset() noexcept {
+    upload_.reset();
+    receive_.reset();
+    yuv_to_rgb_.reset();
+    texture_upload_.reset();
+    display_.reset();
+    frame_count_ = 0;
+  }
+
+  StageStats upload_{};
+  StageStats receive_{};
+  StageStats yuv_to_rgb_{};
+  StageStats texture_upload_{};
+  StageStats display_{};
+  uint32_t frame_count_{0};
+};
+
+} // namespace streaming

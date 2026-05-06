@@ -5,12 +5,19 @@
 
 #include <gp/ffmpeg/ffmpeg.hpp>
 
+#include <chrono>
 #include <functional>
 #include <memory>
 
 namespace streaming {
 class Encoder {
 public:
+  struct Timings {
+    std::chrono::microseconds flip_us{};
+    std::chrono::microseconds rgb_to_yuv_us{};
+    std::chrono::microseconds encode_us{};
+  };
+
   explicit Encoder(const VideoStreamInfo &video_stream_info);
   Encoder(const Encoder &) = delete;
   Encoder &operator=(const Encoder &) = delete;
@@ -21,6 +28,9 @@ public:
 
   std::shared_ptr<FrameData> video_frame();
   VideoStreamInfo video_stream_info() const;
+
+  const Timings &last_timings() const noexcept { return last_timings_; }
+
   void set_video_stream_callback(
       std::function<void(const std::byte *data, const std::size_t size, const bool eof)> video_stream_callback);
   void encode();
@@ -34,6 +44,8 @@ private:
 
   std::shared_ptr<FrameData> video_frame_{};
   FrameData rgb_frame_{};
+
+  Timings last_timings_{};
 
   const AVCodec *codec_{};
   gp::ffmpeg::UniqueAVCodecContext context_{};

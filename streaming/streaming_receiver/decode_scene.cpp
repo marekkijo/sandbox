@@ -7,6 +7,7 @@
 #include <gp/misc/event.hpp>
 
 #include <array>
+#include <chrono>
 
 namespace streaming {
 namespace {
@@ -86,8 +87,9 @@ void DecodeScene::decode() {
 
   const auto status = decoder_->decode();
   switch (status.code) {
-  case Decoder::Status::Code::OK:
-    printf("Decoding: decoded frame: %i\n", status.frame_num);
+  case Decoder::Status::Code::OK: {
+    using Clock = std::chrono::steady_clock;
+    const auto t0 = Clock::now();
     frame_texture_->bind();
     frame_texture_->set_image(0,
                               format,
@@ -97,10 +99,16 @@ void DecodeScene::decode() {
                               format,
                               GL_UNSIGNED_BYTE,
                               rgb_frame_->data());
+    const auto t1 = Clock::now();
+    const auto &dec_t = decoder_->last_timings();
+    pending_decode_frame_ = {.upload_us = dec_t.upload_us,
+                             .receive_us = dec_t.receive_us,
+                             .yuv_to_rgb_us = dec_t.yuv_to_rgb_us,
+                             .texture_upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)};
     frame_ready_ = true;
     break;
+  }
   case Decoder::Status::Code::RETRY:
-    printf("Decoding: packet sent, retrying...\n");
     break;
   case Decoder::Status::Code::EOS:
     printf("Decoding: end of stream\n");
@@ -120,12 +128,19 @@ bool DecodeScene::redraw() {
     return false;
   }
 
+  using Clock = std::chrono::steady_clock;
+  const auto t0 = Clock::now();
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glActiveTexture(GL_TEXTURE0);
   shader_program_->use();
   frame_texture_->bind();
   vao_->bind();
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+  pending_decode_frame_.display_us = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t0);
+  decode_stats_.record(pending_decode_frame_);
+
   frame_ready_ = false;
   return true;
 }

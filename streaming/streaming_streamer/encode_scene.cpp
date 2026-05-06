@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <array>
+#include <chrono>
 
 namespace streaming {
 namespace {
@@ -119,6 +120,9 @@ void EncodeScene::animate(const std::uint64_t time_elapsed_ms) {
 }
 
 void EncodeScene::redraw() {
+  using Clock = std::chrono::steady_clock;
+  const auto t0 = Clock::now();
+
   auto camera_rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(camera_rot_.x), glm::vec3(1.0f, 0.0f, 0.0f));
   camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.y), glm::vec3(0.0f, 1.0f, 0.0f));
   camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.z), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -133,12 +137,26 @@ void EncodeScene::redraw() {
 
   vao_->bind();
   glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+
+  last_render_us_ = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t0);
 }
 
 void EncodeScene::encode() {
   constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
+
+  using Clock = std::chrono::steady_clock;
+
+  const auto t0 = Clock::now();
   glReadPixels(0, 0, width(), height(), format, GL_UNSIGNED_BYTE, video_frame_->data());
+  const auto t1 = Clock::now();
   encoder_->encode();
+
+  const auto &enc_t = encoder_->last_timings();
+  encode_stats_.record({.render_us = last_render_us_,
+                        .capture_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0),
+                        .flip_us = enc_t.flip_us,
+                        .rgb_to_yuv_us = enc_t.rgb_to_yuv_us,
+                        .encode_us = enc_t.encode_us});
 }
 
 void EncodeScene::init_scene() {

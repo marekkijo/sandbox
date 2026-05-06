@@ -2,6 +2,7 @@
 
 #include "streaming_common/constants.hpp"
 
+#include <chrono>
 #include <stdexcept>
 
 namespace streaming {
@@ -72,7 +73,12 @@ Decoder::Status Decoder::decode() {
   }
 
   if (packet_sent_) {
+    using Clock = std::chrono::steady_clock;
+
+    const auto t0 = Clock::now();
     auto result = avcodec_receive_frame(context_.get(), frame_.get());
+    const auto t1 = Clock::now();
+    last_timings_.receive_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
 
     if (result == AVERROR(EAGAIN)) {
       packet_sent_ = false;
@@ -90,13 +96,20 @@ Decoder::Status Decoder::decode() {
     }
 
     yuv_to_rgb();
+    const auto t2 = Clock::now();
+    last_timings_.yuv_to_rgb_us = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
     return {Status::Code::OK, static_cast<int>(context_->frame_num)};
   } else {
-    if (upload()) {
+    using Clock = std::chrono::steady_clock;
+
+    const auto t0 = Clock::now();
+    const bool uploaded = upload();
+    const auto t1 = Clock::now();
+    if (uploaded) {
+      last_timings_.upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
       return {Status::Code::RETRY};
-    } else {
-      return {Status::Code::NODATA};
     }
+    return {Status::Code::NODATA};
   }
 }
 
