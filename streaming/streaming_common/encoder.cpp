@@ -58,7 +58,7 @@ Encoder::Encoder(const VideoStreamInfo &video_stream_info)
 
   sws_context_.reset(sws_getContext(context_->width,
                                     context_->height,
-                                    AV_PIX_FMT_RGB32,
+                                    AV_PIX_FMT_RGBA,
                                     context_->width,
                                     context_->height,
                                     AV_PIX_FMT_YUV420P,

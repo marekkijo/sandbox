@@ -115,6 +115,9 @@ void EncodeScene::finalize() {
   indices_buffer_.reset();
   vertex_buffer_.reset();
   vao_.reset();
+  for (auto &pbo : pbos_) {
+    pbo.reset();
+  }
   video_frame_.reset();
   encoder_.reset();
 }

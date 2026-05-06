@@ -45,6 +45,7 @@ void Decoder::init(const VideoStreamInfo &video_stream_info) {
   packet_sent_ = false;
   {
     buffer_.clear();
+    buffer_read_offset_ = 0;
     signaled_eof_ = false;
   }
 }
@@ -149,6 +150,10 @@ bool Decoder::incoming_data(const std::byte *data, const std::size_t size, const
   if (buffer_.empty()) {
     buffer_.reserve(size + NULL_PADDING.size());
   } else {
+    if (buffer_read_offset_ > 0) {
+      buffer_.erase(buffer_.begin(), buffer_.begin() + static_cast<std::ptrdiff_t>(buffer_read_offset_));
+      buffer_read_offset_ = 0;
+    }
     if (buffer_.size() >= NULL_PADDING.size()) {
       buffer_.erase(buffer_.end() - NULL_PADDING.size(), buffer_.end());
     }
@@ -173,12 +178,12 @@ bool Decoder::upload() {
       break;
     }
 
-    const auto size = buffer_.empty() ? 0u : (buffer_.size() - NULL_PADDING.size());
+    const auto size = buffer_.empty() ? 0u : (buffer_.size() - buffer_read_offset_ - NULL_PADDING.size());
     auto result = av_parser_parse2(parser_.get(),
                                    context_.get(),
                                    &packet_->data,
                                    &packet_->size,
-                                   buffer_.data(),
+                                   buffer_.data() + buffer_read_offset_,
                                    static_cast<int>(size),
                                    AV_NOPTS_VALUE,
                                    AV_NOPTS_VALUE,
@@ -245,10 +250,10 @@ void Decoder::reduce_buffer(int n) {
     return;
   }
 
-  if (static_cast<std::size_t>(n) == (buffer_.size() - NULL_PADDING.size())) {
+  buffer_read_offset_ += static_cast<std::size_t>(n);
+  if (buffer_read_offset_ >= buffer_.size() - NULL_PADDING.size()) {
     buffer_.clear();
-  } else {
-    buffer_.erase(buffer_.begin(), buffer_.begin() + n);
+    buffer_read_offset_ = 0;
   }
 }
 
@@ -261,7 +266,7 @@ void Decoder::yuv_to_rgb() {
                                       AV_PIX_FMT_YUV420P,
                                       context_->width,
                                       context_->height,
-                                      AV_PIX_FMT_RGB32,
+                                      AV_PIX_FMT_RGBA,
                                       0,
                                       nullptr,
                                       nullptr,
