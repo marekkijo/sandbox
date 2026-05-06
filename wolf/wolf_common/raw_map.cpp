@@ -1,5 +1,7 @@
 #include "raw_map.hpp"
 
+#include <array>
+#include <queue>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -37,6 +39,7 @@ RawMap::RawMap(const int width, const int height, std::vector<BlockType> &&block
   process_doors();
   process_ambush_tiles();
   process_start_position();
+  process_visible_walls();
 }
 
 int RawMap::width() const { return size_.x; }
@@ -66,12 +69,10 @@ bool RawMap::is_within_bounds(const glm::ivec2 &pos) const {
 bool RawMap::is_wall(const int w, const int h) const { return is_wall(glm::ivec2{w, h}); }
 
 bool RawMap::is_wall(const glm::ivec2 &pos) const {
-  if (!is_within_bounds(pos)) {
+  if (!is_wall_raw(pos)) {
     return false;
   }
-
-  const auto wall = block(pos.x, pos.y).wall;
-  return wall > Map::Walls::nothing && wall < Map::Walls::elevator_to_secret_floor;
+  return visible_walls_[static_cast<std::size_t>(pos.x + pos.y * width())];
 }
 
 const glm::ivec2 &RawMap::player_pos() const { return player_pos_; }
@@ -82,6 +83,55 @@ RawMap::BlockType &RawMap::block(const int w, const int h) {
   }
 
   return blocks_[w + h * width()];
+}
+
+bool RawMap::is_wall_raw(const glm::ivec2 &pos) const {
+  if (!is_within_bounds(pos)) {
+    return false;
+  }
+  const auto wall = block(pos.x, pos.y).wall;
+  return wall > Map::Walls::nothing && wall < Map::Walls::elevator_to_secret_floor;
+}
+
+void RawMap::process_visible_walls() {
+  const auto sz = static_cast<std::size_t>(width() * height());
+  visible_walls_.assign(sz, false);
+
+  std::vector<bool> visited(sz, false);
+  std::queue<glm::ivec2> queue;
+
+  const auto start_idx = static_cast<std::size_t>(player_pos_.x + player_pos_.y * width());
+  visited[start_idx] = true;
+  queue.push(player_pos_);
+
+  constexpr std::array<glm::ivec2, 4> dirs = {
+      glm::ivec2{ 0, -1},
+      glm::ivec2{ 0,  1},
+      glm::ivec2{-1,  0},
+      glm::ivec2{ 1,  0}
+  };
+
+  while (!queue.empty()) {
+    const auto curr = queue.front();
+    queue.pop();
+
+    for (const auto &dir : dirs) {
+      const auto next = curr + dir;
+      if (!is_within_bounds(next)) {
+        continue;
+      }
+      const auto next_idx = static_cast<std::size_t>(next.x + next.y * width());
+      if (visited[next_idx]) {
+        continue;
+      }
+      visited[next_idx] = true;
+      if (is_wall_raw(next)) {
+        visible_walls_[next_idx] = true;
+      } else {
+        queue.push(next);
+      }
+    }
+  }
 }
 
 void RawMap::process_doors() {
