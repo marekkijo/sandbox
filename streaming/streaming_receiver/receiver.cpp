@@ -1,9 +1,12 @@
 #include "receiver.hpp"
 
 #include "streaming_common/constants.hpp"
+#include "streaming_common/stream_package_header.hpp"
 
 #include <gp/json/misc.hpp>
 #include <gp/utils/utils.hpp>
+
+#include <cstring>
 
 namespace streaming {
 Receiver::Receiver(const std::string &server_ip, const std::uint16_t server_port)
@@ -42,7 +45,8 @@ void Receiver::set_video_stream_info_callback(
 }
 
 void Receiver::set_incoming_video_stream_data_callback(
-    std::function<void(const std::byte *data, const std::size_t size)> incoming_video_stream_data_callback) {
+    std::function<void(const std::byte *data, const std::size_t size, const bool eof)>
+        incoming_video_stream_data_callback) {
   incoming_video_stream_data_callback_ = std::move(incoming_video_stream_data_callback);
 }
 
@@ -254,10 +258,21 @@ void Receiver::on_data_channel_closed() { printf("Data channel closed\n"); }
 void Receiver::on_data_channel_error(std::string error) { printf("Data channel error: %s\n", error.c_str()); }
 
 void Receiver::on_data_channel_binary_message(rtc::binary message) {
-  if (incoming_video_stream_data_callback_) {
-    incoming_video_stream_data_callback_(message.data(), message.size());
-  } else {
-    printf("Incoming video stream data callback not set\n");
+  if (message.size() < STREAM_PACKAGE_HEADER_SIZE) {
+    return;
+  }
+
+  StreamPackageHeader header{};
+  std::memcpy(&header, message.data(), STREAM_PACKAGE_HEADER_SIZE);
+
+  const auto *payload = message.data() + STREAM_PACKAGE_HEADER_SIZE;
+  const auto payload_size = message.size() - STREAM_PACKAGE_HEADER_SIZE;
+
+  if (incoming_video_stream_data_callback_ && payload_size > 0) {
+    incoming_video_stream_data_callback_(payload, payload_size, false);
+  }
+  if (header.eof && incoming_video_stream_data_callback_) {
+    incoming_video_stream_data_callback_(nullptr, 0, true);
   }
 }
 

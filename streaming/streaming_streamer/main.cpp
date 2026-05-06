@@ -23,6 +23,7 @@ struct ProgramSetup {
   int height{};
   std::uint16_t fps{};
   AVCodecID codec_id{AV_CODEC_ID_NONE};
+  bool use_stun{true};
 #ifdef STREAMING_PIPELINE_STATS
   std::string stats_log{};
 #endif
@@ -41,6 +42,7 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   desc.add_options()("codec",
                      boost::program_options::value<std::string>()->default_value("h264"),
                      "Codec name, e.g. h264 or mpeg4");
+  desc.add_options()("no-stun", "Disable STUN server (use for local LAN connections)");
 #ifdef STREAMING_PIPELINE_STATS
   desc.add_options()("stats-log",
                      boost::program_options::value<std::string>()->default_value(""),
@@ -62,9 +64,10 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           vm["width"].as<int>(),
           vm["height"].as<int>(),
           vm["fps"].as<std::uint16_t>(),
-          gp::ffmpeg::codec_name_to_id(vm["codec"].as<std::string>())
+          gp::ffmpeg::codec_name_to_id(vm["codec"].as<std::string>()),
+          !vm.count("no-stun")
 #ifdef STREAMING_PIPELINE_STATS
-              ,
+          ,
           vm["stats-log"].as<std::string>()
 #endif
   };
@@ -85,7 +88,7 @@ int main(int argc, char *argv[]) {
                                                             avcodec_get_name(program_setup.codec_id)};
 
   auto encode_scene = std::make_unique<streaming::EncodeScene>(video_stream_info);
-  auto streamer = std::make_shared<streaming::Streamer>(program_setup.ip, program_setup.port);
+  auto streamer = std::make_shared<streaming::Streamer>(program_setup.ip, program_setup.port, program_setup.use_stun);
 
 #ifdef STREAMING_PIPELINE_STATS
   std::FILE *stats_file{nullptr};
