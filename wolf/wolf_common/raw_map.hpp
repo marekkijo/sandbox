@@ -39,16 +39,12 @@ private:
   glm::ivec2 size_{-1, -1};
 
   std::vector<BlockType> blocks_{};
-  std::vector<bool> visible_walls_{};
   glm::ivec2 player_pos_{-1, -1};
 
   BlockType &block(const int w, const int h);
 
-  bool is_wall_raw(const glm::ivec2 &pos) const;
-
   void process_doors();
   void process_ambush_tiles();
   void process_start_position();
-  void process_visible_walls();
 };
 } // namespace wolf
