@@ -1,5 +1,6 @@
 #include "raw_map.hpp"
 
+#include <array>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -37,6 +38,7 @@ RawMap::RawMap(const int width, const int height, std::vector<BlockType> &&block
   process_doors();
   process_ambush_tiles();
   process_start_position();
+  process_corridor_walls();
 }
 
 int RawMap::width() const { return size_.x; }
@@ -70,8 +72,7 @@ bool RawMap::is_wall(const glm::ivec2 &pos) const {
     return false;
   }
 
-  const auto wall = block(pos.x, pos.y).wall;
-  return wall > Map::Walls::nothing && wall < Map::Walls::elevator_to_secret_floor;
+  return corridor_walls_[static_cast<std::size_t>(pos.x + pos.y * width())];
 }
 
 const glm::ivec2 &RawMap::player_pos() const { return player_pos_; }
@@ -82,6 +83,40 @@ RawMap::BlockType &RawMap::block(const int w, const int h) {
   }
 
   return blocks_[w + h * width()];
+}
+
+bool RawMap::is_wall_raw(const glm::ivec2 &pos) const {
+  if (!is_within_bounds(pos)) {
+    return false;
+  }
+  const auto wall = block(pos.x, pos.y).wall;
+  return wall > Map::Walls::nothing && wall < Map::Walls::elevator_to_secret_floor;
+}
+
+void RawMap::process_corridor_walls() {
+  corridor_walls_.assign(static_cast<std::size_t>(width() * height()), false);
+
+  constexpr std::array<glm::ivec2, 4> dirs = {
+      glm::ivec2{ 0, -1},
+      glm::ivec2{ 0,  1},
+      glm::ivec2{-1,  0},
+      glm::ivec2{ 1,  0}
+  };
+
+  for (auto h = 0; h < height(); ++h) {
+    for (auto w = 0; w < width(); ++w) {
+      if (!is_wall_raw({w, h})) {
+        continue;
+      }
+      for (const auto &dir : dirs) {
+        const auto neighbor = glm::ivec2{w, h} + dir;
+        if (is_within_bounds(neighbor) && !is_wall_raw(neighbor)) {
+          corridor_walls_[static_cast<std::size_t>(w + h * width())] = true;
+          break;
+        }
+      }
+    }
+  }
 }
 
 void RawMap::process_doors() {
