@@ -61,7 +61,7 @@ private:
   std::string connection_url_{};
   VideoStreamInfo video_stream_info_{};
   std::atomic<bool> connection_open_{false};
-  std::size_t frame_num_{0};
+  std::uint64_t frame_num_{0};
   rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
   std::shared_ptr<Peer> peer_{};

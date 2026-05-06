@@ -6,8 +6,6 @@
 #include <gp/json/misc.hpp>
 #include <gp/utils/utils.hpp>
 
-#include <cstring>
-
 namespace streaming {
 Receiver::Receiver(const std::string &server_ip, const std::uint16_t server_port)
     : receiver_id_{gp::utils::generate_random_string(16u)}
@@ -262,8 +260,7 @@ void Receiver::on_data_channel_binary_message(rtc::binary message) {
     return;
   }
 
-  StreamPackageHeader header{};
-  std::memcpy(&header, message.data(), STREAM_PACKAGE_HEADER_SIZE);
+  StreamPackageHeader header = StreamPackageHeader::deserialize(reinterpret_cast<const std::uint8_t *>(message.data()));
 
   const auto *payload = message.data() + STREAM_PACKAGE_HEADER_SIZE;
   const auto payload_size = message.size() - STREAM_PACKAGE_HEADER_SIZE;

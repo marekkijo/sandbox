@@ -294,8 +294,9 @@ void Streamer::video_stream_callback(const std::byte *data, const std::size_t si
   }
   if (peer && peer->data_channel && peer->data_channel->isOpen()) {
     const StreamPackageHeader header{frame_num_++, eof};
+    const auto serialized = header.serialize();
     std::vector<std::byte> packet(STREAM_PACKAGE_HEADER_SIZE + size);
-    std::memcpy(packet.data(), &header, STREAM_PACKAGE_HEADER_SIZE);
+    std::memcpy(packet.data(), serialized.data(), STREAM_PACKAGE_HEADER_SIZE);
     std::memcpy(packet.data() + STREAM_PACKAGE_HEADER_SIZE, data, size);
     peer->data_channel->send(packet.data(), packet.size());
   }
