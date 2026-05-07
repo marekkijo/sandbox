@@ -26,6 +26,7 @@ public:
 
   void start(std::shared_ptr<Encoder> encoder);
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
+  void set_close_callback(std::function<void()> close_callback);
 
 private:
   struct Peer {
@@ -65,5 +66,6 @@ private:
   std::shared_ptr<Peer> peer_{};
   mutable std::mutex mutex_{};
   std::function<void(const gp::misc::Event &event)> event_callback_{};
+  std::function<void()> close_callback_{};
 };
 } // namespace streaming

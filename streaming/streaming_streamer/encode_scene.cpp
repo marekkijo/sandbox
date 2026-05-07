@@ -28,6 +28,8 @@ EncodeScene::EncodeScene(const VideoStreamInfo &video_stream_info)
 
 std::shared_ptr<Encoder> EncodeScene::encoder() const { return encoder_; }
 
+void EncodeScene::close() { request_close(); }
+
 void EncodeScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
   case gp::misc::Event::Type::Init:

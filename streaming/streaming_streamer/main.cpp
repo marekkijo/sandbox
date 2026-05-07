@@ -96,6 +96,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   streamer->set_event_callback([&encode_scene](const gp::misc::Event &event) { encode_scene->handle_event(event); });
+  streamer->set_close_callback([&encode_scene]() { encode_scene->close(); });
   streamer->start(encode_scene->encoder());
 
   const auto result = encode_scene->exec();

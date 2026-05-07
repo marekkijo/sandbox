@@ -67,7 +67,7 @@ public:
 
 private:
   void report() const {
-    fprintf(out_, "\n--- Encode pipeline stats (over %u frames) ---\n", frame_count_);
+    fprintf(out_, "--- Encode pipeline stats (over %u frames) ---\n", frame_count_);
     print_stage(out_, "  render      ", render_);
     print_stage(out_, "  capture     ", capture_);
     print_stage(out_, "  flip        ", flip_);
@@ -75,7 +75,7 @@ private:
     print_stage(out_, "  encode      ", encode_);
     const auto total = render_.avg() + capture_.avg() + flip_.avg() + rgb_to_yuv_.avg() + encode_.avg();
     fprintf(out_, "  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
-    fprintf(out_, "----------------------------------------------\n");
+    fprintf(out_, "----------------------------------------------\n\n");
     std::fflush(out_);
   }
 
@@ -139,7 +139,7 @@ public:
 
 private:
   void report() const {
-    fprintf(out_, "\n--- Decode pipeline stats (over %u frames) ---\n", frame_count_);
+    fprintf(out_, "--- Decode pipeline stats (over %u frames) ---\n", frame_count_);
     print_stage(out_, "  upload      ", upload_);
     print_stage(out_, "  receive     ", receive_);
     print_stage(out_, "  yuv->rgb    ", yuv_to_rgb_);
@@ -147,7 +147,7 @@ private:
     print_stage(out_, "  display     ", display_);
     const auto total = upload_.avg() + receive_.avg() + yuv_to_rgb_.avg() + texture_upload_.avg() + display_.avg();
     fprintf(out_, "  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
-    fprintf(out_, "----------------------------------------------\n");
+    fprintf(out_, "----------------------------------------------\n\n");
     std::fflush(out_);
   }
 
