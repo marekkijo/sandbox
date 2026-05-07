@@ -9,8 +9,10 @@
 
 #include <boost/program_options.hpp>
 
+#include <cerrno>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <string>
 
@@ -91,6 +93,14 @@ int main(int argc, char *argv[]) {
   std::FILE *stats_file{nullptr};
   if (!program_setup.stats_log.empty()) {
     stats_file = std::fopen(program_setup.stats_log.c_str(), "a");
+    if (stats_file == nullptr) {
+      std::fprintf(stderr,
+                   "[streamer] WARNING: failed to open stats log '%s': %s\n",
+                   program_setup.stats_log.c_str(),
+                   std::strerror(errno));
+    } else {
+      std::fprintf(stderr, "[streamer] stats log: %s\n", program_setup.stats_log.c_str());
+    }
   }
   encode_scene->set_stats_log(stats_file != nullptr ? stats_file : stdout);
 #endif
