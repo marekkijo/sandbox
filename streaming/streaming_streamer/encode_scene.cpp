@@ -84,6 +84,10 @@ void EncodeScene::handle_event(const gp::misc::Event &event) {
   event_queue_.emplace_back(event);
 }
 
+#ifdef STREAMING_PIPELINE_STATS
+void EncodeScene::set_stats_log(std::FILE *const out) noexcept { encode_stats_.set_output(out); }
+#endif
+
 void EncodeScene::initialize() {
   video_frame_ = encoder_->video_frame();
   init_scene();

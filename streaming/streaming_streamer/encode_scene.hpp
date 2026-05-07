@@ -31,6 +31,10 @@ public:
   std::shared_ptr<Encoder> encoder() const;
   void handle_event(const gp::misc::Event &event);
 
+#ifdef STREAMING_PIPELINE_STATS
+  void set_stats_log(std::FILE *out) noexcept;
+#endif
+
 private:
   void init(const int width, const int height, const std::string &title);
 

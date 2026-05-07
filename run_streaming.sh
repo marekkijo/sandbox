@@ -15,7 +15,23 @@ case "${1:-}" in
     exec "${BUILD_DIR}/streaming_signaling_server/Release/streaming_signaling_server" "${@:2}"
     ;;
   streamer)
-    exec "${BUILD_DIR}/streaming_streamer/Release/streaming_streamer" "${@:2}"
+    LOG_DIR="benchmark_logs"
+    mkdir -p "$LOG_DIR"
+    COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "nogit")
+    BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/\\' '__')
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    LOG_FILE="$(pwd)/${LOG_DIR}/${TIMESTAMP}_${COMMIT}_${BRANCH}_encode.log"
+    {
+      printf "# streaming pipeline stats (encode)\n"
+      printf "# date:   %s\n" "$(date)"
+      printf "# commit: %s\n" "$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+      printf "# branch: %s\n" "$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
+      printf "# preset: %s\n" "$PRESET"
+      printf "#\n"
+    } > "$LOG_FILE"
+    echo "Stats log: ${LOG_FILE}"
+    exec "${BUILD_DIR}/streaming_streamer/Release/streaming_streamer" \
+      --stats-log "${LOG_FILE}" "${@:2}"
     ;;
   receiver)
     LOG_DIR="benchmark_logs"
@@ -23,9 +39,9 @@ case "${1:-}" in
     COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "nogit")
     BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/\\' '__')
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    LOG_FILE="$(pwd)/${LOG_DIR}/${TIMESTAMP}_${COMMIT}_${BRANCH}.log"
+    LOG_FILE="$(pwd)/${LOG_DIR}/${TIMESTAMP}_${COMMIT}_${BRANCH}_decode.log"
     {
-      printf "# streaming pipeline stats\n"
+      printf "# streaming pipeline stats (decode)\n"
       printf "# date:   %s\n" "$(date)"
       printf "# commit: %s\n" "$(git rev-parse HEAD 2>/dev/null || echo unknown)"
       printf "# branch: %s\n" "$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
