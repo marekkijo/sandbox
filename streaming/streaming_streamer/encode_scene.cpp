@@ -114,8 +114,7 @@ void EncodeScene::animate(const std::uint64_t time_elapsed_ms) {
     return;
   }
 
-  const auto speed_factor = 0.05f;
-  camera_rot_.x += time_elapsed_ms * speed_factor;
+  const auto speed_factor = 0.02f;
   camera_rot_.y += time_elapsed_ms * speed_factor;
 }
 

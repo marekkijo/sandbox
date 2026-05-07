@@ -51,7 +51,7 @@ private:
 
   std::shared_ptr<FrameData> video_frame_{};
 
-  bool animate_{};
+  bool animate_{true};
   glm::mat4 projection_{};
   glm::vec3 camera_pos_{};
   glm::vec3 camera_rot_{};

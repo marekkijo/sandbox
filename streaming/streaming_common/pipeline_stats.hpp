@@ -49,6 +49,8 @@ public:
     std::chrono::microseconds encode_us{};
   };
 
+  void set_output(std::FILE *out) noexcept { out_ = out; }
+
   void record(const Frame &f) noexcept {
     render_.record(f.render_us);
     capture_.record(f.capture_us);
@@ -65,23 +67,25 @@ public:
 
 private:
   void report() const {
-    printf("\n--- Encode pipeline stats (over %u frames) ---\n", frame_count_);
-    print_stage("  render      ", render_);
-    print_stage("  capture     ", capture_);
-    print_stage("  flip        ", flip_);
-    print_stage("  rgb->yuv    ", rgb_to_yuv_);
-    print_stage("  encode      ", encode_);
+    fprintf(out_, "\n--- Encode pipeline stats (over %u frames) ---\n", frame_count_);
+    print_stage(out_, "  render      ", render_);
+    print_stage(out_, "  capture     ", capture_);
+    print_stage(out_, "  flip        ", flip_);
+    print_stage(out_, "  rgb->yuv    ", rgb_to_yuv_);
+    print_stage(out_, "  encode      ", encode_);
     const auto total = render_.avg() + capture_.avg() + flip_.avg() + rgb_to_yuv_.avg() + encode_.avg();
-    printf("  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
-    printf("----------------------------------------------\n");
+    fprintf(out_, "  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
+    fprintf(out_, "----------------------------------------------\n");
+    std::fflush(out_);
   }
 
-  static void print_stage(const char *name, const StageStats &s) {
-    printf("%s min=%6" PRId64 "  avg=%6" PRId64 "  max=%6" PRId64 " us\n",
-           name,
-           static_cast<int64_t>(s.count > 0 ? s.min.count() : 0),
-           static_cast<int64_t>(s.avg().count()),
-           static_cast<int64_t>(s.max.count()));
+  static void print_stage(std::FILE *out, const char *name, const StageStats &s) {
+    fprintf(out,
+            "%s min=%6" PRId64 "  avg=%6" PRId64 "  max=%6" PRId64 " us\n",
+            name,
+            static_cast<int64_t>(s.count > 0 ? s.min.count() : 0),
+            static_cast<int64_t>(s.avg().count()),
+            static_cast<int64_t>(s.max.count()));
   }
 
   void reset() noexcept {
@@ -99,6 +103,7 @@ private:
   StageStats rgb_to_yuv_{};
   StageStats encode_{};
   uint32_t frame_count_{0};
+  std::FILE *out_{stdout};
 };
 
 class DecodeStats {
@@ -110,6 +115,8 @@ public:
     std::chrono::microseconds texture_upload_us{};
     std::chrono::microseconds display_us{};
   };
+
+  void set_output(std::FILE *out) noexcept { out_ = out; }
 
   void record(const Frame &f) noexcept {
     upload_.record(f.upload_us);
@@ -127,23 +134,25 @@ public:
 
 private:
   void report() const {
-    printf("\n--- Decode pipeline stats (over %u frames) ---\n", frame_count_);
-    print_stage("  upload      ", upload_);
-    print_stage("  receive     ", receive_);
-    print_stage("  yuv->rgb    ", yuv_to_rgb_);
-    print_stage("  tex upload  ", texture_upload_);
-    print_stage("  display     ", display_);
+    fprintf(out_, "\n--- Decode pipeline stats (over %u frames) ---\n", frame_count_);
+    print_stage(out_, "  upload      ", upload_);
+    print_stage(out_, "  receive     ", receive_);
+    print_stage(out_, "  yuv->rgb    ", yuv_to_rgb_);
+    print_stage(out_, "  tex upload  ", texture_upload_);
+    print_stage(out_, "  display     ", display_);
     const auto total = upload_.avg() + receive_.avg() + yuv_to_rgb_.avg() + texture_upload_.avg() + display_.avg();
-    printf("  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
-    printf("----------------------------------------------\n");
+    fprintf(out_, "  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
+    fprintf(out_, "----------------------------------------------\n");
+    std::fflush(out_);
   }
 
-  static void print_stage(const char *name, const StageStats &s) {
-    printf("%s min=%6" PRId64 "  avg=%6" PRId64 "  max=%6" PRId64 " us\n",
-           name,
-           static_cast<int64_t>(s.count > 0 ? s.min.count() : 0),
-           static_cast<int64_t>(s.avg().count()),
-           static_cast<int64_t>(s.max.count()));
+  static void print_stage(std::FILE *out, const char *name, const StageStats &s) {
+    fprintf(out,
+            "%s min=%6" PRId64 "  avg=%6" PRId64 "  max=%6" PRId64 " us\n",
+            name,
+            static_cast<int64_t>(s.count > 0 ? s.min.count() : 0),
+            static_cast<int64_t>(s.avg().count()),
+            static_cast<int64_t>(s.max.count()));
   }
 
   void reset() noexcept {
@@ -161,6 +170,7 @@ private:
   StageStats texture_upload_{};
   StageStats display_{};
   uint32_t frame_count_{0};
+  std::FILE *out_{stdout};
 };
 
 } // namespace streaming

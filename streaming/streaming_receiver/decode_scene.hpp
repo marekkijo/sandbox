@@ -28,6 +28,10 @@ public:
 
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
 
+#ifdef STREAMING_PIPELINE_STATS
+  void set_stats_log(std::FILE *out) noexcept;
+#endif
+
 private:
   void init(const int width, const int height, const std::string &title);
 

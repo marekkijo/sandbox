@@ -36,6 +36,10 @@ void DecodeScene::set_event_callback(std::function<void(const gp::misc::Event &e
   event_callback_ = std::move(event_callback);
 }
 
+#ifdef STREAMING_PIPELINE_STATS
+void DecodeScene::set_stats_log(std::FILE *const out) noexcept { decode_stats_.set_output(out); }
+#endif
+
 void DecodeScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
   case gp::misc::Event::Type::Init:

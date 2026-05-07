@@ -6,6 +6,7 @@
 #include <boost/program_options.hpp>
 
 #include <cstdint>
+#include <cstdio>
 #include <iostream>
 #include <string>
 
@@ -14,6 +15,9 @@ struct ProgramSetup {
 
   std::string ip{};
   std::uint16_t port{};
+#ifdef STREAMING_PIPELINE_STATS
+  std::string stats_log{};
+#endif
 };
 
 ProgramSetup process_args(const int argc, const char *const argv[]) {
@@ -21,6 +25,11 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   desc.add_options()("help", "This help message");
   desc.add_options()("ip", boost::program_options::value<std::string>()->default_value("127.0.0.1"), "Server ip");
   desc.add_options()("port", boost::program_options::value<std::uint16_t>()->default_value(11100u), "Server port");
+#ifdef STREAMING_PIPELINE_STATS
+  desc.add_options()("stats-log",
+                     boost::program_options::value<std::string>()->default_value(""),
+                     "File path for pipeline stats log (empty = stdout)");
+#endif
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -31,7 +40,11 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
     return {true};
   }
 
+#ifdef STREAMING_PIPELINE_STATS
+  return {false, vm["ip"].as<std::string>(), vm["port"].as<std::uint16_t>(), vm["stats-log"].as<std::string>()};
+#else
   return {false, vm["ip"].as<std::string>(), vm["port"].as<std::uint16_t>()};
+#endif
 }
 
 int main(int argc, char *argv[]) {
@@ -51,8 +64,24 @@ int main(int argc, char *argv[]) {
       [&decode_scene](const std::byte *data, const std::size_t size) { decode_scene->consume_data(data, size); });
   decode_scene->set_event_callback([&receiver](const gp::misc::Event &event) { receiver->handle_event(event); });
 
+#ifdef STREAMING_PIPELINE_STATS
+  std::FILE *stats_file{nullptr};
+  if (!program_setup.stats_log.empty()) {
+    stats_file = std::fopen(program_setup.stats_log.c_str(), "w");
+  }
+  decode_scene->set_stats_log(stats_file != nullptr ? stats_file : stdout);
+#endif
+
   receiver->connect();
 
   const auto async_init = true;
-  return decode_scene->exec(async_init);
+  const auto result = decode_scene->exec(async_init);
+
+#ifdef STREAMING_PIPELINE_STATS
+  if (stats_file != nullptr) {
+    std::fclose(stats_file);
+  }
+#endif
+
+  return result;
 }
