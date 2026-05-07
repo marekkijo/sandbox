@@ -23,7 +23,7 @@ case "${1:-}" in
     COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "nogit")
     BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/\\' '__')
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    LOG_FILE="${LOG_DIR}/${TIMESTAMP}_${COMMIT}_${BRANCH}.log"
+    LOG_FILE="$(pwd)/${LOG_DIR}/${TIMESTAMP}_${COMMIT}_${BRANCH}.log"
     {
       printf "# streaming pipeline stats\n"
       printf "# date:   %s\n" "$(date)"
