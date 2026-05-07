@@ -34,10 +34,9 @@ case "${1:-}" in
     ;;
 
   receiver)
-    COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "nogit")
     BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/\\' '__')
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    SESSION_DIR="${BASE_LOG_DIR}/${TIMESTAMP}_${COMMIT}_${BRANCH}"
+    SESSION_DIR="${BASE_LOG_DIR}/${TIMESTAMP}_${BRANCH}"
     mkdir -p "$SESSION_DIR"
 
     # Update "latest" symlink
