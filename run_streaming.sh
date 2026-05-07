@@ -6,8 +6,9 @@
 #   ./run_streaming.sh receiver [extra args]
 #
 # The receiver creates a timestamped session folder in benchmark_logs/ and
-# updates a "latest" symlink. The streamer writes into that same session folder
-# automatically (start receiver before or at the same time as streamer).
+# writes its path to benchmark_logs/.current. The streamer discovers this
+# file lazily (on first stats flush) and writes streamer.log there.
+# Start the receiver before or alongside the streamer.
 
 set -euo pipefail
 
@@ -21,16 +22,8 @@ case "${1:-}" in
     ;;
 
   streamer)
-    # Write into the latest session folder created by the receiver
-    SESSION_DIR="${BASE_LOG_DIR}/latest"
-    if [[ ! -d "$SESSION_DIR" ]]; then
-      echo "No active session folder found (run receiver first, or start them together)."
-      echo "Falling back to stdout for stats."
-      exec "${BUILD_DIR}/streaming_streamer/Release/streaming_streamer" "${@:2}"
-    fi
-    LOG_FILE="${SESSION_DIR}/streamer.log"
     exec "${BUILD_DIR}/streaming_streamer/Release/streaming_streamer" \
-      --stats-log "${LOG_FILE}" "${@:2}"
+      --stats-log-dir "${BASE_LOG_DIR}" "${@:2}"
     ;;
 
   receiver)
@@ -39,8 +32,8 @@ case "${1:-}" in
     SESSION_DIR="${BASE_LOG_DIR}/${TIMESTAMP}_${BRANCH}"
     mkdir -p "$SESSION_DIR"
 
-    # Update "latest" symlink
-    ln -sfn "$SESSION_DIR" "${BASE_LOG_DIR}/latest"
+    # Record current session path for streamer to discover
+    printf "%s\n" "$SESSION_DIR" > "${BASE_LOG_DIR}/.current"
 
     # Write session metadata
     {

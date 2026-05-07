@@ -9,10 +9,8 @@
 
 #include <boost/program_options.hpp>
 
-#include <cerrno>
 #include <cstdint>
 #include <cstdio>
-#include <cstring>
 #include <iostream>
 #include <string>
 
@@ -26,7 +24,7 @@ struct ProgramSetup {
   std::uint16_t fps{};
   AVCodecID codec_id{AV_CODEC_ID_NONE};
 #ifdef STREAMING_PIPELINE_STATS
-  std::string stats_log{};
+  std::string stats_log_dir{};
 #endif
 };
 
@@ -44,9 +42,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
                      boost::program_options::value<std::string>()->default_value("h264"),
                      "Codec name, e.g. h264 or mpeg4");
 #ifdef STREAMING_PIPELINE_STATS
-  desc.add_options()("stats-log",
+  desc.add_options()("stats-log-dir",
                      boost::program_options::value<std::string>()->default_value(""),
-                     "File path for pipeline stats log (empty = stdout)");
+                     "Base directory for pipeline stats logs (empty = stdout)");
 #endif
 
   boost::program_options::variables_map vm;
@@ -67,7 +65,7 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           gp::ffmpeg::codec_name_to_id(vm["codec"].as<std::string>())
 #ifdef STREAMING_PIPELINE_STATS
               ,
-          vm["stats-log"].as<std::string>()
+          vm["stats-log-dir"].as<std::string>()
 #endif
   };
 }
@@ -90,31 +88,15 @@ int main(int argc, char *argv[]) {
   auto streamer = std::make_shared<streaming::Streamer>(program_setup.ip, program_setup.port);
 
 #ifdef STREAMING_PIPELINE_STATS
-  std::FILE *stats_file{nullptr};
-  if (!program_setup.stats_log.empty()) {
-    stats_file = std::fopen(program_setup.stats_log.c_str(), "a");
-    if (stats_file == nullptr) {
-      std::fprintf(stderr,
-                   "[streamer] WARNING: failed to open stats log '%s': %s\n",
-                   program_setup.stats_log.c_str(),
-                   std::strerror(errno));
-    } else {
-      std::fprintf(stderr, "[streamer] stats log: %s\n", program_setup.stats_log.c_str());
-    }
+  if (!program_setup.stats_log_dir.empty()) {
+    encode_scene->set_stats_log_dir(program_setup.stats_log_dir);
   }
-  encode_scene->set_stats_log(stats_file != nullptr ? stats_file : stdout);
 #endif
 
   streamer->set_event_callback([&encode_scene](const gp::misc::Event &event) { encode_scene->handle_event(event); });
   streamer->start(encode_scene->encoder());
 
   const auto result = encode_scene->exec();
-
-#ifdef STREAMING_PIPELINE_STATS
-  if (stats_file != nullptr) {
-    std::fclose(stats_file);
-  }
-#endif
 
   return result;
 }
