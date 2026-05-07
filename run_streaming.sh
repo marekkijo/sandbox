@@ -6,9 +6,8 @@
 #   ./run_streaming.sh receiver [extra args]
 #
 # The receiver creates a timestamped session folder in benchmark_logs/ and
-# writes its path to benchmark_logs/.current. The streamer discovers this
-# file lazily (on first stats flush) and writes streamer.log there.
-# Start the receiver before or alongside the streamer.
+# records its path in benchmark_logs/.current. The streamer reads .current
+# and receives the same path as --stats-log. Start the receiver first.
 
 set -euo pipefail
 
@@ -22,8 +21,13 @@ case "${1:-}" in
     ;;
 
   streamer)
+    SESSION_DIR=$(cat "${BASE_LOG_DIR}/.current" 2>/dev/null | tr -d '[:space:]')
+    if [[ -z "$SESSION_DIR" ]]; then
+      echo "No active session found. Start the receiver first."
+      exec "${BUILD_DIR}/streaming_streamer/Release/streaming_streamer" "${@:2}"
+    fi
     exec "${BUILD_DIR}/streaming_streamer/Release/streaming_streamer" \
-      --stats-log-dir "${BASE_LOG_DIR}" "${@:2}"
+      --stats-log "${SESSION_DIR}/streamer.log" "${@:2}"
     ;;
 
   receiver)

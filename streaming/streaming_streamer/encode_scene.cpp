@@ -85,9 +85,7 @@ void EncodeScene::handle_event(const gp::misc::Event &event) {
 }
 
 #ifdef STREAMING_PIPELINE_STATS
-void EncodeScene::set_stats_log_dir(std::string base_dir) noexcept {
-  encode_stats_.set_output_dir(std::move(base_dir), "streamer.log");
-}
+void EncodeScene::set_stats_log(std::FILE *const out) noexcept { encode_stats_.set_output(out); }
 #endif
 
 void EncodeScene::initialize() {

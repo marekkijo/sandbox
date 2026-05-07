@@ -6,9 +6,7 @@
 # include <cinttypes>
 # include <cstdint>
 # include <cstdio>
-# include <cstring>
 # include <limits>
-# include <string>
 
 namespace streaming {
 
@@ -51,16 +49,7 @@ public:
     std::chrono::microseconds encode_us{};
   };
 
-  ~EncodeStats() noexcept {
-    if (owned_file_ != nullptr) {
-      std::fclose(owned_file_);
-    }
-  }
-
-  void set_output_dir(std::string base_dir, std::string filename) noexcept {
-    log_base_dir_ = std::move(base_dir);
-    log_filename_ = std::move(filename);
-  }
+  void set_output(std::FILE *out) noexcept { out_ = out; }
 
   void record(const Frame &f) noexcept {
     render_.record(f.render_us);
@@ -71,38 +60,12 @@ public:
     ++frame_count_;
 
     if (frame_count_ >= PIPELINE_STATS_REPORT_INTERVAL) {
-      try_open_output();
       report();
       reset();
     }
   }
 
 private:
-  void try_open_output() noexcept {
-    if (out_ != stdout || log_base_dir_.empty() || owned_file_ != nullptr) {
-      return;
-    }
-    const auto current_path = log_base_dir_ + "/.current";
-    auto *f = std::fopen(current_path.c_str(), "r");
-    if (f == nullptr) {
-      return;
-    }
-    char session[4096]{};
-    if (std::fgets(session, sizeof(session), f) != nullptr) {
-      const auto len = std::strlen(session);
-      auto end = len;
-      while (end > 0 && (session[end - 1] == '\n' || session[end - 1] == '\r')) {
-        session[--end] = '\0';
-      }
-      const auto log_path = std::string(session) + "/" + log_filename_;
-      owned_file_ = std::fopen(log_path.c_str(), "a");
-      if (owned_file_ != nullptr) {
-        out_ = owned_file_;
-      }
-    }
-    std::fclose(f);
-  }
-
   void report() const {
     fprintf(out_, "\n--- Encode pipeline stats (over %u frames) ---\n", frame_count_);
     print_stage(out_, "  render      ", render_);
@@ -134,9 +97,6 @@ private:
     frame_count_ = 0;
   }
 
-  std::string log_base_dir_{};
-  std::string log_filename_{};
-  std::FILE *owned_file_{nullptr};
   StageStats render_{};
   StageStats capture_{};
   StageStats flip_{};

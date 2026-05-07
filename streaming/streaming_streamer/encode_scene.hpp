@@ -32,7 +32,7 @@ public:
   void handle_event(const gp::misc::Event &event);
 
 #ifdef STREAMING_PIPELINE_STATS
-  void set_stats_log_dir(std::string base_dir) noexcept;
+  void set_stats_log(std::FILE *out) noexcept;
 #endif
 
 private:
