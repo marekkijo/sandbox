@@ -63,16 +63,16 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-# Launch server — show its minimal output; capture real PID
+# Launch server — show output directly
 "${SERVER}" &
 SERVER_PID=$!
 sleep 0.5
 
-# Launch streamer — suppress FFmpeg noise (stats go to file)
-"${STREAMER}" 2>/dev/null &
+# Launch streamer — show output (FFmpeg warnings are useful for debugging)
+"${STREAMER}" &
 STREAMER_PID=$!
 
-# Launch receiver — suppress FFmpeg noise; stats written directly to LOG_FILE
+# Launch receiver — stats written to LOG_FILE; suppress FFmpeg noise on stderr
 "${RECEIVER}" --stats-log "${LOG_FILE}" --stats-reports "${REPORTS}" 2>/dev/null &
 RECEIVER_PID=$!
 
