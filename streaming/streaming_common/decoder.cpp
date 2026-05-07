@@ -73,12 +73,15 @@ Decoder::Status Decoder::decode() {
   }
 
   if (packet_sent_) {
+#ifdef STREAMING_PIPELINE_STATS
     using Clock = std::chrono::steady_clock;
-
     const auto t0 = Clock::now();
+#endif
     auto result = avcodec_receive_frame(context_.get(), frame_.get());
+#ifdef STREAMING_PIPELINE_STATS
     const auto t1 = Clock::now();
     last_timings_.receive_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+#endif
 
     if (result == AVERROR(EAGAIN)) {
       packet_sent_ = false;
@@ -96,6 +99,7 @@ Decoder::Status Decoder::decode() {
     }
 
     yuv_to_rgb();
+#ifdef STREAMING_PIPELINE_STATS
     const auto t2 = Clock::now();
     last_timings_.yuv_to_rgb_us = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
     // upload_us is only valid for the first frame decoded from each uploaded packet;
@@ -104,18 +108,26 @@ Decoder::Status Decoder::decode() {
       last_timings_.upload_us = std::chrono::microseconds::zero();
     }
     upload_timing_fresh_ = false;
+#endif
     return {Status::Code::OK, static_cast<int>(context_->frame_num)};
   } else {
+#ifdef STREAMING_PIPELINE_STATS
     using Clock = std::chrono::steady_clock;
-
     const auto t0 = Clock::now();
+#endif
     const bool uploaded = upload();
+#ifdef STREAMING_PIPELINE_STATS
     const auto t1 = Clock::now();
     if (uploaded) {
       last_timings_.upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
       upload_timing_fresh_ = true;
       return {Status::Code::RETRY};
     }
+#else
+    if (uploaded) {
+      return {Status::Code::RETRY};
+    }
+#endif
     return {Status::Code::NODATA};
   }
 }

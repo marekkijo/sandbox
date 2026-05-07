@@ -100,19 +100,26 @@ void Encoder::encode() {
     throw std::runtime_error{"av_frame_make_writable failed"};
   }
 
+#ifdef STREAMING_PIPELINE_STATS
   using Clock = std::chrono::steady_clock;
-
   const auto t0 = Clock::now();
+#endif
   flip_frame();
+#ifdef STREAMING_PIPELINE_STATS
   const auto t1 = Clock::now();
+#endif
   rgb_to_yuv();
+#ifdef STREAMING_PIPELINE_STATS
   const auto t2 = Clock::now();
+#endif
   encode_frame(frame_.get());
+#ifdef STREAMING_PIPELINE_STATS
   const auto t3 = Clock::now();
 
   last_timings_.flip_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
   last_timings_.rgb_to_yuv_us = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
   last_timings_.encode_us = std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2);
+#endif
 
   frame_->pts++;
 }

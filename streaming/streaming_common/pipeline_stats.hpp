@@ -1,10 +1,12 @@
 #pragma once
 
-#include <chrono>
-#include <cinttypes>
-#include <cstdint>
-#include <cstdio>
-#include <limits>
+#ifdef STREAMING_PIPELINE_STATS
+
+# include <chrono>
+# include <cinttypes>
+# include <cstdint>
+# include <cstdio>
+# include <limits>
 
 namespace streaming {
 
@@ -162,3 +164,5 @@ private:
 };
 
 } // namespace streaming
+
+#endif // STREAMING_PIPELINE_STATS

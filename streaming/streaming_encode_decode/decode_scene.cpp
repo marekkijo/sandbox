@@ -74,8 +74,10 @@ void DecodeScene::decode() {
   const auto status = decoder_->decode();
   switch (status.code) {
   case Decoder::Status::Code::OK: {
+#ifdef STREAMING_PIPELINE_STATS
     using Clock = std::chrono::steady_clock;
     const auto t0 = Clock::now();
+#endif
     frame_texture_->bind();
     frame_texture_->set_image(0,
                               format,
@@ -85,12 +87,14 @@ void DecodeScene::decode() {
                               format,
                               GL_UNSIGNED_BYTE,
                               rgb_frame_->data());
+#ifdef STREAMING_PIPELINE_STATS
     const auto t1 = Clock::now();
     const auto &dec_t = decoder_->last_timings();
     pending_decode_frame_ = {.upload_us = dec_t.upload_us,
                              .receive_us = dec_t.receive_us,
                              .yuv_to_rgb_us = dec_t.yuv_to_rgb_us,
                              .texture_upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)};
+#endif
     frame_ready_ = true;
     break;
   }
@@ -116,8 +120,10 @@ bool DecodeScene::redraw() {
     return false;
   }
 
+#ifdef STREAMING_PIPELINE_STATS
   using Clock = std::chrono::steady_clock;
   const auto t0 = Clock::now();
+#endif
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glActiveTexture(GL_TEXTURE0);
@@ -126,8 +132,10 @@ bool DecodeScene::redraw() {
   vao_->bind();
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+#ifdef STREAMING_PIPELINE_STATS
   pending_decode_frame_.display_us = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t0);
   decode_stats_.record(pending_decode_frame_);
+#endif
 
   frame_ready_ = false;
   return true;
