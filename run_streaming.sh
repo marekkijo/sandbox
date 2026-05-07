@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# Streaming runner.
+# Streaming runner / benchmark.
 # Starts signaling server, streamer, and receiver.
-# When STREAMING_PIPELINE_STATS is enabled (default), pipeline stats are written
-# to a timestamped log file in benchmark_logs/ instead of stdout.
+# The receiver auto-closes after REPORTS stat cycles and writes stats to a
+# timestamped log file in benchmark_logs/.
 #
 # Usage:
 #   ./run_streaming.sh
+#   REPORTS=10 ./run_streaming.sh
 #   STREAMING_PRESET=ninja_debug ./run_streaming.sh
 
 set -uo pipefail
 
 PRESET=${STREAMING_PRESET:-ninja}
+REPORTS=${REPORTS:-20}
 
 BUILD_DIR="build/${PRESET}/streaming"
 SERVER="${BUILD_DIR}/streaming_signaling_server/Release/streaming_signaling_server"
@@ -35,36 +37,45 @@ LOG_FILE="${LOG_DIR}/${TIMESTAMP}_${COMMIT}_${BRANCH}.log"
 
 {
   printf "# streaming pipeline stats\n"
-  printf "# date:   %s\n" "$(date)"
-  printf "# commit: %s\n" "$(git rev-parse HEAD 2>/dev/null || echo unknown)"
-  printf "# branch: %s\n" "$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
-  printf "# preset: %s\n" "$PRESET"
+  printf "# date:    %s\n" "$(date)"
+  printf "# commit:  %s\n" "$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+  printf "# branch:  %s\n" "$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
+  printf "# preset:  %s\n" "$PRESET"
+  printf "# reports: %s x 100 frames\n" "$REPORTS"
   printf "#\n"
 } > "$LOG_FILE"
 
-echo "Stats log: ${LOG_FILE}"
+echo "Stats log:  ${LOG_FILE}"
+echo "Reports:    ${REPORTS} x 100 frames"
 echo
 
-# --- Cleanup ---
+# --- Cleanup: kill all on exit / Ctrl-C ---
 SERVER_PID="" STREAMER_PID="" RECEIVER_PID=""
 cleanup() {
-  kill "$SERVER_PID" "$STREAMER_PID" "$RECEIVER_PID" 2>/dev/null || true
+  for pid in "$SERVER_PID" "$STREAMER_PID" "$RECEIVER_PID"; do
+    if [[ -n "$pid" ]]; then
+      kill "$pid" 2>/dev/null || true
+    fi
+  done
   wait 2>/dev/null || true
   echo ""
-  echo "Log: ${LOG_FILE}"
+  echo "Done. Log: ${LOG_FILE}"
 }
 trap cleanup EXIT INT TERM
 
-# --- Launch ---
-"${SERVER}" 2>&1 | sed 's/^/[server  ] /' &
+# Launch server — show its minimal output; capture real PID
+"${SERVER}" &
 SERVER_PID=$!
 sleep 0.5
 
-"${STREAMER}" 2>&1 | sed 's/^/[streamer] /' &
+# Launch streamer — suppress FFmpeg noise (stats go to file)
+"${STREAMER}" 2>/dev/null &
 STREAMER_PID=$!
 
-"${RECEIVER}" --stats-log "${LOG_FILE}" 2>&1 | sed 's/^/[receiver] /' &
+# Launch receiver — suppress FFmpeg noise; stats written directly to LOG_FILE
+"${RECEIVER}" --stats-log "${LOG_FILE}" --stats-reports "${REPORTS}" 2>/dev/null &
 RECEIVER_PID=$!
 
-echo "All processes started. Press Ctrl-C to stop."
-wait "$RECEIVER_PID"
+echo "All processes started (Ctrl-C to stop early)."
+# Wait for receiver to auto-close after N reports
+wait "$RECEIVER_PID" || true

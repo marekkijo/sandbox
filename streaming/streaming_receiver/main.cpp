@@ -17,6 +17,7 @@ struct ProgramSetup {
   std::uint16_t port{};
 #ifdef STREAMING_PIPELINE_STATS
   std::string stats_log{};
+  uint32_t stats_reports{20};
 #endif
 };
 
@@ -29,6 +30,9 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   desc.add_options()("stats-log",
                      boost::program_options::value<std::string>()->default_value(""),
                      "File path for pipeline stats log (empty = stdout)");
+  desc.add_options()("stats-reports",
+                     boost::program_options::value<uint32_t>()->default_value(20u),
+                     "Number of stat reports before auto-close (0 = unlimited)");
 #endif
 
   boost::program_options::variables_map vm;
@@ -41,7 +45,11 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
   }
 
 #ifdef STREAMING_PIPELINE_STATS
-  return {false, vm["ip"].as<std::string>(), vm["port"].as<std::uint16_t>(), vm["stats-log"].as<std::string>()};
+  return {false,
+          vm["ip"].as<std::string>(),
+          vm["port"].as<std::uint16_t>(),
+          vm["stats-log"].as<std::string>(),
+          vm["stats-reports"].as<uint32_t>()};
 #else
   return {false, vm["ip"].as<std::string>(), vm["port"].as<std::uint16_t>()};
 #endif
@@ -70,6 +78,7 @@ int main(int argc, char *argv[]) {
     stats_file = std::fopen(program_setup.stats_log.c_str(), "w");
   }
   decode_scene->set_stats_log(stats_file != nullptr ? stats_file : stdout);
+  decode_scene->set_max_stats_reports(program_setup.stats_reports);
 #endif
 
   receiver->connect();

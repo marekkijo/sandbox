@@ -118,7 +118,9 @@ public:
 
   void set_output(std::FILE *out) noexcept { out_ = out; }
 
-  void record(const Frame &f) noexcept {
+  void set_max_reports(uint32_t n) noexcept { max_reports_ = n; }
+
+  bool record(const Frame &f) noexcept {
     upload_.record(f.upload_us);
     receive_.record(f.receive_us);
     yuv_to_rgb_.record(f.yuv_to_rgb_us);
@@ -129,7 +131,10 @@ public:
     if (frame_count_ >= PIPELINE_STATS_REPORT_INTERVAL) {
       report();
       reset();
+      ++reports_count_;
+      return max_reports_ > 0u && reports_count_ >= max_reports_;
     }
+    return false;
   }
 
 private:
@@ -170,6 +175,8 @@ private:
   StageStats texture_upload_{};
   StageStats display_{};
   uint32_t frame_count_{0};
+  uint32_t reports_count_{0};
+  uint32_t max_reports_{0};
   std::FILE *out_{stdout};
 };
 

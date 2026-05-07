@@ -38,6 +38,8 @@ void DecodeScene::set_event_callback(std::function<void(const gp::misc::Event &e
 
 #ifdef STREAMING_PIPELINE_STATS
 void DecodeScene::set_stats_log(std::FILE *const out) noexcept { decode_stats_.set_output(out); }
+
+void DecodeScene::set_max_stats_reports(const uint32_t n) noexcept { decode_stats_.set_max_reports(n); }
 #endif
 
 void DecodeScene::loop(const gp::misc::Event &event) {
@@ -150,7 +152,9 @@ bool DecodeScene::redraw() {
 
 #ifdef STREAMING_PIPELINE_STATS
   pending_decode_frame_.display_us = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t0);
-  decode_stats_.record(pending_decode_frame_);
+  if (decode_stats_.record(pending_decode_frame_)) {
+    request_close();
+  }
 #endif
 
   frame_ready_ = false;

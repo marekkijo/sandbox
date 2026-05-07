@@ -30,6 +30,7 @@ public:
 
 #ifdef STREAMING_PIPELINE_STATS
   void set_stats_log(std::FILE *out) noexcept;
+  void set_max_stats_reports(uint32_t n) noexcept;
 #endif
 
 private:
