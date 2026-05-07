@@ -178,8 +178,10 @@ void Streamer::on_peer_state_change(rtc::PeerConnection::State state) {
   }
   case rtc::PeerConnection::State::Closed: {
     printf("Peer state: Closed\n");
-    std::lock_guard<std::mutex> lock(mutex_);
-    peer_ = nullptr;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      peer_ = nullptr;
+    }
     if (close_callback_) {
       close_callback_();
     }

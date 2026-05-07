@@ -17,6 +17,7 @@
 #ifdef STREAMING_PIPELINE_STATS
 # include <chrono>
 #endif
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -68,6 +69,8 @@ private:
 
   std::vector<gp::misc::Event> event_queue_{};
   std::mutex event_queue_mutex_{};
+
+  std::atomic<bool> close_requested_{false};
 
 #ifdef STREAMING_PIPELINE_STATS
   std::chrono::microseconds last_render_us_{};

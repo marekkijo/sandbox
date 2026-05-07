@@ -28,7 +28,7 @@ EncodeScene::EncodeScene(const VideoStreamInfo &video_stream_info)
 
 std::shared_ptr<Encoder> EncodeScene::encoder() const { return encoder_; }
 
-void EncodeScene::close() { request_close(); }
+void EncodeScene::close() { close_requested_.store(true); }
 
 void EncodeScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -41,6 +41,10 @@ void EncodeScene::loop(const gp::misc::Event &event) {
     break;
   case gp::misc::Event::Type::Redraw: {
     process_event_queue();
+    if (close_requested_.load()) {
+      request_close();
+      break;
+    }
     const auto time_elapsed_ms = event.timestamp() - last_timestamp_ms_;
     if (time_elapsed_ms >= ms_per_frame_) {
       animate(time_elapsed_ms);
