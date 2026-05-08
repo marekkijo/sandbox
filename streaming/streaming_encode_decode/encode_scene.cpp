@@ -122,7 +122,6 @@ void EncodeScene::encode() {
   const auto &enc_t = encoder_->last_timings();
   encode_stats_.record({.render_us = last_render_us_,
                         .capture_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0),
-                        .flip_us = enc_t.flip_us,
                         .rgb_to_yuv_us = enc_t.rgb_to_yuv_us,
                         .encode_us = enc_t.encode_us});
 #endif

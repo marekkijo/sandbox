@@ -10,7 +10,6 @@
 namespace streaming {
 Encoder::Encoder(const VideoStreamInfo &video_stream_info)
     : video_frame_{std::make_shared<FrameData>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM)}
-    , rgb_frame_(video_frame_->size())
     , codec_{avcodec_find_encoder(video_stream_info.codec_id)}
     , context_{codec_ ? avcodec_alloc_context3(codec_) : nullptr}
     , packet_{av_packet_alloc()} {
@@ -104,21 +103,16 @@ void Encoder::encode() {
   using Clock = std::chrono::steady_clock;
   const auto t0 = Clock::now();
 #endif
-  flip_frame();
+  rgb_to_yuv();
 #ifdef STREAMING_PIPELINE_STATS
   const auto t1 = Clock::now();
 #endif
-  rgb_to_yuv();
-#ifdef STREAMING_PIPELINE_STATS
-  const auto t2 = Clock::now();
-#endif
   encode_frame(frame_.get());
 #ifdef STREAMING_PIPELINE_STATS
-  const auto t3 = Clock::now();
+  const auto t2 = Clock::now();
 
-  last_timings_.flip_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
-  last_timings_.rgb_to_yuv_us = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
-  last_timings_.encode_us = std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2);
+  last_timings_.rgb_to_yuv_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+  last_timings_.encode_us = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
 #endif
 
   frame_->pts++;
@@ -169,30 +163,21 @@ void Encoder::encode_frame(AVFrame *frame) {
   }
 }
 
-void Encoder::flip_frame() {
+void Encoder::rgb_to_yuv() {
   const auto width = static_cast<std::size_t>(context_->width);
   const auto height = static_cast<std::size_t>(context_->height);
 
-  for (std::size_t i = 0; i < height; i++) {
-    for (std::size_t j = 0; j < width; j++) {
-      auto *ptr_gl = video_frame_->data() + (CHANNELS_NUM * (width * (height - i - 1) + j));
-      auto *ptr_rgb = rgb_frame_.data() + (CHANNELS_NUM * (width * i + j));
-      memcpy(ptr_rgb, ptr_gl, CHANNELS_NUM);
-    }
-  }
-}
-
-void Encoder::rgb_to_yuv() {
-  const std::array<int, 1> in_linesize{CHANNELS_NUM * context_->width};
-
-  auto rgb_frame_data = reinterpret_cast<std::uint8_t *>(rgb_frame_.data());
-  sws_scale(sws_context_.get(),
-            &rgb_frame_data,
-            in_linesize.data(),
-            0,
-            context_->height,
-            frame_->data,
-            frame_->linesize);
+  // GL framebuffers are stored bottom-up: video_frame_->data() holds the bottom
+  // screen row, and the last row in memory is the top screen row. By setting
+  // src[0] to that last (top-screen) row and using a negative linesize, each
+  // successive sws_scale input row steps backward in memory — effectively reading
+  // the GL buffer top-to-bottom in screen coordinates, which is what the encoder
+  // expects. No intermediate copy is needed.
+  const auto *last_row =
+      reinterpret_cast<const std::uint8_t *>(video_frame_->data()) + (height - 1) * width * CHANNELS_NUM;
+  const std::uint8_t *src[] = {last_row};
+  const std::array<int, 1> in_linesize{-static_cast<int>(CHANNELS_NUM * width)};
+  sws_scale(sws_context_.get(), src, in_linesize.data(), 0, context_->height, frame_->data, frame_->linesize);
 }
 
 } // namespace streaming

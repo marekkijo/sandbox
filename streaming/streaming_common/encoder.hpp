@@ -16,7 +16,6 @@ class Encoder {
 public:
 #ifdef STREAMING_PIPELINE_STATS
   struct Timings {
-    std::chrono::microseconds flip_us{};
     std::chrono::microseconds rgb_to_yuv_us{};
     std::chrono::microseconds encode_us{};
   };
@@ -43,13 +42,11 @@ public:
 
 private:
   void encode_frame(AVFrame *frame);
-  void flip_frame();
   void rgb_to_yuv();
 
   std::function<void(const std::byte *data, const std::size_t size, const bool eof)> video_stream_callback_{};
 
   std::shared_ptr<FrameData> video_frame_{};
-  FrameData rgb_frame_{};
 
 #ifdef STREAMING_PIPELINE_STATS
   Timings last_timings_{};

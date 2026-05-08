@@ -3,7 +3,7 @@
 #include <cstddef>
 
 namespace streaming {
-constexpr auto BITRATE_kbits_1 = 1024 /* kilo */ * 8 /* bits */;
+constexpr auto BITRATE_kbits_1 = 1024; // 1 kbit/s in bits/s (binary)
 constexpr auto BITRATE_kbits_2 = BITRATE_kbits_1 * 2;
 constexpr auto BITRATE_kbits_4 = BITRATE_kbits_1 * 4;
 constexpr auto BITRATE_kbits_8 = BITRATE_kbits_1 * 8;
@@ -18,7 +18,7 @@ constexpr auto BITRATE_Mbits_2 = BITRATE_Mbits_1 * 2;
 constexpr auto BITRATE_Mbits_4 = BITRATE_Mbits_1 * 4;
 constexpr auto BITRATE_Mbits_8 = BITRATE_Mbits_1 * 8;
 
-constexpr auto ENCODE_BITRATE = BITRATE_kbits_8;
+constexpr auto ENCODE_BITRATE = BITRATE_Mbits_4;
 
 constexpr auto CHANNELS_NUM = int{4};
 constexpr auto DECODE_THREAD_COUNT = std::size_t{4u};
