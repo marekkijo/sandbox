@@ -7,6 +7,7 @@
 #include <gp/misc/event.hpp>
 
 #include <array>
+#include <chrono>
 
 namespace streaming {
 namespace {
@@ -34,6 +35,12 @@ void DecodeScene::consume_data(const std::byte *data, const std::size_t size) {
 void DecodeScene::set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback) {
   event_callback_ = std::move(event_callback);
 }
+
+#ifdef STREAMING_PIPELINE_STATS
+void DecodeScene::set_stats_log(std::FILE *const out) noexcept { decode_stats_.set_output(out); }
+
+void DecodeScene::set_max_stats_reports(const uint32_t n) noexcept { decode_stats_.set_max_reports(n); }
+#endif
 
 void DecodeScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
@@ -86,8 +93,11 @@ void DecodeScene::decode() {
 
   const auto status = decoder_->decode();
   switch (status.code) {
-  case Decoder::Status::Code::OK:
-    printf("Decoding: decoded frame: %i\n", status.frame_num);
+  case Decoder::Status::Code::OK: {
+#ifdef STREAMING_PIPELINE_STATS
+    using Clock = std::chrono::steady_clock;
+    const auto t0 = Clock::now();
+#endif
     frame_texture_->bind();
     frame_texture_->set_image(0,
                               format,
@@ -97,10 +107,18 @@ void DecodeScene::decode() {
                               format,
                               GL_UNSIGNED_BYTE,
                               rgb_frame_->data());
+#ifdef STREAMING_PIPELINE_STATS
+    const auto t1 = Clock::now();
+    const auto &dec_t = decoder_->last_timings();
+    pending_decode_frame_ = {.upload_us = dec_t.upload_us,
+                             .receive_us = dec_t.receive_us,
+                             .yuv_to_rgb_us = dec_t.yuv_to_rgb_us,
+                             .texture_upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)};
+#endif
     frame_ready_ = true;
     break;
+  }
   case Decoder::Status::Code::RETRY:
-    printf("Decoding: packet sent, retrying...\n");
     break;
   case Decoder::Status::Code::EOS:
     printf("Decoding: end of stream\n");
@@ -120,12 +138,25 @@ bool DecodeScene::redraw() {
     return false;
   }
 
+#ifdef STREAMING_PIPELINE_STATS
+  using Clock = std::chrono::steady_clock;
+  const auto t0 = Clock::now();
+#endif
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glActiveTexture(GL_TEXTURE0);
   shader_program_->use();
   frame_texture_->bind();
   vao_->bind();
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+#ifdef STREAMING_PIPELINE_STATS
+  pending_decode_frame_.display_us = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t0);
+  if (decode_stats_.record(pending_decode_frame_)) {
+    request_close();
+  }
+#endif
+
   frame_ready_ = false;
   return true;
 }

@@ -7,6 +7,9 @@
 
 #include <array>
 #include <atomic>
+#ifdef STREAMING_PIPELINE_STATS
+# include <chrono>
+#endif
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -39,6 +42,14 @@ public:
     int frame_num;
   };
 
+#ifdef STREAMING_PIPELINE_STATS
+  struct Timings {
+    std::chrono::microseconds upload_us{};
+    std::chrono::microseconds receive_us{};
+    std::chrono::microseconds yuv_to_rgb_us{};
+  };
+#endif
+
   Decoder() = default;
 
   ~Decoder();
@@ -51,6 +62,11 @@ public:
   void init(const VideoStreamInfo &video_stream_info);
 
   std::shared_ptr<FrameData> rgb_frame();
+
+#ifdef STREAMING_PIPELINE_STATS
+  const Timings &last_timings() const noexcept { return last_timings_; }
+#endif
+
   /**
    * Prepares another frame available through @ref rgb_frame().
    */
@@ -87,10 +103,20 @@ private:
   std::vector<std::uint8_t> async_buffer_{};
   std::mutex async_buffer_mutex_{};
 
+#ifdef STREAMING_PIPELINE_STATS
+  Timings last_timings_{};
+#endif
+
   /**
    * Packet was sent by avcodec_send_packet - expected to receive frames first.
    */
   bool packet_sent_{false};
+  /**
+   * True immediately after upload(); cleared after the first OK frame reads upload_us.
+   */
+#ifdef STREAMING_PIPELINE_STATS
+  bool upload_timing_fresh_{false};
+#endif
   /**
    * EOF signaled from the outside - no more data accepted.
    */

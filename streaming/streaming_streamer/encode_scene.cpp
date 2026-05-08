@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <array>
+#include <chrono>
 
 namespace streaming {
 namespace {
@@ -27,6 +28,8 @@ EncodeScene::EncodeScene(const VideoStreamInfo &video_stream_info)
 
 std::shared_ptr<Encoder> EncodeScene::encoder() const { return encoder_; }
 
+void EncodeScene::close() { close_requested_.store(true); }
+
 void EncodeScene::loop(const gp::misc::Event &event) {
   switch (event.type()) {
   case gp::misc::Event::Type::Init:
@@ -38,6 +41,10 @@ void EncodeScene::loop(const gp::misc::Event &event) {
     break;
   case gp::misc::Event::Type::Redraw: {
     process_event_queue();
+    if (close_requested_.load()) {
+      request_close();
+      break;
+    }
     const auto time_elapsed_ms = event.timestamp() - last_timestamp_ms_;
     if (time_elapsed_ms >= ms_per_frame_) {
       animate(time_elapsed_ms);
@@ -83,6 +90,10 @@ void EncodeScene::handle_event(const gp::misc::Event &event) {
   event_queue_.emplace_back(event);
 }
 
+#ifdef STREAMING_PIPELINE_STATS
+void EncodeScene::set_stats_log(std::FILE *const out) noexcept { encode_stats_.set_output(out); }
+#endif
+
 void EncodeScene::initialize() {
   video_frame_ = encoder_->video_frame();
   init_scene();
@@ -113,12 +124,16 @@ void EncodeScene::animate(const std::uint64_t time_elapsed_ms) {
     return;
   }
 
-  const auto speed_factor = 0.05f;
-  camera_rot_.x += time_elapsed_ms * speed_factor;
+  const auto speed_factor = 0.02f;
   camera_rot_.y += time_elapsed_ms * speed_factor;
 }
 
 void EncodeScene::redraw() {
+#ifdef STREAMING_PIPELINE_STATS
+  using Clock = std::chrono::steady_clock;
+  const auto t0 = Clock::now();
+#endif
+
   auto camera_rot_mat = glm::rotate(glm::mat4(1.0f), glm::radians(camera_rot_.x), glm::vec3(1.0f, 0.0f, 0.0f));
   camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.y), glm::vec3(0.0f, 1.0f, 0.0f));
   camera_rot_mat = glm::rotate(camera_rot_mat, glm::radians(camera_rot_.z), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -133,12 +148,34 @@ void EncodeScene::redraw() {
 
   vao_->bind();
   glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+
+#ifdef STREAMING_PIPELINE_STATS
+  last_render_us_ = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t0);
+#endif
 }
 
 void EncodeScene::encode() {
   constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
+
+#ifdef STREAMING_PIPELINE_STATS
+  using Clock = std::chrono::steady_clock;
+
+  const auto t0 = Clock::now();
+#endif
   glReadPixels(0, 0, width(), height(), format, GL_UNSIGNED_BYTE, video_frame_->data());
+#ifdef STREAMING_PIPELINE_STATS
+  const auto t1 = Clock::now();
+#endif
   encoder_->encode();
+
+#ifdef STREAMING_PIPELINE_STATS
+  const auto &enc_t = encoder_->last_timings();
+  encode_stats_.record({.render_us = last_render_us_,
+                        .capture_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0),
+                        .flip_us = enc_t.flip_us,
+                        .rgb_to_yuv_us = enc_t.rgb_to_yuv_us,
+                        .encode_us = enc_t.encode_us});
+#endif
 }
 
 void EncodeScene::init_scene() {

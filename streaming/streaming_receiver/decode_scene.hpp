@@ -2,6 +2,9 @@
 
 #include "streaming_common/decoder.hpp"
 #include "streaming_common/frame_data.hpp"
+#ifdef STREAMING_PIPELINE_STATS
+# include "streaming_common/pipeline_stats.hpp"
+#endif
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/gl/buffer_object.hpp>
@@ -24,6 +27,11 @@ public:
   void consume_data(const std::byte *data, const std::size_t size);
 
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
+
+#ifdef STREAMING_PIPELINE_STATS
+  void set_stats_log(std::FILE *out) noexcept;
+  void set_max_stats_reports(uint32_t n) noexcept;
+#endif
 
 private:
   void init(const int width, const int height, const std::string &title);
@@ -52,5 +60,10 @@ private:
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
 
   std::function<void(const gp::misc::Event &event)> event_callback_{};
+
+#ifdef STREAMING_PIPELINE_STATS
+  DecodeStats::Frame pending_decode_frame_{};
+  DecodeStats decode_stats_{};
+#endif
 };
 } // namespace streaming

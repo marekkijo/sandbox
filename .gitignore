@@ -15,3 +15,6 @@ CMakeUserPresets.json
 
 # Compile commands
 compile_commands.json
+
+# Streaming benchmark logs
+benchmark_logs/

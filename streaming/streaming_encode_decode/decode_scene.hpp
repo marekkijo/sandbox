@@ -2,6 +2,9 @@
 
 #include "streaming_common/decoder.hpp"
 #include "streaming_common/frame_data.hpp"
+#ifdef STREAMING_PIPELINE_STATS
+# include "streaming_common/pipeline_stats.hpp"
+#endif
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/gl/buffer_object.hpp>
@@ -48,5 +51,10 @@ private:
   std::unique_ptr<gp::gl::BufferObject> vertex_buffer_{};
   std::unique_ptr<gp::gl::TextureObject> frame_texture_{};
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
+
+#ifdef STREAMING_PIPELINE_STATS
+  DecodeStats::Frame pending_decode_frame_{};
+  DecodeStats decode_stats_{};
+#endif
 };
 } // namespace streaming

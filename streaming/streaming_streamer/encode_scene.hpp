@@ -2,6 +2,9 @@
 
 #include "streaming_common/encoder.hpp"
 #include "streaming_common/frame_data.hpp"
+#ifdef STREAMING_PIPELINE_STATS
+# include "streaming_common/pipeline_stats.hpp"
+#endif
 #include "streaming_common/video_stream_info.hpp"
 
 #include <gp/gl/buffer_object.hpp>
@@ -11,6 +14,10 @@
 
 #include <glm/glm.hpp>
 
+#ifdef STREAMING_PIPELINE_STATS
+# include <chrono>
+#endif
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -24,6 +31,11 @@ public:
 
   std::shared_ptr<Encoder> encoder() const;
   void handle_event(const gp::misc::Event &event);
+  void close();
+
+#ifdef STREAMING_PIPELINE_STATS
+  void set_stats_log(std::FILE *out) noexcept;
+#endif
 
 private:
   void init(const int width, const int height, const std::string &title);
@@ -45,7 +57,7 @@ private:
 
   std::shared_ptr<FrameData> video_frame_{};
 
-  bool animate_{};
+  bool animate_{true};
   glm::mat4 projection_{};
   glm::vec3 camera_pos_{};
   glm::vec3 camera_rot_{};
@@ -57,5 +69,12 @@ private:
 
   std::vector<gp::misc::Event> event_queue_{};
   std::mutex event_queue_mutex_{};
+
+  std::atomic<bool> close_requested_{false};
+
+#ifdef STREAMING_PIPELINE_STATS
+  std::chrono::microseconds last_render_us_{};
+  EncodeStats encode_stats_{};
+#endif
 };
 } // namespace streaming

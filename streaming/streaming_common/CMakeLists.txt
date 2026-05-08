@@ -9,6 +9,10 @@ target_include_directories(
 
 target_link_libraries(streaming_common PUBLIC gp)
 
+target_compile_definitions(
+  streaming_common
+  PUBLIC $<$<BOOL:${STREAMING_PIPELINE_STATS}>:STREAMING_PIPELINE_STATS>)
+
 set_target_properties(streaming_common PROPERTIES FOLDER ${SOLUTION_FOLDER})
 
 source_group(${SOURCE_GROUP_LABEL} FILES ${SRC_FILES})
