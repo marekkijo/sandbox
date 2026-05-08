@@ -121,13 +121,11 @@ void DecodeScene::decode() {
   case Decoder::Status::Code::RETRY:
     break;
   case Decoder::Status::Code::EOS:
-    printf("Decoding: end of stream\n");
     request_close();
     break;
   case Decoder::Status::Code::NODATA:
     break;
   case Decoder::Status::Code::ERROR:
-    printf("Decoding: ERROR\n");
     request_close();
     break;
   }

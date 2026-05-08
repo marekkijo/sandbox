@@ -44,7 +44,6 @@ public:
   struct Frame {
     std::chrono::microseconds render_us{};
     std::chrono::microseconds capture_us{};
-    std::chrono::microseconds flip_us{};
     std::chrono::microseconds rgb_to_yuv_us{};
     std::chrono::microseconds encode_us{};
   };
@@ -54,7 +53,6 @@ public:
   void record(const Frame &f) noexcept {
     render_.record(f.render_us);
     capture_.record(f.capture_us);
-    flip_.record(f.flip_us);
     rgb_to_yuv_.record(f.rgb_to_yuv_us);
     encode_.record(f.encode_us);
     ++frame_count_;
@@ -70,10 +68,9 @@ private:
     fprintf(out_, "--- Encode pipeline stats (over %u frames) ---\n", frame_count_);
     print_stage(out_, "  render      ", render_);
     print_stage(out_, "  capture     ", capture_);
-    print_stage(out_, "  flip        ", flip_);
     print_stage(out_, "  rgb->yuv    ", rgb_to_yuv_);
     print_stage(out_, "  encode      ", encode_);
-    const auto total = render_.avg() + capture_.avg() + flip_.avg() + rgb_to_yuv_.avg() + encode_.avg();
+    const auto total = render_.avg() + capture_.avg() + rgb_to_yuv_.avg() + encode_.avg();
     fprintf(out_, "  total (avg) : %6" PRId64 " us\n", static_cast<int64_t>(total.count()));
     fprintf(out_, "----------------------------------------------\n\n");
     std::fflush(out_);
@@ -91,7 +88,6 @@ private:
   void reset() noexcept {
     render_.reset();
     capture_.reset();
-    flip_.reset();
     rgb_to_yuv_.reset();
     encode_.reset();
     frame_count_ = 0;
@@ -99,7 +95,6 @@ private:
 
   StageStats render_{};
   StageStats capture_{};
-  StageStats flip_{};
   StageStats rgb_to_yuv_{};
   StageStats encode_{};
   uint32_t frame_count_{0};
