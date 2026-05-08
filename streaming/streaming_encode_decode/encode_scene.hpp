@@ -10,6 +10,8 @@
 #include <gp/gl/buffer_object.hpp>
 #include <gp/gl/shader_program.hpp>
 #include <gp/gl/vertex_array_object.hpp>
+
+#include <array>
 #include <gp/sdl/scene_3d.hpp>
 
 #include <glm/glm.hpp>
@@ -34,6 +36,7 @@ private:
 
   void initialize();
   void finalize();
+  void drain_pbo();
   void animate(const std::uint64_t time_elapsed_ms);
   void redraw();
   void encode();
@@ -58,6 +61,10 @@ private:
   std::unique_ptr<gp::gl::BufferObject> vertex_buffer_{};
   std::unique_ptr<gp::gl::BufferObject> indices_buffer_{};
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
+
+  std::array<std::unique_ptr<gp::gl::BufferObject>, 2> pbo_{};
+  int pbo_index_{0};
+  bool pbo_primed_{false};
 
 #ifdef STREAMING_PIPELINE_STATS
   std::chrono::microseconds last_render_us_{};
