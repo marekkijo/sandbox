@@ -166,10 +166,6 @@ void Streamer::on_peer_state_change(rtc::PeerConnection::State state) {
     break;
   case rtc::PeerConnection::State::Disconnected: {
     printf("Peer state: Disconnected\n");
-    {
-      std::lock_guard<std::mutex> lock(mutex_);
-      peer_ = nullptr;
-    }
     if (close_callback_) {
       close_callback_();
     }
@@ -177,10 +173,6 @@ void Streamer::on_peer_state_change(rtc::PeerConnection::State state) {
   }
   case rtc::PeerConnection::State::Failed: {
     printf("Peer state: Failed\n");
-    {
-      std::lock_guard<std::mutex> lock(mutex_);
-      peer_ = nullptr;
-    }
     if (close_callback_) {
       close_callback_();
     }
@@ -188,10 +180,6 @@ void Streamer::on_peer_state_change(rtc::PeerConnection::State state) {
   }
   case rtc::PeerConnection::State::Closed: {
     printf("Peer state: Closed\n");
-    {
-      std::lock_guard<std::mutex> lock(mutex_);
-      peer_ = nullptr;
-    }
     if (close_callback_) {
       close_callback_();
     }
