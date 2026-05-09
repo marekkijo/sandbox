@@ -11,6 +11,7 @@
 
 #include <array>
 #include <chrono>
+#include <cstring>
 
 namespace streaming {
 namespace {
@@ -57,6 +58,9 @@ void EncodeScene::initialize() {
 }
 
 void EncodeScene::finalize() {
+  drain_pbo();
+  pbo_[0].reset();
+  pbo_[1].reset();
   shader_program_.reset();
   indices_buffer_.reset();
   vertex_buffer_.reset();
@@ -103,28 +107,65 @@ void EncodeScene::encode() {
 
 #ifdef STREAMING_PIPELINE_STATS
   using Clock = std::chrono::steady_clock;
-
   const auto t0 = Clock::now();
 #endif
-  glReadPixels(0,
-               0,
-               video_stream_info_.width,
-               video_stream_info_.height,
-               format,
-               GL_UNSIGNED_BYTE,
-               video_frame_->data());
+
+  const auto write_idx = pbo_index_;
+  const auto read_idx = 1 - pbo_index_;
+  pbo_index_ = 1 - pbo_index_;
+
+  // Issue async readback for this frame — returns immediately; GPU writes into PBO concurrently
+  pbo_[write_idx]->bind();
+  glReadPixels(0, 0, video_stream_info_.width, video_stream_info_.height, format, GL_UNSIGNED_BYTE, nullptr);
+  pbo_[write_idx]->unbind();
+
+  auto mapped_ok = false;
+  if (pbo_primed_) {
+    // Previous PBO's readback has had a full frame cycle to complete — map and encode
+    pbo_[read_idx]->bind();
+    const auto *src = static_cast<const FrameSubType *>(pbo_[read_idx]->map(GL_READ_ONLY));
+    if (src) {
+      std::memcpy(video_frame_->data(), src, video_frame_->size());
+      pbo_[read_idx]->unmap();
+      mapped_ok = true;
+    }
+    pbo_[read_idx]->unbind();
+  }
+  pbo_primed_ = true;
+
 #ifdef STREAMING_PIPELINE_STATS
   const auto t1 = Clock::now();
 #endif
-  encoder_->encode();
+
+  if (mapped_ok) {
+    encoder_->encode();
+  }
 
 #ifdef STREAMING_PIPELINE_STATS
-  const auto &enc_t = encoder_->last_timings();
-  encode_stats_.record({.render_us = last_render_us_,
-                        .capture_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0),
-                        .rgb_to_yuv_us = enc_t.rgb_to_yuv_us,
-                        .encode_us = enc_t.encode_us});
+  if (mapped_ok) {
+    const auto &enc_t = encoder_->last_timings();
+    encode_stats_.record({.render_us = last_render_us_,
+                          .capture_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0),
+                          .rgb_to_yuv_us = enc_t.rgb_to_yuv_us,
+                          .encode_us = enc_t.encode_us});
+  }
 #endif
+}
+
+void EncodeScene::drain_pbo() {
+  if (!pbo_primed_) {
+    return;
+  }
+  // The slot written to last is 1 - pbo_index_ (pbo_index_ was already toggled by the last encode() call)
+  const auto read_idx = 1 - pbo_index_;
+  pbo_[read_idx]->bind();
+  const auto *src = static_cast<const FrameSubType *>(pbo_[read_idx]->map(GL_READ_ONLY));
+  if (src) {
+    std::memcpy(video_frame_->data(), src, video_frame_->size());
+    pbo_[read_idx]->unmap();
+    encoder_->encode();
+  }
+  pbo_[read_idx]->unbind();
 }
 
 void EncodeScene::init_streaming() {
@@ -139,6 +180,14 @@ void EncodeScene::init_streaming() {
       });
 
   video_frame_ = encoder_->video_frame();
+
+  const auto frame_size = static_cast<GLsizeiptr>(video_stream_info_.width) * video_stream_info_.height * CHANNELS_NUM;
+  for (auto &pbo : pbo_) {
+    pbo = std::make_unique<gp::gl::BufferObject>(GL_PIXEL_PACK_BUFFER);
+    pbo->bind();
+    pbo->set_data(frame_size, nullptr, GL_STREAM_READ);
+    pbo->unbind();
+  }
 }
 
 void EncodeScene::init_scene() {
