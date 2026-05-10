@@ -47,6 +47,9 @@ void EncodeScene::loop(const gp::misc::Event &event) {
       request_close();
     }
     break;
+  case gp::misc::Event::Type::Resize:
+    glViewport(0, 0, video_stream_info_.width, video_stream_info_.height);
+    break;
   default:
     break;
   }

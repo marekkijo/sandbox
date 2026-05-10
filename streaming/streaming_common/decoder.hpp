@@ -99,6 +99,7 @@ private:
   gp::ffmpeg::UniqueAVFrame frame_{};
 
   std::vector<std::uint8_t> buffer_{};
+  std::size_t buffer_read_offset_{0};
 
   std::vector<std::uint8_t> async_buffer_{};
   std::mutex async_buffer_mutex_{};

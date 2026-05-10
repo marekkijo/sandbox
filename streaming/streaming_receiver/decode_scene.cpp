@@ -99,14 +99,14 @@ void DecodeScene::decode() {
     const auto t0 = Clock::now();
 #endif
     frame_texture_->bind();
-    frame_texture_->set_image(0,
-                              format,
-                              video_stream_info_.width,
-                              video_stream_info_.height,
-                              0,
-                              format,
-                              GL_UNSIGNED_BYTE,
-                              rgb_frame_->data());
+    frame_texture_->set_sub_image(0,
+                                  0,
+                                  0,
+                                  video_stream_info_.width,
+                                  video_stream_info_.height,
+                                  format,
+                                  GL_UNSIGNED_BYTE,
+                                  rgb_frame_->data());
 #ifdef STREAMING_PIPELINE_STATS
     const auto t1 = Clock::now();
     const auto &dec_t = decoder_->last_timings();
@@ -198,6 +198,10 @@ void DecodeScene::init_scene() {
   frame_texture_->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   frame_texture_->set_parameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   frame_texture_->set_parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  constexpr auto fmt = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
+  frame_texture_
+      ->set_image(0, fmt, video_stream_info_.width, video_stream_info_.height, 0, fmt, GL_UNSIGNED_BYTE, nullptr);
 
   shader_program_ = gp::gl::create_shader_program("shaders/texture_screen");
   shader_program_->use();
