@@ -161,10 +161,12 @@ void Streamer::on_data_channel_string_message(std::string message) {
     }
 
     if (json.contains("ack")) {
-      const auto acked_frame_num = json.at("ack").at("frame_num").template get<std::uint64_t>();
-      const auto current = frame_num_.load();
-      if (feedback_callback_ && current > acked_frame_num) {
-        feedback_callback_(current - acked_frame_num);
+      const auto acked_packet_num = json.at("ack").at("frame_num").template get<std::uint64_t>();
+      const auto next = frame_num_.load();
+      const auto last_sent = next > 0 ? next - 1 : 0;
+      const auto lag = acked_packet_num <= last_sent ? last_sent - acked_packet_num : 0;
+      if (feedback_callback_) {
+        feedback_callback_(lag);
       }
       return;
     }

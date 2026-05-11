@@ -29,10 +29,11 @@ constexpr auto STREAMER_ID = "streamer";
 constexpr auto RECEIVER_ID = "receiver";
 constexpr auto DATA_CHANNEL_ID = "video-channel";
 
-// Feedback ACK: receiver sends one ACK message every ACK_INTERVAL received frames.
+// Feedback ACK: receiver sends one ACK message every ACK_INTERVAL received DataChannel packets.
 constexpr auto ACK_INTERVAL = std::size_t{10};
 
-// Lag thresholds (in frames) for encoder throttling on the streamer side.
+// Lag thresholds (in DataChannel packets) for encoder throttling on the streamer side.
+// Each encoded frame produces one packet, so packet lag approximates frame lag in normal operation.
 // Above LAG_THROTTLE_HEAVY: encode every 4th frame.
 // Above LAG_THROTTLE_LIGHT: encode every 2nd frame.
 constexpr auto LAG_THROTTLE_LIGHT = std::uint64_t{10};
