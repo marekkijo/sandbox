@@ -67,7 +67,7 @@ ProgramSetup process_args(const int argc, const char *const argv[]) {
           gp::ffmpeg::codec_name_to_id(vm["codec"].as<std::string>()),
           !vm.count("no-stun")
 #ifdef STREAMING_PIPELINE_STATS
-          ,
+              ,
           vm["stats-log"].as<std::string>()
 #endif
   };
@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
 
   streamer->set_event_callback([&encode_scene](const gp::misc::Event &event) { encode_scene->handle_event(event); });
   streamer->set_close_callback([&encode_scene]() { encode_scene->close(); });
+  streamer->set_feedback_callback([&encode_scene](std::uint64_t lag) { encode_scene->set_lag(lag); });
   streamer->start(encode_scene->encoder());
 
   const auto result = encode_scene->exec();

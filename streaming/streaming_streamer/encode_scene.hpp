@@ -35,6 +35,8 @@ public:
   void handle_event(const gp::misc::Event &event);
   void close();
 
+  void set_lag(std::uint64_t lag) noexcept { frame_lag_.store(lag); }
+
 #ifdef STREAMING_PIPELINE_STATS
   void set_stats_log(std::FILE *out) noexcept;
 #endif
@@ -78,6 +80,8 @@ private:
   std::mutex event_queue_mutex_{};
 
   std::atomic<bool> close_requested_{false};
+  std::atomic<std::uint64_t> frame_lag_{0};
+  int skip_counter_{0};
 
 #ifdef STREAMING_PIPELINE_STATS
   std::chrono::microseconds last_render_us_{};

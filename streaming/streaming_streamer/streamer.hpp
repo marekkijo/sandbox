@@ -27,6 +27,7 @@ public:
   void start(std::shared_ptr<Encoder> encoder);
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
   void set_close_callback(std::function<void()> close_callback);
+  void set_feedback_callback(std::function<void(std::uint64_t lag)> feedback_callback);
 
 private:
   struct Peer {
@@ -61,12 +62,13 @@ private:
   std::string connection_url_{};
   VideoStreamInfo video_stream_info_{};
   std::atomic<bool> connection_open_{false};
-  std::uint64_t frame_num_{0};
+  std::atomic<std::uint64_t> frame_num_{0};
   rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
   std::shared_ptr<Peer> peer_{};
   mutable std::mutex mutex_{};
   std::function<void(const gp::misc::Event &event)> event_callback_{};
   std::function<void()> close_callback_{};
+  std::function<void(std::uint64_t lag)> feedback_callback_{};
 };
 } // namespace streaming

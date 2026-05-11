@@ -45,6 +45,7 @@ private:
   std::unique_ptr<Decoder> decoder_;
 
   std::shared_ptr<FrameData> rgb_frame_{};
+  std::shared_ptr<FrameData> display_frame_{};
   bool frame_ready_{};
 
   std::unique_ptr<gp::gl::VertexArrayObject> vao_{};
