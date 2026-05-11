@@ -56,7 +56,5 @@ private:
   gp::ffmpeg::UniqueAVCodecContext context_{};
   gp::ffmpeg::UniqueAVPacket packet_{};
   gp::ffmpeg::UniqueAVFrame frame_{};
-
-  gp::ffmpeg::UniqueSwsContext sws_context_{};
 };
 } // namespace streaming

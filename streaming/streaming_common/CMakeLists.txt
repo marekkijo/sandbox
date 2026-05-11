@@ -7,7 +7,12 @@ target_compile_features(streaming_common PRIVATE cxx_std_23)
 target_include_directories(
   streaming_common PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 
-target_link_libraries(streaming_common PUBLIC gp)
+find_package(libyuv CONFIG REQUIRED)
+
+target_link_libraries(
+  streaming_common
+  PUBLIC gp
+  PRIVATE yuv)
 
 target_compile_definitions(
   streaming_common

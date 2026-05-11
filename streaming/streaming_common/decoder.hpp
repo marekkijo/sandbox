@@ -122,7 +122,5 @@ private:
    * EOF signaled from the outside - no more data accepted.
    */
   std::atomic_bool signaled_eof_{};
-
-  SwsContext *sws_context_{};
 };
 } // namespace streaming

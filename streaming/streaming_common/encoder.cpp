@@ -2,17 +2,25 @@
 
 #include "streaming_common/constants.hpp"
 
+#include <libyuv.h>
+
 #include <array>
 #include <chrono>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace streaming {
 Encoder::Encoder(const VideoStreamInfo &video_stream_info)
-    : video_frame_{std::make_shared<FrameData>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM)}
-    , codec_{avcodec_find_encoder(video_stream_info.codec_id)}
-    , context_{codec_ ? avcodec_alloc_context3(codec_) : nullptr}
-    , packet_{av_packet_alloc()} {
+    : video_frame_{std::make_shared<FrameData>(video_stream_info.width * video_stream_info.height * CHANNELS_NUM)} {
+  // Prefer hardware VideoToolbox encoder; fall back to software libx264
+  codec_ = avcodec_find_encoder_by_name("h264_videotoolbox");
+  if (!codec_) {
+    codec_ = avcodec_find_encoder(AV_CODEC_ID_H264);
+  }
+  context_.reset(codec_ ? avcodec_alloc_context3(codec_) : nullptr);
+  packet_.reset(av_packet_alloc());
+
   if (codec_ == nullptr) {
     throw std::runtime_error{"avcodec_find_encoder failed"};
   }
@@ -31,9 +39,12 @@ Encoder::Encoder(const VideoStreamInfo &video_stream_info)
   context_->gop_size = video_stream_info.fps;
   context_->max_b_frames = 0;
   context_->pix_fmt = AV_PIX_FMT_YUV420P;
-  context_->thread_count = ENCODE_THREAD_COUNT;
+  context_->thread_count = 1;
 
-  if (codec_->id == AV_CODEC_ID_H264) {
+  if (std::string_view{codec_->name} == "h264_videotoolbox") {
+    // Minimise internal frame buffering so input events are reflected without delay.
+    av_opt_set_int(context_->priv_data, "realtime", 1, 0);
+  } else {
     av_opt_set(context_->priv_data, "preset", "ultrafast", 0);
     av_opt_set(context_->priv_data, "tune", "zerolatency", 0);
   }
@@ -54,20 +65,6 @@ Encoder::Encoder(const VideoStreamInfo &video_stream_info)
 
   if (av_frame_get_buffer(frame_.get(), 0) < 0) {
     throw std::runtime_error{"av_frame_get_buffer failed"};
-  }
-
-  sws_context_.reset(sws_getContext(context_->width,
-                                    context_->height,
-                                    AV_PIX_FMT_RGBA,
-                                    context_->width,
-                                    context_->height,
-                                    AV_PIX_FMT_YUV420P,
-                                    SWS_FAST_BILINEAR,
-                                    nullptr,
-                                    nullptr,
-                                    nullptr));
-  if (!sws_context_) {
-    throw std::runtime_error{"sws_getContext failed"};
   }
 }
 
@@ -164,20 +161,24 @@ void Encoder::encode_frame(AVFrame *frame) {
 }
 
 void Encoder::rgb_to_yuv() {
-  const auto width = static_cast<std::size_t>(context_->width);
-  const auto height = static_cast<std::size_t>(context_->height);
+  const auto width = context_->width;
+  const auto height = context_->height;
+  const auto stride = width * CHANNELS_NUM;
 
-  // GL framebuffers are stored bottom-up: video_frame_->data() holds the bottom
-  // screen row, and the last row in memory is the top screen row. By setting
-  // src[0] to that last (top-screen) row and using a negative linesize, each
-  // successive sws_scale input row steps backward in memory — effectively reading
-  // the GL buffer top-to-bottom in screen coordinates, which is what the encoder
-  // expects. No intermediate copy is needed.
-  const auto *last_row =
-      reinterpret_cast<const std::uint8_t *>(video_frame_->data()) + (height - 1) * width * CHANNELS_NUM;
-  const std::uint8_t *src[] = {last_row};
-  const std::array<int, 1> in_linesize{-static_cast<int>(CHANNELS_NUM * width)};
-  sws_scale(sws_context_.get(), src, in_linesize.data(), 0, context_->height, frame_->data, frame_->linesize);
+  // GL framebuffers are bottom-up: point to last row and use negative stride to
+  // flip vertically while converting RGBA (= libyuv ABGR) → YUV420P.
+  const auto *src_last_row =
+      reinterpret_cast<const std::uint8_t *>(video_frame_->data()) + static_cast<std::ptrdiff_t>(height - 1) * stride;
+  libyuv::ABGRToI420(src_last_row,
+                     -stride,
+                     frame_->data[0],
+                     frame_->linesize[0],
+                     frame_->data[1],
+                     frame_->linesize[1],
+                     frame_->data[2],
+                     frame_->linesize[2],
+                     width,
+                     height);
 }
 
 } // namespace streaming
