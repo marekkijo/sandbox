@@ -166,7 +166,9 @@ void Encoder::rgb_to_yuv() {
   const auto stride = width * CHANNELS_NUM;
 
   // GL framebuffers are bottom-up: point to last row and use negative stride to
-  // flip vertically while converting RGBA (= libyuv ABGR) → YUV420P.
+  // flip vertically while converting RGBA → YUV420P.
+  // libyuv uses 32-bit integer naming on little-endian: "ABGR" means the 32-bit
+  // value has A at MSB and R at LSB, so bytes in memory are [R, G, B, A] — exactly GL_RGBA.
   const auto *src_last_row =
       reinterpret_cast<const std::uint8_t *>(video_frame_->data()) + static_cast<std::ptrdiff_t>(height - 1) * stride;
   libyuv::ABGRToI420(src_last_row,

@@ -172,8 +172,18 @@ bool DecodeScene::redraw() {
                                   GL_UNSIGNED_BYTE,
                                   nullptr);
     pbo_[read_idx]->unbind();
+  } else {
+    // First frame: read PBO not yet filled — upload directly so the first frame is visible.
+    frame_texture_->set_sub_image(0,
+                                  0,
+                                  0,
+                                  video_stream_info_.width,
+                                  video_stream_info_.height,
+                                  format,
+                                  GL_UNSIGNED_BYTE,
+                                  display_frame_->data());
+    pbo_primed_ = true;
   }
-  pbo_primed_ = true;
 
 #ifdef STREAMING_PIPELINE_STATS
   const auto t1 = Clock::now();

@@ -261,7 +261,9 @@ void Decoder::reduce_buffer(int n) {
 }
 
 void Decoder::yuv_to_rgb() {
-  // YUV420P (I420) → RGBA (= libyuv ABGR): fast SIMD path via libyuv.
+  // YUV420P (I420) → RGBA via libyuv.
+  // libyuv uses 32-bit integer naming on little-endian: "ABGR" means bytes in
+  // memory are [R, G, B, A] — exactly what GL_RGBA expects.
   auto *dst = reinterpret_cast<std::uint8_t *>(rgb_frame_->data());
   const int dst_stride = context_->width * CHANNELS_NUM;
   libyuv::I420ToABGR(frame_->data[0],
