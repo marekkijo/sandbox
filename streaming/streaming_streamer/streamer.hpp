@@ -22,7 +22,7 @@ public:
   Streamer(Streamer &&other) noexcept = delete;
   Streamer &operator=(Streamer &&other) noexcept = delete;
 
-  Streamer(const std::string &server_ip, const std::uint16_t server_port);
+  Streamer(const std::string &server_ip, const std::uint16_t server_port, const bool use_stun = true);
 
   void start(std::shared_ptr<Encoder> encoder);
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
@@ -61,6 +61,7 @@ private:
   std::string connection_url_{};
   VideoStreamInfo video_stream_info_{};
   std::atomic<bool> connection_open_{false};
+  std::uint64_t frame_num_{0};
   rtc::Configuration configuration_{};
   std::shared_ptr<rtc::WebSocket> web_socket_{};
   std::shared_ptr<Peer> peer_{};

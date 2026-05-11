@@ -62,7 +62,7 @@ Encoder::Encoder(const VideoStreamInfo &video_stream_info)
                                     context_->width,
                                     context_->height,
                                     AV_PIX_FMT_YUV420P,
-                                    SWS_BILINEAR,
+                                    SWS_FAST_BILINEAR,
                                     nullptr,
                                     nullptr,
                                     nullptr));

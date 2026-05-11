@@ -2,15 +2,21 @@
 
 #include "streaming_common/constants.hpp"
 #include "streaming_common/encoder.hpp"
+#include "streaming_common/stream_package_header.hpp"
 
 #include <gp/json/misc.hpp>
 #include <gp/utils/utils.hpp>
 
+#include <cstring>
+#include <vector>
+
 namespace streaming {
-Streamer::Streamer(const std::string &server_ip, const std::uint16_t server_port)
+Streamer::Streamer(const std::string &server_ip, const std::uint16_t server_port, const bool use_stun)
     : id_{std::string{STREAMER_ID} + ":" + gp::utils::generate_random_string(16u)}
     , connection_url_{std::string{"ws://"} + server_ip + ":" + std::to_string(server_port) + "/" + id_} {
-  configuration_.iceServers.emplace_back("stun.l.google.com", 19302);
+  if (use_stun) {
+    configuration_.iceServers.emplace_back("stun.l.google.com", 19302);
+  }
   configuration_.disableAutoNegotiation = true;
   configuration_.maxMessageSize = MAX_MESSAGE_SIZE;
 
@@ -287,12 +293,12 @@ void Streamer::video_stream_callback(const std::byte *data, const std::size_t si
     peer = peer_;
   }
   if (peer && peer->data_channel && peer->data_channel->isOpen()) {
-    peer->data_channel->send(data, size);
-    if (eof) {
-      constexpr auto eof_data = "EOF";
-      constexpr auto eof_size = 4u;
-      peer->data_channel->send(reinterpret_cast<const std::byte *>(eof_data), eof_size);
-    }
+    const StreamPackageHeader header{frame_num_++, eof};
+    const auto serialized = header.serialize();
+    std::vector<std::byte> packet(STREAM_PACKAGE_HEADER_SIZE + size);
+    std::memcpy(packet.data(), serialized.data(), STREAM_PACKAGE_HEADER_SIZE);
+    std::memcpy(packet.data() + STREAM_PACKAGE_HEADER_SIZE, data, size);
+    peer->data_channel->send(packet.data(), packet.size());
   }
 }
 

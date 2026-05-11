@@ -24,7 +24,7 @@ public:
   DecodeScene();
 
   void init(const VideoStreamInfo &video_stream_info);
-  void consume_data(const std::byte *data, const std::size_t size);
+  void consume_data(const std::byte *data, const std::size_t size, const bool eof = false);
 
   void set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback);
 

@@ -27,9 +27,14 @@ void DecodeScene::init(const VideoStreamInfo &video_stream_info) {
   Scene3D::init(video_stream_info.width, video_stream_info.height, "Decoding...", async);
 }
 
-void DecodeScene::consume_data(const std::byte *data, const std::size_t size) {
-  const auto async = true;
-  decoder_->incoming_data(data, size, async);
+void DecodeScene::consume_data(const std::byte *data, const std::size_t size, const bool eof) {
+  if (size > 0) {
+    const auto async = true;
+    decoder_->incoming_data(data, size, async);
+  }
+  if (eof) {
+    decoder_->signal_eof();
+  }
 }
 
 void DecodeScene::set_event_callback(std::function<void(const gp::misc::Event &event)> event_callback) {

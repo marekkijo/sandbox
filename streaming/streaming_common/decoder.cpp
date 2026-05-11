@@ -267,7 +267,7 @@ void Decoder::yuv_to_rgb() {
                                       context_->width,
                                       context_->height,
                                       AV_PIX_FMT_RGBA,
-                                      0,
+                                      SWS_FAST_BILINEAR,
                                       nullptr,
                                       nullptr,
                                       nullptr);
@@ -285,16 +285,14 @@ void Decoder::fill_async_buffer(const std::byte *data, const std::size_t size) {
 }
 
 void Decoder::consume_async_buffer() {
-  const auto lock = std::lock_guard{async_buffer_mutex_};
-
-  if (async_buffer_.empty()) {
-    return;
+  std::vector<std::uint8_t> local;
+  {
+    const auto lock = std::lock_guard{async_buffer_mutex_};
+    if (async_buffer_.empty()) {
+      return;
+    }
+    local.swap(async_buffer_);
   }
-
-  const auto size = async_buffer_.size();
-  const auto data = async_buffer_.data();
-  async_buffer_.clear();
-
-  incoming_data(reinterpret_cast<const std::byte *>(data), size);
+  incoming_data(reinterpret_cast<const std::byte *>(local.data()), local.size());
 }
 } // namespace streaming

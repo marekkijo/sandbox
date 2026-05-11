@@ -30,7 +30,8 @@ public:
   void set_video_stream_info_callback(
       std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback);
   void set_incoming_video_stream_data_callback(
-      std::function<void(const std::byte *data, const std::size_t size)> incoming_video_stream_data_callback);
+      std::function<void(const std::byte *data, const std::size_t size, const bool eof)>
+          incoming_video_stream_data_callback);
 
 private:
   struct Peer {
@@ -81,6 +82,7 @@ private:
   mutable std::mutex mutex_{};
 
   std::function<void(const VideoStreamInfo &video_stream_info)> video_stream_info_callback_{};
-  std::function<void(const std::byte *data, const std::size_t size)> incoming_video_stream_data_callback_{};
+  std::function<void(const std::byte *data, const std::size_t size, const bool eof)>
+      incoming_video_stream_data_callback_{};
 };
 } // namespace streaming

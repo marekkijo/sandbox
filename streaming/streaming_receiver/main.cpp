@@ -69,7 +69,9 @@ int main(int argc, char *argv[]) {
   receiver->set_video_stream_info_callback(
       [&decode_scene](const streaming::VideoStreamInfo &video_stream_info) { decode_scene->init(video_stream_info); });
   receiver->set_incoming_video_stream_data_callback(
-      [&decode_scene](const std::byte *data, const std::size_t size) { decode_scene->consume_data(data, size); });
+      [&decode_scene](const std::byte *data, const std::size_t size, const bool eof) {
+        decode_scene->consume_data(data, size, eof);
+      });
   decode_scene->set_event_callback([&receiver](const gp::misc::Event &event) { receiver->handle_event(event); });
 
 #ifdef STREAMING_PIPELINE_STATS
