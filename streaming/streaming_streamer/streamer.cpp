@@ -42,6 +42,10 @@ void Streamer::set_event_callback(std::function<void(const gp::misc::Event &even
 
 void Streamer::set_close_callback(std::function<void()> close_callback) { close_callback_ = std::move(close_callback); }
 
+void Streamer::set_feedback_callback(std::function<void(std::uint64_t lag)> feedback_callback) {
+  feedback_callback_ = std::move(feedback_callback);
+}
+
 void Streamer::init_web_socket(std::shared_ptr<rtc::WebSocket> web_socket) {
   auto weak_self = weak_from_this();
   web_socket->onOpen([weak_self]() {
@@ -153,6 +157,15 @@ void Streamer::on_data_channel_string_message(std::string message) {
 
     if (json.contains("event")) {
       parse_event(json.at("event"));
+      return;
+    }
+
+    if (json.contains("ack")) {
+      const auto acked_frame_num = json.at("ack").at("frame_num").template get<std::uint64_t>();
+      const auto current = frame_num_.load();
+      if (feedback_callback_ && current > acked_frame_num) {
+        feedback_callback_(current - acked_frame_num);
+      }
       return;
     }
 

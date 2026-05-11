@@ -205,7 +205,17 @@ void EncodeScene::encode() {
 #endif
 
   if (mapped_ok) {
-    encoder_->encode();
+    const auto lag = frame_lag_.load();
+    int skip_interval = 1;
+    if (lag > LAG_THROTTLE_HEAVY) {
+      skip_interval = 4;
+    } else if (lag > LAG_THROTTLE_LIGHT) {
+      skip_interval = 2;
+    }
+    if (skip_counter_ == 0) {
+      encoder_->encode();
+    }
+    skip_counter_ = (skip_counter_ + 1) % skip_interval;
   }
 
 #ifdef STREAMING_PIPELINE_STATS

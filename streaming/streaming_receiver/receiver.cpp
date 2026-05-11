@@ -271,6 +271,21 @@ void Receiver::on_data_channel_binary_message(rtc::binary message) {
   if (header.eof && incoming_video_stream_data_callback_) {
     incoming_video_stream_data_callback_(nullptr, 0, true);
   }
+
+  if (++ack_counter_ >= ACK_INTERVAL) {
+    ack_counter_ = 0;
+    std::shared_ptr<Peer> peer;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      peer = peer_;
+    }
+    if (peer && peer->data_channel && peer->data_channel->isOpen()) {
+      const auto json = nlohmann::json{
+          {"ack", {{"frame_num", header.frame_num}}}
+      };
+      peer->data_channel->send(json.dump());
+    }
+  }
 }
 
 void Receiver::on_data_channel_string_message(std::string /* message */) {

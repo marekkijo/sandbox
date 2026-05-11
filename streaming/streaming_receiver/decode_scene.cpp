@@ -84,42 +84,23 @@ void DecodeScene::finalize() {
   frame_texture_.reset();
   vertex_buffer_.reset();
   vao_.reset();
+  display_frame_.reset();
   rgb_frame_.reset();
   decoder_.reset();
   decoder_ = std::make_unique<Decoder>();
 }
 
 void DecodeScene::decode() {
-  constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
-
-  if (frame_ready_) {
-    return;
-  }
-
   const auto status = decoder_->decode();
   switch (status.code) {
   case Decoder::Status::Code::OK: {
 #ifdef STREAMING_PIPELINE_STATS
-    using Clock = std::chrono::steady_clock;
-    const auto t0 = Clock::now();
-#endif
-    frame_texture_->bind();
-    frame_texture_->set_sub_image(0,
-                                  0,
-                                  0,
-                                  video_stream_info_.width,
-                                  video_stream_info_.height,
-                                  format,
-                                  GL_UNSIGNED_BYTE,
-                                  rgb_frame_->data());
-#ifdef STREAMING_PIPELINE_STATS
-    const auto t1 = Clock::now();
     const auto &dec_t = decoder_->last_timings();
     pending_decode_frame_ = {.upload_us = dec_t.upload_us,
                              .receive_us = dec_t.receive_us,
-                             .yuv_to_rgb_us = dec_t.yuv_to_rgb_us,
-                             .texture_upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)};
+                             .yuv_to_rgb_us = dec_t.yuv_to_rgb_us};
 #endif
+    rgb_frame_->swap(*display_frame_);
     frame_ready_ = true;
     break;
   }
@@ -141,9 +122,27 @@ bool DecodeScene::redraw() {
     return false;
   }
 
+  constexpr auto format = CHANNELS_NUM == 4u ? GL_RGBA : GL_RGB;
+
 #ifdef STREAMING_PIPELINE_STATS
   using Clock = std::chrono::steady_clock;
   const auto t0 = Clock::now();
+#endif
+
+  frame_texture_->bind();
+  frame_texture_->set_sub_image(0,
+                                0,
+                                0,
+                                video_stream_info_.width,
+                                video_stream_info_.height,
+                                format,
+                                GL_UNSIGNED_BYTE,
+                                display_frame_->data());
+
+#ifdef STREAMING_PIPELINE_STATS
+  const auto t1 = Clock::now();
+  pending_decode_frame_.texture_upload_us = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+  const auto t_draw0 = t1;
 #endif
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -154,7 +153,7 @@ bool DecodeScene::redraw() {
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 #ifdef STREAMING_PIPELINE_STATS
-  pending_decode_frame_.display_us = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t0);
+  pending_decode_frame_.display_us = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - t_draw0);
   if (decode_stats_.record(pending_decode_frame_)) {
     request_close();
   }
@@ -167,6 +166,7 @@ bool DecodeScene::redraw() {
 void DecodeScene::init_streaming() {
   decoder_->init(video_stream_info_);
   rgb_frame_ = decoder_->rgb_frame();
+  display_frame_ = std::make_shared<FrameData>(video_stream_info_.width * video_stream_info_.height * CHANNELS_NUM);
 }
 
 void DecodeScene::init_scene() {

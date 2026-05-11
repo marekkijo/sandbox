@@ -74,6 +74,7 @@ private:
   const std::string receiver_id_{};
   const std::string id_{};
   std::atomic<bool> connection_open_{false};
+  std::size_t ack_counter_{0};
   rtc::Configuration configuration_{};
   std::string connection_url_;
   std::shared_ptr<rtc::WebSocket> web_socket_{};
