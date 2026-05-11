@@ -14,6 +14,8 @@
 #include <gp/misc/event.hpp>
 #include <gp/sdl/scene_3d.hpp>
 
+#include <array>
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -59,6 +61,10 @@ private:
   std::unique_ptr<gp::gl::BufferObject> vertex_buffer_{};
   std::unique_ptr<gp::gl::TextureObject> frame_texture_{};
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
+
+  std::array<std::unique_ptr<gp::gl::BufferObject>, 2> pbo_{};
+  int pbo_index_{0};
+  bool pbo_primed_{false};
 
   std::function<void(const gp::misc::Event &event)> event_callback_{};
 

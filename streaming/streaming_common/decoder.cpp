@@ -2,6 +2,8 @@
 
 #include "streaming_common/constants.hpp"
 
+#include <libyuv.h>
+
 #include <chrono>
 #include <stdexcept>
 
@@ -31,7 +33,12 @@ void Decoder::init(const VideoStreamInfo &video_stream_info) {
 
   context_->width = video_stream_info.width;
   context_->height = video_stream_info.height;
-  context_->thread_count = DECODE_THREAD_COUNT;
+  // Single-threaded decoding: frame-threading buffers N frames in flight which
+  // adds N×frame_time of fixed latency — unacceptable for interactive streaming.
+  context_->thread_count = 1;
+  // Output frames immediately without reordering; safe because the encoder
+  // uses max_b_frames=0 so there are no B-frames to reorder.
+  context_->flags |= AV_CODEC_FLAG_LOW_DELAY;
 
   if (avcodec_open2(context_.get(), codec_, nullptr) < 0) {
     throw std::runtime_error{"avcodec_open2 failed"};
@@ -50,11 +57,7 @@ void Decoder::init(const VideoStreamInfo &video_stream_info) {
   }
 }
 
-Decoder::~Decoder() {
-  if (sws_context_) {
-    sws_freeContext(sws_context_);
-  }
-}
+Decoder::~Decoder() = default;
 
 std::shared_ptr<FrameData> Decoder::rgb_frame() {
   if (!rgb_frame_) {
@@ -258,22 +261,21 @@ void Decoder::reduce_buffer(int n) {
 }
 
 void Decoder::yuv_to_rgb() {
-  const std::array<int, 1> in_linesize{CHANNELS_NUM * context_->width};
-
-  sws_context_ = sws_getCachedContext(sws_context_,
-                                      context_->width,
-                                      context_->height,
-                                      AV_PIX_FMT_YUV420P,
-                                      context_->width,
-                                      context_->height,
-                                      AV_PIX_FMT_RGBA,
-                                      SWS_FAST_BILINEAR,
-                                      nullptr,
-                                      nullptr,
-                                      nullptr);
-
-  auto rgb_frame_data = reinterpret_cast<std::uint8_t *>(rgb_frame_->data());
-  sws_scale(sws_context_, &frame_->data[0], frame_->linesize, 0, context_->height, &rgb_frame_data, in_linesize.data());
+  // YUV420P (I420) → RGBA via libyuv.
+  // libyuv uses 32-bit integer naming on little-endian: "ABGR" means bytes in
+  // memory are [R, G, B, A] — exactly what GL_RGBA expects.
+  auto *dst = reinterpret_cast<std::uint8_t *>(rgb_frame_->data());
+  const int dst_stride = context_->width * CHANNELS_NUM;
+  libyuv::I420ToABGR(frame_->data[0],
+                     frame_->linesize[0],
+                     frame_->data[1],
+                     frame_->linesize[1],
+                     frame_->data[2],
+                     frame_->linesize[2],
+                     dst,
+                     dst_stride,
+                     context_->width,
+                     context_->height);
 }
 
 void Decoder::fill_async_buffer(const std::byte *data, const std::size_t size) {

@@ -13,6 +13,8 @@
 #include <gp/gl/vertex_array_object.hpp>
 #include <gp/sdl/scene_3d.hpp>
 
+#include <array>
+
 #include <cstdint>
 #include <fstream>
 #include <memory>
@@ -52,6 +54,10 @@ private:
   std::unique_ptr<gp::gl::BufferObject> vertex_buffer_{};
   std::unique_ptr<gp::gl::TextureObject> frame_texture_{};
   std::unique_ptr<gp::gl::ShaderProgram> shader_program_{};
+
+  std::array<std::unique_ptr<gp::gl::BufferObject>, 2> pbo_{};
+  int pbo_index_{0};
+  bool pbo_primed_{false};
 
 #ifdef STREAMING_PIPELINE_STATS
   DecodeStats::Frame pending_decode_frame_{};

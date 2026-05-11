@@ -22,8 +22,6 @@ constexpr auto BITRATE_Mbits_8 = BITRATE_Mbits_1 * 8;
 constexpr auto ENCODE_BITRATE = BITRATE_Mbits_4;
 
 constexpr auto CHANNELS_NUM = int{4};
-constexpr auto DECODE_THREAD_COUNT = std::size_t{4u};
-constexpr auto ENCODE_THREAD_COUNT = std::size_t{4u};
 constexpr auto MAX_MESSAGE_SIZE = 1024u * 1024u; // 1MB
 constexpr auto STREAMER_ID = "streamer";
 constexpr auto RECEIVER_ID = "receiver";

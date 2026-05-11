@@ -8,6 +8,7 @@
 
 #include <array>
 #include <chrono>
+#include <cstring>
 
 namespace streaming {
 namespace {
@@ -51,9 +52,19 @@ void DecodeScene::loop(const gp::misc::Event &event) {
 void DecodeScene::initialize() {
   init_streaming();
   init_scene();
+
+  const auto frame_size = static_cast<GLsizeiptr>(video_stream_info_.width) * video_stream_info_.height * CHANNELS_NUM;
+  for (auto &pbo : pbo_) {
+    pbo = std::make_unique<gp::gl::BufferObject>(GL_PIXEL_UNPACK_BUFFER);
+    pbo->bind();
+    pbo->set_data(frame_size, nullptr, GL_STREAM_DRAW);
+    pbo->unbind();
+  }
 }
 
 void DecodeScene::finalize() {
+  pbo_[0].reset();
+  pbo_[1].reset();
   shader_program_.reset();
   frame_texture_.reset();
   vertex_buffer_.reset();
@@ -66,30 +77,34 @@ void DecodeScene::finalize() {
 }
 
 void DecodeScene::decode() {
-  const auto status = decoder_->decode();
-  switch (status.code) {
-  case Decoder::Status::Code::OK: {
+  // Drain all available frames per Redraw; only the latest is displayed.
+  for (;;) {
+    const auto status = decoder_->decode();
+    switch (status.code) {
+    case Decoder::Status::Code::OK:
 #ifdef STREAMING_PIPELINE_STATS
-    const auto &dec_t = decoder_->last_timings();
-    pending_decode_frame_ = {.upload_us = dec_t.upload_us,
-                             .receive_us = dec_t.receive_us,
-                             .yuv_to_rgb_us = dec_t.yuv_to_rgb_us};
+    {
+      const auto &dec_t = decoder_->last_timings();
+      pending_decode_frame_ = {.upload_us = dec_t.upload_us,
+                               .receive_us = dec_t.receive_us,
+                               .yuv_to_rgb_us = dec_t.yuv_to_rgb_us};
+    }
 #endif
-    rgb_frame_->swap(*display_frame_);
-    frame_ready_ = true;
-    break;
-  }
-  case Decoder::Status::Code::RETRY:
-    break;
-  case Decoder::Status::Code::EOS:
-    request_close();
-    break;
-  case Decoder::Status::Code::NODATA:
-    read_some();
-    break;
-  case Decoder::Status::Code::ERROR:
-    request_close();
-    break;
+      rgb_frame_->swap(*display_frame_);
+      frame_ready_ = true;
+      break;
+    case Decoder::Status::Code::RETRY:
+      break;
+    case Decoder::Status::Code::EOS:
+      request_close();
+      return;
+    case Decoder::Status::Code::NODATA:
+      read_some();
+      return;
+    case Decoder::Status::Code::ERROR:
+      request_close();
+      return;
+    }
   }
 }
 
@@ -105,15 +120,44 @@ bool DecodeScene::redraw() {
   const auto t0 = Clock::now();
 #endif
 
+  // Double-buffered PBO unpack: CPU fills write PBO while GPU uploads from read PBO.
+  const auto write_idx = pbo_index_;
+  const auto read_idx = 1 - pbo_index_;
+  pbo_index_ = 1 - pbo_index_;
+
+  pbo_[write_idx]->bind();
+  auto *dst = static_cast<std::byte *>(pbo_[write_idx]->map(GL_WRITE_ONLY));
+  if (dst) {
+    std::memcpy(dst, display_frame_->data(), display_frame_->size());
+    pbo_[write_idx]->unmap();
+  }
+  pbo_[write_idx]->unbind();
+
   frame_texture_->bind();
-  frame_texture_->set_sub_image(0,
-                                0,
-                                0,
-                                video_stream_info_.width,
-                                video_stream_info_.height,
-                                format,
-                                GL_UNSIGNED_BYTE,
-                                display_frame_->data());
+  if (pbo_primed_) {
+    // Kick async GPU texture upload from the previously filled PBO (returns immediately).
+    pbo_[read_idx]->bind();
+    frame_texture_->set_sub_image(0,
+                                  0,
+                                  0,
+                                  video_stream_info_.width,
+                                  video_stream_info_.height,
+                                  format,
+                                  GL_UNSIGNED_BYTE,
+                                  nullptr);
+    pbo_[read_idx]->unbind();
+  } else {
+    // First frame: read PBO not yet filled — upload directly so the first frame is visible.
+    frame_texture_->set_sub_image(0,
+                                  0,
+                                  0,
+                                  video_stream_info_.width,
+                                  video_stream_info_.height,
+                                  format,
+                                  GL_UNSIGNED_BYTE,
+                                  display_frame_->data());
+    pbo_primed_ = true;
+  }
 
 #ifdef STREAMING_PIPELINE_STATS
   const auto t1 = Clock::now();
